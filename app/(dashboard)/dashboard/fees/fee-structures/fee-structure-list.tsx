@@ -55,10 +55,16 @@ export function FeeStructureList({
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this fee structure?")) return
-    const res = await deleteFeeStructure(id)
-    if (res.success) {
-      toast({ title: "Fee structure deleted" })
-      router.refresh()
+    try {
+      const res = await deleteFeeStructure(id)
+      if (res.success) {
+        toast({ title: "Fee structure deleted" })
+        router.refresh()
+      } else {
+        toast({ title: "Failed to delete fee structure", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to delete fee structure", variant: "destructive" })
     }
   }
 

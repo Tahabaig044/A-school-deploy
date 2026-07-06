@@ -8,7 +8,7 @@ export default async function StudentProfilePage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  await requireRole(
+  const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
@@ -19,8 +19,13 @@ export default async function StudentProfilePage({
 
   const { id } = await params
 
-  const student = await prisma.student.findUnique({
-    where: { id },
+  const student = await prisma.student.findFirst({
+    where: {
+      id,
+      ...(profile.role !== "SUPER_ADMIN" && {
+        schoolId: profile.schoolId || undefined,
+      }),
+    },
     include: {
       enrollments: {
         include: {

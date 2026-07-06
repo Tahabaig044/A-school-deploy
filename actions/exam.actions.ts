@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/auth"
 import { getSchoolId, getBranchId } from "@/lib/school-context"
 import { logAuditEvent } from "@/lib/audit"
 import { z } from "zod"
+import type { Grade } from "@/lib/generated/prisma/enums"
 
 const examTypeSchema = z.object({
   schoolId: z.string().uuid(),
@@ -105,7 +106,17 @@ export async function updateExamType(
   _prevState: { error?: string; success?: boolean } | null,
   formData: FormData
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  // School isolation: verify exam type belongs to user's school
+  const existing = await prisma.examType.findUnique({
+    where: { id: examTypeId },
+    select: { schoolId: true },
+  })
+  if (!existing) return { error: "Exam type not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
 
   const name = formData.get("name") as string
   const description = formData.get("description") as string || undefined
@@ -122,7 +133,18 @@ export async function updateExamType(
 }
 
 export async function deleteExamType(examTypeId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  // School isolation: verify exam type belongs to user's school
+  const existing = await prisma.examType.findUnique({
+    where: { id: examTypeId },
+    select: { schoolId: true },
+  })
+  if (!existing) return { error: "Exam type not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
+
   await prisma.examType.delete({ where: { id: examTypeId } })
   revalidatePath("/dashboard/exams/exam-types")
   return { success: true }
@@ -197,7 +219,17 @@ export async function updateExam(
   _prevState: { error?: string; success?: boolean } | null,
   formData: FormData
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  // School isolation: verify exam belongs to user's school
+  const existing = await prisma.exam.findUnique({
+    where: { id: examId },
+    select: { schoolId: true },
+  })
+  if (!existing) return { error: "Exam not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
 
   const name = formData.get("name") as string
   const totalMarks = Number(formData.get("totalMarks") as string)
@@ -226,7 +258,18 @@ export async function updateExam(
 }
 
 export async function deleteExam(examId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  // School isolation: verify exam belongs to user's school
+  const existing = await prisma.exam.findUnique({
+    where: { id: examId },
+    select: { schoolId: true },
+  })
+  if (!existing) return { error: "Exam not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
+
   await prisma.exam.delete({ where: { id: examId } })
   revalidatePath("/dashboard/exams")
   return { success: true }
@@ -396,30 +439,57 @@ export async function submitBulkExamResults(
     if (result.marksObtained !== null && result.marksObtained < 0) {
       return { error: `Marks for student ${result.studentId} cannot be negative.`, success: false }
     }
-
-    const percentage = result.marksObtained !== null ? (result.marksObtained / exam.totalMarks) * 100 : null
-    const grade = percentage !== null ? calculateGrade(percentage) as any : undefined
-
-    await prisma.examResult.upsert({
-      where: { examId_studentId: { examId, studentId: result.studentId } },
-      update: {
-        marksObtained: result.marksObtained !== null ? String(result.marksObtained) : undefined,
-        grade,
-        remarks: result.remarks,
-        gradedBy: profile.id,
-        gradedAt: new Date(),
-      },
-      create: {
-        examId,
-        studentId: result.studentId,
-        marksObtained: result.marksObtained !== null ? String(result.marksObtained) : undefined,
-        grade,
-        remarks: result.remarks,
-        gradedBy: profile.id,
-        gradedAt: new Date(),
-      },
-    })
   }
+
+  const studentIds = results.map((r) => r.studentId)
+  const existingResults = await prisma.examResult.findMany({
+    where: { examId, studentId: { in: studentIds } },
+    select: { id: true, studentId: true },
+  })
+  const existingMap = new Map(existingResults.map((r) => [r.studentId, r.id]))
+
+  const now = new Date()
+  const toCreate: { examId: string; studentId: string; marksObtained: string | null; grade: Grade | null; remarks: string | null; gradedBy: string; gradedAt: Date }[] = []
+  const toUpdate: { id: string; marksObtained: string | null; grade: Grade | null; remarks: string | null; gradedBy: string; gradedAt: Date }[] = []
+
+  for (const result of results) {
+    const percentage = result.marksObtained !== null ? (result.marksObtained / exam.totalMarks) * 100 : null
+    const grade = percentage !== null ? calculateGrade(percentage) as Grade : null
+    const marksStr = result.marksObtained !== null ? String(result.marksObtained) : null
+
+    const existingId = existingMap.get(result.studentId)
+    const data = {
+      marksObtained: marksStr,
+      grade,
+      remarks: result.remarks || null,
+      gradedBy: profile.id,
+      gradedAt: now,
+    }
+
+    if (existingId) {
+      toUpdate.push({ id: existingId, ...data })
+    } else {
+      toCreate.push({ examId, studentId: result.studentId, ...data })
+    }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    if (toCreate.length > 0) {
+      await tx.examResult.createMany({ data: toCreate })
+    }
+    for (const item of toUpdate) {
+      await tx.examResult.update({
+        where: { id: item.id },
+        data: {
+          marksObtained: item.marksObtained,
+          grade: item.grade,
+          remarks: item.remarks,
+          gradedBy: item.gradedBy,
+          gradedAt: item.gradedAt,
+        },
+      })
+    }
+  })
 
   revalidatePath("/dashboard/exams/marks-entry")
   return { success: true, error: undefined }

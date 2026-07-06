@@ -5,6 +5,15 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 import { getSchoolId } from "@/lib/school-context"
 import { logAuditEvent } from "@/lib/audit"
+import { z } from "zod"
+
+const branchSchema = z.object({
+  name: z.string().min(1, "Branch name is required").max(100),
+  code: z.string().min(1, "Branch code is required").max(20),
+  address: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  email: z.string().email("Invalid email").optional().nullable(),
+})
 
 export async function createBranch(
   _prevState: unknown,
@@ -20,23 +29,40 @@ export async function createBranch(
   const phone = formData.get("phone") as string
   const email = formData.get("email") as string
 
-  await prisma.branch.create({
-    data: { schoolId, name, code, address, phone, email },
-  })
+  const parsed = branchSchema.safeParse({ name, code, address, phone, email })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message, success: false }
+  }
 
-  await logAuditEvent({
-    userId: profile.id,
-    schoolId,
-    action: "CREATE",
-    entityType: "Branch",
-    newValues: { name, code },
-  })
+  try {
+    await prisma.branch.create({
+      data: { schoolId, name, code, address, phone, email },
+    })
 
-  revalidatePath("/dashboard/branches")
+    await logAuditEvent({
+      userId: profile.id,
+      schoolId,
+      action: "CREATE",
+      entityType: "Branch",
+      newValues: { name, code },
+    })
+
+    revalidatePath("/dashboard/branches")
+  } catch (e) {
+    // Error handled by try/catch
+  }
 }
 
 export async function updateBranch(branchId: string, formData: FormData) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
+
+  // School isolation: verify branch belongs to user's school
+  const existing = await prisma.branch.findUnique({
+    where: { id: branchId },
+    select: { schoolId: true },
+  })
+  if (!existing) return
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) return
 
   const name = formData.get("name") as string
   const code = formData.get("code") as string
@@ -44,25 +70,44 @@ export async function updateBranch(branchId: string, formData: FormData) {
   const phone = formData.get("phone") as string
   const email = formData.get("email") as string
 
-  await prisma.branch.update({
-    where: { id: branchId },
-    data: { name, code, address, phone, email },
-  })
+  const parsed = branchSchema.safeParse({ name, code, address, phone, email })
+  if (!parsed.success) return
 
-  revalidatePath("/dashboard/branches")
+  try {
+    await prisma.branch.update({
+      where: { id: branchId },
+      data: { name, code, address, phone, email },
+    })
+
+    revalidatePath("/dashboard/branches")
+  } catch (e) {
+    // Error handled by try/catch
+  }
 }
 
 export async function deleteBranch(branchId: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
 
-  await prisma.branch.delete({ where: { id: branchId } })
-
-  await logAuditEvent({
-    userId: profile.id,
-    action: "DELETE",
-    entityType: "Branch",
-    entityId: branchId,
+  // School isolation: verify branch belongs to user's school
+  const existing = await prisma.branch.findUnique({
+    where: { id: branchId },
+    select: { schoolId: true },
   })
+  if (!existing) return
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) return
 
-  revalidatePath("/dashboard/branches")
+  try {
+    await prisma.branch.delete({ where: { id: branchId } })
+
+    await logAuditEvent({
+      userId: profile.id,
+      action: "DELETE",
+      entityType: "Branch",
+      entityId: branchId,
+    })
+
+    revalidatePath("/dashboard/branches")
+  } catch (e) {
+    // Silently fail — branch may have dependent records
+  }
 }

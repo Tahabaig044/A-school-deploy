@@ -21,29 +21,44 @@ export function PortalSidebar({ role }: PortalSidebarProps) {
           <h1 className="text-lg font-semibold">SchoolMS Portal</h1>
         </Link>
       </div>
-      <nav className="flex-1 overflow-y-auto p-4">
-        <ul className="space-y-1">
-          {items.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.title}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
+      <PortalNavList items={items} pathname={pathname} />
     </aside>
+  )
+}
+
+export function PortalNavList({
+  items,
+  pathname,
+  onLinkClick,
+}: {
+  items: ReturnType<typeof getPortalMenuItemsForRole>
+  pathname: string
+  onLinkClick?: () => void
+}) {
+  return (
+    <nav className="flex-1 overflow-y-auto p-4">
+      <ul className="space-y-1">
+        {items.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+          return (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                onClick={onLinkClick}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.title}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
   )
 }

@@ -22,7 +22,6 @@ const homeworkSchema = z.object({
 
 const homeworkSubmissionSchema = z.object({
   homeworkId: z.string().uuid(),
-  studentId: z.string().uuid(),
   content: z.string().optional(),
   filePath: z.string().optional(),
 })
@@ -78,7 +77,13 @@ export async function updateHomework(
   _prevState: { error?: string; success?: boolean } | null,
   formData: FormData
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const existing = await prisma.homework.findUnique({ where: { id: homeworkId }, select: { schoolId: true } })
+  if (!existing) return { error: "Homework not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
 
   const title = formData.get("title") as string
   const description = formData.get("description") as string || undefined
@@ -101,7 +106,14 @@ export async function updateHomework(
 }
 
 export async function deleteHomework(homeworkId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const existing = await prisma.homework.findUnique({ where: { id: homeworkId }, select: { schoolId: true } })
+  if (!existing) return { error: "Homework not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
   await prisma.homework.delete({ where: { id: homeworkId } })
   revalidatePath("/dashboard/homework")
   return { success: true }
@@ -155,11 +167,10 @@ export async function submitHomework(
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "STUDENT")
 
   const homeworkId = formData.get("homeworkId") as string
-  const studentId = formData.get("studentId") as string || profile.id
   const content = formData.get("content") as string || undefined
   const filePath = formData.get("filePath") as string || undefined
 
-  const parsed = homeworkSubmissionSchema.safeParse({ homeworkId, studentId, content, filePath })
+  const parsed = homeworkSubmissionSchema.safeParse({ homeworkId, content, filePath })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
   }
@@ -172,9 +183,9 @@ export async function submitHomework(
   }
 
   await prisma.homeworkSubmission.upsert({
-    where: { homeworkId_studentId: { homeworkId, studentId } },
+    where: { homeworkId_studentId: { homeworkId, studentId: profile.id } },
     update: { content, filePath, status: "SUBMITTED" },
-    create: { homeworkId, studentId, content, filePath },
+    create: { homeworkId, studentId: profile.id, content, filePath },
   })
 
   revalidatePath("/dashboard/homework/submissions")

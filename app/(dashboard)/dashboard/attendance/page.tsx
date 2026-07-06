@@ -10,17 +10,22 @@ export default async function AttendancePage({
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
   const params = await searchParams
 
-  const classes = profile.role === "SUPER_ADMIN"
-    ? await prisma.class.findMany({ include: { sections: true }, orderBy: { order: "asc" } })
-    : await prisma.class.findMany({
-        where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
-        include: { sections: true },
-        orderBy: { order: "asc" },
-      })
+  const classWhere = profile.role === "SUPER_ADMIN"
+    ? {}
+    : { schoolId: profile.schoolId!, branchId: profile.branchId! }
 
-  const sessions = profile.role === "SUPER_ADMIN"
-    ? await prisma.academicSession.findMany({ where: { isCurrent: true } })
-    : await prisma.academicSession.findMany({ where: { schoolId: profile.schoolId!, isCurrent: true } })
+  const sessionWhere = profile.role === "SUPER_ADMIN"
+    ? { isCurrent: true as const }
+    : { schoolId: profile.schoolId!, isCurrent: true as const }
+
+  const [classes, sessions] = await Promise.all([
+    prisma.class.findMany({
+      where: classWhere,
+      include: { sections: true },
+      orderBy: { order: "asc" },
+    }),
+    prisma.academicSession.findMany({ where: sessionWhere }),
+  ])
 
   let students: any[] = []
   let existingAttendance: any[] = []
@@ -42,32 +47,37 @@ export default async function AttendancePage({
       if (profile.branchId) where.branchId = profile.branchId!
     }
 
-    students = await prisma.student.findMany({
-      where,
-      include: {
-        enrollments: {
-          where: {
-            classId: params.classId,
-            ...(params.sectionId ? { sectionId: params.sectionId } : {}),
-            status: "ACTIVE",
-          },
-          take: 1,
-          include: { class: true, section: true },
-        },
-      },
-      orderBy: { firstName: "asc" },
-    })
+    const studentWhere = where
+    const attendanceWhere = params.sessionId ? {
+      date: new Date(params.date),
+      academicSessionId: params.sessionId,
+      classId: params.classId,
+      ...(params.sectionId ? { sectionId: params.sectionId } : {}),
+    } : null
 
-    if (params.sessionId) {
-      existingAttendance = await prisma.studentAttendance.findMany({
-        where: {
-          date: new Date(params.date),
-          academicSessionId: params.sessionId,
-          classId: params.classId,
-          ...(params.sectionId ? { sectionId: params.sectionId } : {}),
+    const [studentsResult, attendanceResult] = await Promise.all([
+      prisma.student.findMany({
+        where: studentWhere,
+        include: {
+          enrollments: {
+            where: {
+              classId: params.classId,
+              ...(params.sectionId ? { sectionId: params.sectionId } : {}),
+              status: "ACTIVE",
+            },
+            take: 1,
+            include: { class: true, section: true },
+          },
         },
-      })
-    }
+        orderBy: { firstName: "asc" },
+      }),
+      attendanceWhere
+        ? prisma.studentAttendance.findMany({ where: attendanceWhere })
+        : Promise.resolve([]),
+    ])
+
+    students = studentsResult
+    existingAttendance = attendanceResult
   }
 
   return (

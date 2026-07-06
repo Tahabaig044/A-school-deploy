@@ -17,8 +17,13 @@ export default async function EditStudentPage({
 
   const { id } = await params
 
-  const student = await prisma.student.findUnique({
-    where: { id },
+  const student = await prisma.student.findFirst({
+    where: {
+      id,
+      ...(profile.role !== "SUPER_ADMIN" && {
+        schoolId: profile.schoolId || undefined,
+      }),
+    },
     include: {
       enrollments: {
         include: { class: true, section: true, academicSession: true },

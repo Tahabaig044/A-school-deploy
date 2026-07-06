@@ -54,10 +54,16 @@ export function AnnouncementList({
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this announcement?")) return
-    const res = await deleteAnnouncement(id)
-    if (res.success) {
-      toast({ title: "Announcement deleted" })
-      router.refresh()
+    try {
+      const res = await deleteAnnouncement(id)
+      if (res.success) {
+        toast({ title: "Announcement deleted" })
+        router.refresh()
+      } else {
+        toast({ title: "Failed to delete announcement", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to delete announcement", variant: "destructive" })
     }
   }
 

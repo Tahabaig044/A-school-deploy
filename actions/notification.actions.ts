@@ -11,6 +11,8 @@ export async function createNotification(
   type: string,
   link?: string
 ) {
+  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
   await prisma.notification.create({
     data: { userId, title, content, type, link },
   })
@@ -30,9 +32,11 @@ export async function markNotificationAsRead(notificationId: string) {
   return { success: true }
 }
 
-export async function markAllNotificationsAsRead(userId: string) {
+export async function markAllNotificationsAsRead() {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+
   await prisma.notification.updateMany({
-    where: { userId, isRead: false },
+    where: { userId: profile.id, isRead: false },
     data: { isRead: true, readAt: new Date() },
   })
 
@@ -40,17 +44,21 @@ export async function markAllNotificationsAsRead(userId: string) {
   return { success: true }
 }
 
-export async function getNotifications(userId: string, limit?: number) {
+export async function getNotifications(limit?: number) {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+
   return prisma.notification.findMany({
-    where: { userId },
+    where: { userId: profile.id },
     orderBy: { createdAt: "desc" },
     take: limit || 50,
   })
 }
 
-export async function getUnreadNotificationCount(userId: string) {
+export async function getUnreadNotificationCount() {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+
   return prisma.notification.count({
-    where: { userId, isRead: false },
+    where: { userId: profile.id, isRead: false },
   })
 }
 

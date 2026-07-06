@@ -50,10 +50,16 @@ export function ExpenseList({
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this expense?")) return
-    const res = await deleteExpense(id)
-    if (res.success) {
-      toast({ title: "Expense deleted" })
-      router.refresh()
+    try {
+      const res = await deleteExpense(id)
+      if (res.success) {
+        toast({ title: "Expense deleted" })
+        router.refresh()
+      } else {
+        toast({ title: "Failed to delete expense", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to delete expense", variant: "destructive" })
     }
   }
 

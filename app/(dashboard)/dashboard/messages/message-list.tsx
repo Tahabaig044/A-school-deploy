@@ -18,11 +18,19 @@ export function MessageList({
   sent,
   unreadCount,
   profile,
+  page,
+  totalPages,
+  total,
+  activeTab,
 }: {
   inbox: any[]
   sent: any[]
   unreadCount: number
   profile: any
+  page: number
+  totalPages: number
+  total: number
+  activeTab: string
 }) {
   const router = useRouter()
   const { toast } = useToast()
@@ -88,7 +96,7 @@ export function MessageList({
         </Dialog>
       </PageHeader>
 
-      <Tabs defaultValue="inbox">
+      <Tabs value={activeTab} onValueChange={(v) => router.push(`/dashboard/messages?tab=${v}`)}>
         <TabsList>
           <TabsTrigger value="inbox" className="flex items-center gap-2">
             Inbox
@@ -151,6 +159,30 @@ export function MessageList({
           )}
         </TabsContent>
       </Tabs>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => router.push(`/dashboard/messages?tab=${activeTab}&page=${page - 1}`)}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => router.push(`/dashboard/messages?tab=${activeTab}&page=${page + 1}`)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       {selectedMessage && (
         <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>

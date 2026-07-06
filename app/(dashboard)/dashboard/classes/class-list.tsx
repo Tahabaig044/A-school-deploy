@@ -29,7 +29,17 @@ type ClassWithSections = {
   sections: { id: string }[]
 }
 
-export function ClassList({ classes }: { classes: ClassWithSections[] }) {
+export function ClassList({
+  classes,
+  total,
+  page,
+  totalPages,
+}: {
+  classes: ClassWithSections[]
+  total: number
+  page: number
+  totalPages: number
+}) {
   const router = useRouter()
   const { toast } = useToast()
   const [editItem, setEditItem] = useState<ClassWithSections | null>(null)
@@ -80,7 +90,7 @@ export function ClassList({ classes }: { classes: ClassWithSections[] }) {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>All Classes ({classes.length})</CardTitle>
+          <CardTitle>All Classes ({total})</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -125,6 +135,30 @@ export function ClassList({ classes }: { classes: ClassWithSections[] }) {
           </Table>
         </CardContent>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => router.push(`/dashboard/classes?page=${page - 1}`)}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => router.push(`/dashboard/classes?page=${page + 1}`)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
         <DialogContent>

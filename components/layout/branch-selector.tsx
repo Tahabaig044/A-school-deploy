@@ -32,7 +32,7 @@ export function BranchSelector({ branches }: { branches: Branch[] }) {
     (value: string | null) => {
       if (!value) return
       setSelected(value)
-      document.cookie = `selected_branch=${value}; path=/; max-age=86400`
+      document.cookie = `selected_branch=${value}; path=/; max-age=86400; SameSite=Lax`
       router.refresh()
     },
     [router]

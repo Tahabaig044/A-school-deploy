@@ -32,6 +32,19 @@ export async function createLeaveRequest(
 export async function approveLeave(leaveId: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
+  // School isolation: verify leave request belongs to user's school
+  const existing = await prisma.leaveRequest.findUnique({
+    where: { id: leaveId },
+    select: { profileId: true },
+  })
+  if (!existing) return
+  const leaveProfile = await prisma.profile.findUnique({
+    where: { id: existing.profileId },
+    select: { schoolId: true },
+  })
+  if (!leaveProfile) return
+  if (profile.role !== "SUPER_ADMIN" && leaveProfile.schoolId !== profile.schoolId) return
+
   await prisma.leaveRequest.update({
     where: { id: leaveId },
     data: { status: "APPROVED", approvedBy: profile.id },
@@ -42,6 +55,19 @@ export async function approveLeave(leaveId: string) {
 
 export async function rejectLeave(leaveId: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
+
+  // School isolation: verify leave request belongs to user's school
+  const existing = await prisma.leaveRequest.findUnique({
+    where: { id: leaveId },
+    select: { profileId: true },
+  })
+  if (!existing) return
+  const leaveProfile = await prisma.profile.findUnique({
+    where: { id: existing.profileId },
+    select: { schoolId: true },
+  })
+  if (!leaveProfile) return
+  if (profile.role !== "SUPER_ADMIN" && leaveProfile.schoolId !== profile.schoolId) return
 
   await prisma.leaveRequest.update({
     where: { id: leaveId },

@@ -1,6 +1,7 @@
 "use client"
 
-import { LogOut, User } from "lucide-react"
+import Link from "next/link"
+import { LogOut, User, Settings } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -18,6 +19,14 @@ type UserDropdownProps = {
   email: string
   name?: string | null
   role?: string | null
+}
+
+function formatRole(role: string | null | undefined): string {
+  if (!role) return ""
+  return role
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 export function UserDropdown({ email, name, role }: UserDropdownProps) {
@@ -46,7 +55,7 @@ export function UserDropdown({ email, name, role }: UserDropdownProps) {
             </p>
             {role && (
               <p className="text-xs leading-none text-muted-foreground pt-1">
-                {role}
+                {formatRole(role)}
               </p>
             )}
           </div>
@@ -54,8 +63,10 @@ export function UserDropdown({ email, name, role }: UserDropdownProps) {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            Profile
+            <Link href="/dashboard/settings" className="flex items-center gap-2 w-full">
+              <Settings className="h-4 w-4" />
+              Settings
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

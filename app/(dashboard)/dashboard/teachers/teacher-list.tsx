@@ -33,7 +33,17 @@ type TeacherItem = {
   assignments: { class: { name: string }; subject: { name: string } }[]
 }
 
-export function TeacherList({ teachers }: { teachers: TeacherItem[] }) {
+export function TeacherList({
+  teachers,
+  total,
+  page,
+  totalPages,
+}: {
+  teachers: TeacherItem[]
+  total: number
+  page: number
+  totalPages: number
+}) {
   const router = useRouter()
   const { toast } = useToast()
   const [editItem, setEditItem] = useState<TeacherItem | null>(null)
@@ -84,7 +94,7 @@ export function TeacherList({ teachers }: { teachers: TeacherItem[] }) {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>All Teachers ({teachers.length})</CardTitle>
+          <CardTitle>All Teachers ({total})</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -134,6 +144,30 @@ export function TeacherList({ teachers }: { teachers: TeacherItem[] }) {
           </Table>
         </CardContent>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => router.push(`/dashboard/teachers?page=${page - 1}`)}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => router.push(`/dashboard/teachers?page=${page + 1}`)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
         <DialogContent className="max-w-2xl">

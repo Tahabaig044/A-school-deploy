@@ -9,11 +9,16 @@ export default async function ClassDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
   const { id } = await params
 
-  const classData = await prisma.class.findUnique({
-    where: { id },
+  const classData = await prisma.class.findFirst({
+    where: {
+      id,
+      ...(profile.role !== "SUPER_ADMIN" && {
+        schoolId: profile.schoolId || undefined,
+      }),
+    },
     include: {
       sections: { orderBy: { name: "asc" } },
       school: true,

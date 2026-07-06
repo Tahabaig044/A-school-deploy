@@ -5,6 +5,33 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 import { getSchoolId, getBranchId } from "@/lib/school-context"
 import { logAuditEvent } from "@/lib/audit"
+import { z } from "zod"
+
+const studentSchema = z.object({
+  firstName: z.string().min(1, "First name is required").max(100),
+  lastName: z.string().min(1, "Last name is required").max(100),
+  dateOfBirth: z.string().optional().nullable(),
+  gender: z.enum(["MALE", "FEMALE", "OTHER"]),
+  bloodGroup: z.string().optional().nullable(),
+  religion: z.string().optional().nullable(),
+  nationality: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  email: z.string().email("Invalid email").optional().nullable(),
+  address: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  postalCode: z.string().optional().nullable(),
+  admissionNo: z.string().optional().nullable(),
+  admissionDate: z.string().optional().nullable(),
+  status: z.enum(["ACTIVE", "TRANSFERRED", "WITHDRAWN", "GRADUATED"]).optional(),
+})
+
+const enrollmentSchema = z.object({
+  classId: z.string().uuid("Invalid class"),
+  sectionId: z.string().uuid("Invalid section").optional().nullable(),
+  academicSessionId: z.string().uuid("Invalid academic session"),
+  rollNumber: z.string().optional().nullable(),
+})
 
 export async function createStudent(
   _prevState: { error?: string; success?: boolean } | null,
@@ -39,53 +66,66 @@ export async function createStudent(
   const academicSessionId = formData.get("academicSessionId") as string
   const rollNumber = formData.get("rollNumber") as string
 
-  const student = await prisma.student.create({
-    data: {
-      schoolId,
-      branchId,
-      firstName,
-      lastName,
-      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-      gender: gender as any,
-      bloodGroup: bloodGroup || null,
-      religion: religion || null,
-      nationality: nationality || null,
-      phone: phone || null,
-      email: email || null,
-      address: address || null,
-      city: city || null,
-      state: state || null,
-      postalCode: postalCode || null,
-      admissionNo: admissionNo || null,
-      admissionDate: admissionDate ? new Date(admissionDate) : null,
-    },
+  const parsed = studentSchema.safeParse({
+    firstName, lastName, dateOfBirth, gender, bloodGroup, religion,
+    nationality, phone, email, address, city, state, postalCode,
+    admissionNo, admissionDate,
   })
-
-  if (classId && academicSessionId) {
-    await prisma.studentEnrollment.create({
-      data: {
-        studentId: student.id,
-        classId,
-        sectionId: sectionId || null,
-        academicSessionId,
-        rollNumber: rollNumber || null,
-      },
-    })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message, success: false }
   }
 
-  revalidatePath("/dashboard/students")
+  try {
+    const student = await prisma.student.create({
+      data: {
+        schoolId,
+        branchId,
+        firstName,
+        lastName,
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+        gender: gender as any,
+        bloodGroup: bloodGroup || null,
+        religion: religion || null,
+        nationality: nationality || null,
+        phone: phone || null,
+        email: email || null,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        postalCode: postalCode || null,
+        admissionNo: admissionNo || null,
+        admissionDate: admissionDate ? new Date(admissionDate) : null,
+      },
+    })
 
-  await logAuditEvent({
-    userId: profile.id,
-    schoolId,
-    branchId,
-    action: "CREATE",
-    entityType: "Student",
-    entityId: student.id,
-    newValues: { firstName, lastName, admissionNo },
-  })
+    if (classId && academicSessionId) {
+      await prisma.studentEnrollment.create({
+        data: {
+          studentId: student.id,
+          classId,
+          sectionId: sectionId || null,
+          academicSessionId,
+          rollNumber: rollNumber || null,
+        },
+      })
+    }
 
-  return { success: true, error: undefined }
+    revalidatePath("/dashboard/students")
+
+    await logAuditEvent({
+      userId: profile.id,
+      schoolId,
+      branchId,
+      action: "CREATE",
+      entityType: "Student",
+      entityId: student.id,
+      newValues: { firstName, lastName, admissionNo },
+    })
+
+    return { success: true, error: undefined }
+  } catch (e) {
+    return { error: "Failed to create student. Please try again.", success: false }
+  }
 }
 
 export async function updateStudent(
@@ -93,12 +133,22 @@ export async function updateStudent(
   _prevState: { error?: string; success?: boolean } | null,
   formData: FormData
 ) {
-  await requireRole(
+  const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
     "ADMISSION_OFFICER"
   )
+
+  // School isolation: verify student belongs to user's school
+  const existing = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { schoolId: true },
+  })
+  if (!existing) return { error: "Student not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
 
   const firstName = formData.get("firstName") as string
   const lastName = formData.get("lastName") as string
@@ -117,37 +167,61 @@ export async function updateStudent(
   const admissionDate = formData.get("admissionDate") as string
   const status = formData.get("status") as string
 
-  await prisma.student.update({
-    where: { id: studentId },
-    data: {
-      firstName,
-      lastName,
-      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-      gender: gender as any,
-      bloodGroup: bloodGroup || null,
-      religion: religion || null,
-      nationality: nationality || null,
-      phone: phone || null,
-      email: email || null,
-      address: address || null,
-      city: city || null,
-      state: state || null,
-      postalCode: postalCode || null,
-      admissionNo: admissionNo || null,
-      admissionDate: admissionDate ? new Date(admissionDate) : null,
-      status: status as any,
-    },
+  const parsed = studentSchema.safeParse({
+    firstName, lastName, dateOfBirth, gender, bloodGroup, religion,
+    nationality, phone, email, address, city, state, postalCode,
+    admissionNo, admissionDate, status,
   })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message, success: false }
+  }
 
-  revalidatePath("/dashboard/students")
-  revalidatePath(`/dashboard/students/${studentId}`)
-  return { success: true, error: undefined }
+  try {
+    await prisma.student.update({
+      where: { id: studentId },
+      data: {
+        firstName,
+        lastName,
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+        gender: gender as any,
+        bloodGroup: bloodGroup || null,
+        religion: religion || null,
+        nationality: nationality || null,
+        phone: phone || null,
+        email: email || null,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        postalCode: postalCode || null,
+        admissionNo: admissionNo || null,
+        admissionDate: admissionDate ? new Date(admissionDate) : null,
+        status: status as any,
+      },
+    })
+
+    revalidatePath("/dashboard/students")
+    revalidatePath(`/dashboard/students/${studentId}`)
+    return { success: true, error: undefined }
+  } catch (e) {
+    return { error: "Failed to update student. Please try again.", success: false }
+  }
 }
 
 export async function deleteStudent(studentId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
 
-  await prisma.student.delete({ where: { id: studentId } })
+  // School isolation: verify student belongs to user's school
+  const existing = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { schoolId: true },
+  })
+  if (!existing) return
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) return
 
-  revalidatePath("/dashboard/students")
+  try {
+    await prisma.student.delete({ where: { id: studentId } })
+    revalidatePath("/dashboard/students")
+  } catch (e) {
+    // Silently fail — student may have dependent records
+  }
 }

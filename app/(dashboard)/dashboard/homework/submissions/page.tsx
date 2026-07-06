@@ -6,8 +6,12 @@ export default async function HomeworkSubmissionsPage() {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "STUDENT")
 
   const where: any = {}
-  if (profile.role !== "SUPER_ADMIN") {
+  if (profile.role === "SUPER_ADMIN") {
+    // no filter
+  } else if (profile.role === "STUDENT") {
     where.studentId = profile.id
+  } else {
+    where.homework = { schoolId: profile.schoolId }
   }
 
   const submissions = await prisma.homeworkSubmission.findMany({

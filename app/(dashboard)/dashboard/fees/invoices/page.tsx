@@ -29,7 +29,7 @@ export default async function InvoicesPage({
 
   if (status) where.status = status
 
-  const [invoices, total, students] = await Promise.all([
+  const [invoices, total, students, academicSessions] = await Promise.all([
     prisma.feeInvoice.findMany({
       where,
       include: {
@@ -49,16 +49,15 @@ export default async function InvoicesPage({
       select: { id: true, firstName: true, lastName: true, admissionNo: true },
       orderBy: { firstName: "asc" },
     }),
+    prisma.academicSession.findMany({
+      where: {
+        schoolId: profile.schoolId!,
+        ...(profile.branchId ? { branchId: profile.branchId! } : {}),
+      },
+      select: { id: true, name: true },
+      orderBy: { startDate: "desc" },
+    }),
   ])
-
-  const academicSessions = await prisma.academicSession.findMany({
-    where: {
-      schoolId: profile.schoolId!,
-      ...(profile.branchId ? { branchId: profile.branchId! } : {}),
-    },
-    select: { id: true, name: true },
-    orderBy: { startDate: "desc" },
-  })
 
   return (
     <InvoiceList

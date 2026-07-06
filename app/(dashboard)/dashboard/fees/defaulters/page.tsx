@@ -26,6 +26,7 @@ export default async function DefaultersPage({
         where: {
           dueDate: { lt: new Date() },
           status: { in: ["PENDING", "PARTIAL"] },
+          ...(profile.role !== "SUPER_ADMIN" && { schoolId: profile.schoolId || undefined }),
           ...(branchId ? { student: { branchId } } : {}),
           academicSessionId: sessionId,
         },

@@ -53,10 +53,16 @@ export function ExamList({
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this exam?")) return
-    const res = await deleteExam(id)
-    if (res.success) {
-      toast({ title: "Exam deleted" })
-      router.refresh()
+    try {
+      const res = await deleteExam(id)
+      if (res.success) {
+        toast({ title: "Exam deleted" })
+        router.refresh()
+      } else {
+        toast({ title: "Failed to delete exam", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to delete exam", variant: "destructive" })
     }
   }
 

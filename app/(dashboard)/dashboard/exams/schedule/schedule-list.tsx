@@ -38,10 +38,16 @@ export function ScheduleList({
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this schedule?")) return
-    const res = await deleteExamSchedule(id)
-    if (res.success) {
-      toast({ title: "Schedule deleted" })
-      router.refresh()
+    try {
+      const res = await deleteExamSchedule(id)
+      if (res.success) {
+        toast({ title: "Schedule deleted" })
+        router.refresh()
+      } else {
+        toast({ title: "Failed to delete schedule", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to delete schedule", variant: "destructive" })
     }
   }
 

@@ -7,7 +7,7 @@ export default async function ExamSchedulePage() {
 
   const where: any = {}
   if (profile.role !== "SUPER_ADMIN") {
-    where.exam = { branchId: profile.branchId! }
+    where.exam = { schoolId: profile.schoolId || undefined, branchId: profile.branchId || undefined }
   }
 
   const schedules = await prisma.examSchedule.findMany({

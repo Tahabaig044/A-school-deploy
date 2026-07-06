@@ -5,7 +5,9 @@ import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { PortalSidebar } from "./portal-sidebar"
+import { PortalNavList } from "./portal-sidebar"
+import { getPortalMenuItemsForRole } from "@/lib/portal-menu-items"
+import { usePathname } from "next/navigation"
 import type { Role } from "@/lib/constants"
 
 type PortalMobileSidebarProps = {
@@ -14,6 +16,8 @@ type PortalMobileSidebarProps = {
 
 export function PortalMobileSidebar({ role }: PortalMobileSidebarProps) {
   const [open, setOpen] = useState(false)
+  const items = getPortalMenuItemsForRole(role)
+  const pathname = usePathname()
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -32,7 +36,7 @@ export function PortalMobileSidebar({ role }: PortalMobileSidebarProps) {
             <X className="h-5 w-5" />
           </Button>
         </div>
-        <PortalSidebar role={role} />
+        <PortalNavList items={items} pathname={pathname} onLinkClick={() => setOpen(false)} />
       </SheetContent>
     </Sheet>
   )

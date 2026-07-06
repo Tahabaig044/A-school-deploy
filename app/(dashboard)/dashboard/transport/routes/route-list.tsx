@@ -45,10 +45,16 @@ export function RouteList({
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this route?")) return
-    const res = await deleteTransportRoute(id)
-    if (res.success) {
-      toast({ title: "Route deleted" })
-      router.refresh()
+    try {
+      const res = await deleteTransportRoute(id)
+      if (res.success) {
+        toast({ title: "Route deleted" })
+        router.refresh()
+      } else {
+        toast({ title: "Failed to delete route", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to delete route", variant: "destructive" })
     }
   }
 

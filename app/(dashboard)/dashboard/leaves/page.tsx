@@ -10,13 +10,14 @@ export default async function LeavesPage() {
 
   const leaves = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"].includes(profile.role)
     ? await prisma.leaveRequest.findMany({
-        include: { profile: { select: { firstName: true, lastName: true, role: true } } },
+        where: profile.role === "SUPER_ADMIN" ? {} : { profile: { schoolId: profile.schoolId } },
+        include: { profile: { select: { firstName: true, lastName: true, role: true, schoolId: true } } },
         orderBy: { createdAt: "desc" },
         take: 50,
       })
     : await prisma.leaveRequest.findMany({
         where: { profileId: profile.id },
-        include: { profile: { select: { firstName: true, lastName: true, role: true } } },
+        include: { profile: { select: { firstName: true, lastName: true, role: true, schoolId: true } } },
         orderBy: { createdAt: "desc" },
       })
 

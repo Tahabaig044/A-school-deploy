@@ -32,7 +32,10 @@ export async function requireAuth() {
 
 export async function requireRole(...roles: string[]) {
   const user = await requireAuth()
-  const profile = await getCurrentProfile()
+
+  const profile = await prisma.profile.findUnique({
+    where: { id: user.id },
+  })
 
   if (!profile || !roles.includes(profile.role)) {
     throw new Error("Forbidden")

@@ -10,9 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { generateInvoice } from "@/actions/fees.actions"
+import { generateInvoice, cancelInvoice } from "@/actions/fees.actions"
 import { useToast } from "@/hooks/use-toast"
-import { Plus, Eye } from "lucide-react"
+import { Plus, Eye, Trash2 } from "lucide-react"
 import Link from "next/link"
 
 const statusVariants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
@@ -54,6 +54,21 @@ export function InvoiceList({
       setError(null)
       toast({ title: "Invoice generated successfully" })
       router.refresh()
+    }
+  }
+
+  async function handleCancel(id: string, invoiceNumber: string) {
+    if (!confirm(`Are you sure you want to cancel invoice "${invoiceNumber}"?`)) return
+    try {
+      const res = await cancelInvoice(id)
+      if (res.success) {
+        toast({ title: "Invoice cancelled" })
+        router.refresh()
+      } else {
+        toast({ title: res.error || "Failed to cancel invoice", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to cancel invoice", variant: "destructive" })
     }
   }
 
@@ -151,9 +166,16 @@ export function InvoiceList({
           {
             header: "Actions",
             cell: ({ row }: any) => (
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={`/dashboard/fees/payments?invoiceId=${row.id}`}><Eye className="mr-1 h-4 w-4" />View</Link>
-              </Button>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href={`/dashboard/fees/payments?invoiceId=${row.id}`}><Eye className="mr-1 h-4 w-4" />View</Link>
+                </Button>
+                {row.status !== "CANCELLED" && row.status !== "PAID" && (
+                  <Button variant="ghost" size="sm" onClick={() => handleCancel(row.id, row.invoiceNumber)}>
+                    <Trash2 className="mr-1 h-4 w-4" />Cancel
+                  </Button>
+                )}
+              </div>
             ),
           },
         ]}

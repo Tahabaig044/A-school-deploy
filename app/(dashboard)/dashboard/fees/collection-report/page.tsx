@@ -14,11 +14,19 @@ export default async function CollectionReportPage({
 
   const branchId = profile.branchId || ""
 
+  const paymentWhere: any = {
+    paymentDate: { gte: new Date(fromDate), lte: new Date(toDate) },
+  }
+
+  if (profile.role !== "SUPER_ADMIN") {
+    paymentWhere.invoice = { ...paymentWhere.invoice, schoolId: profile.schoolId }
+  }
+  if (branchId) {
+    paymentWhere.invoice = { ...paymentWhere.invoice, student: { branchId } }
+  }
+
   const payments = await prisma.payment.findMany({
-    where: {
-      paymentDate: { gte: new Date(fromDate), lte: new Date(toDate) },
-      ...(branchId ? { invoice: { student: { branchId } } } : {}),
-    },
+    where: paymentWhere,
     include: {
       invoice: {
         include: { student: { select: { firstName: true, lastName: true, admissionNo: true } } },

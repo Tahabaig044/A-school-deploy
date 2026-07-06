@@ -15,23 +15,30 @@ export default async function HomeworkCheckPage({
   let homework = null
 
   if (homeworkId) {
-    homework = await prisma.homework.findUnique({
-      where: { id: homeworkId },
+    homework = await prisma.homework.findFirst({
+      where: {
+        id: homeworkId,
+        ...(profile.role !== "SUPER_ADMIN" && {
+          schoolId: profile.schoolId || undefined,
+        }),
+      },
       include: {
         class: true,
         subject: true,
       },
     })
 
-    submissions = await prisma.homeworkSubmission.findMany({
-      where: { homeworkId },
-      include: {
-        student: {
-          select: { id: true, firstName: true, lastName: true, admissionNo: true },
+    if (homework) {
+      submissions = await prisma.homeworkSubmission.findMany({
+        where: { homeworkId },
+        include: {
+          student: {
+            select: { id: true, firstName: true, lastName: true, admissionNo: true },
+          },
         },
-      },
-      orderBy: { submittedAt: "desc" },
-    })
+        orderBy: { submittedAt: "desc" },
+      })
+    }
   }
 
   return (

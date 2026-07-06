@@ -51,10 +51,16 @@ export function BookList({
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this book?")) return
-    const res = await deleteBook(id)
-    if (res.success) {
-      toast({ title: "Book deleted" })
-      router.refresh()
+    try {
+      const res = await deleteBook(id)
+      if (res.success) {
+        toast({ title: "Book deleted" })
+        router.refresh()
+      } else {
+        toast({ title: "Failed to delete book", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to delete book", variant: "destructive" })
     }
   }
 

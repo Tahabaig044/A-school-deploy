@@ -53,10 +53,16 @@ export function HomeworkList({
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this homework?")) return
-    const res = await deleteHomework(id)
-    if (res.success) {
-      toast({ title: "Homework deleted" })
-      router.refresh()
+    try {
+      const res = await deleteHomework(id)
+      if (res.success) {
+        toast({ title: "Homework deleted" })
+        router.refresh()
+      } else {
+        toast({ title: "Failed to delete homework", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to delete homework", variant: "destructive" })
     }
   }
 

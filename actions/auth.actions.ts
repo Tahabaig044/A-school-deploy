@@ -18,6 +18,23 @@ type ActionResult = {
 const MAX_FAILED_ATTEMPTS = 5
 const LOCKOUT_DURATION_MINUTES = 30
 const INVITATION_EXPIRY_HOURS = 24
+const MIN_PASSWORD_LENGTH = 8
+
+function validatePassword(password: string): string | null {
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`
+  }
+  if (!/[A-Z]/.test(password)) {
+    return "Password must contain at least one uppercase letter."
+  }
+  if (!/[a-z]/.test(password)) {
+    return "Password must contain at least one lowercase letter."
+  }
+  if (!/[0-9]/.test(password)) {
+    return "Password must contain at least one number."
+  }
+  return null
+}
 
 const SELF_REGISTER_ROLES: Role[] = ["STUDENT", "PARENT", "TEACHER"]
 
@@ -99,7 +116,7 @@ export async function inviteUser(
     })
 
     if (fallbackError) {
-      return { error: fallbackError.message }
+      return { error: "Failed to create user. Please try again." }
     }
 
     // Create profile with hashed token
@@ -220,8 +237,9 @@ export async function acceptInvitation(
     return { error: "Token and password are required." }
   }
 
-  if (password.length < 8) {
-    return { error: "Password must be at least 8 characters." }
+  const passwordError = validatePassword(password)
+  if (passwordError) {
+    return { error: passwordError }
   }
 
   if (password !== confirmPassword) {
@@ -244,7 +262,7 @@ export async function acceptInvitation(
   )
 
   if (updateError) {
-    return { error: updateError.message }
+    return { error: "Failed to set password. Please try again." }
   }
 
   // Requirement 9: One-time use - clear token and activate
@@ -448,7 +466,7 @@ export async function forgotPassword(
   })
 
   if (error) {
-    return { error: error.message }
+    return { error: "Failed to send password reset email. Please try again." }
   }
 
   // Audit log
@@ -483,7 +501,7 @@ export async function resetPassword(
   const { error } = await supabase.auth.updateUser({ password })
 
   if (error) {
-    return { error: error.message }
+    return { error: "Failed to reset password. Please try again." }
   }
 
   // Get user for audit
@@ -533,8 +551,9 @@ export async function signup(
     return { error: "All fields are required." }
   }
 
-  if (password.length < 8) {
-    return { error: "Password must be at least 8 characters." }
+  const passwordError = validatePassword(password)
+  if (passwordError) {
+    return { error: passwordError }
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -546,7 +565,7 @@ export async function signup(
   })
 
   if (error) {
-    return { error: error.message }
+    return { error: "Failed to create account. Please try again." }
   }
 
   if (data.user) {
@@ -567,6 +586,88 @@ export async function signup(
   const redirectPath = getRedirectPath(role)
   revalidatePath("/", "layout")
   redirect(redirectPath)
+}
+
+// ─── Update User ──────────────────────────────────────────────
+export async function updateUser(
+  userId: string,
+  _prevState: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  const { profile: currentProfile } = await requireInvitePermission()
+
+  const targetProfile = await prisma.profile.findUnique({ where: { id: userId } })
+  if (!targetProfile) return { error: "User not found." }
+
+  if (currentProfile.role !== "SUPER_ADMIN" && targetProfile.schoolId !== currentProfile.schoolId) {
+    return { error: "Unauthorized" }
+  }
+
+  const firstName = (formData.get("firstName") as string)?.trim()
+  const lastName = (formData.get("lastName") as string)?.trim()
+  const role = formData.get("role") as Role
+  const phone = (formData.get("phone") as string)?.trim() || null
+  const isActive = formData.get("isActive") === "true"
+
+  if (!firstName || !lastName || !role) {
+    return { error: "All required fields must be filled." }
+  }
+
+  if (currentProfile.role === "SCHOOL_ADMIN" && RESTRICTED_ROLES_FOR_SCHOOL_ADMIN.includes(role)) {
+    return { error: "You cannot assign this role." }
+  }
+
+  await prisma.profile.update({
+    where: { id: userId },
+    data: { firstName, lastName, role, phone, isActive },
+  })
+
+  await logAuditEvent({
+    userId: currentProfile.id,
+    schoolId: currentProfile.schoolId || undefined,
+    branchId: currentProfile.branchId || undefined,
+    action: "UPDATE",
+    entityType: "USER",
+    entityId: userId,
+    newValues: { firstName, lastName, role, phone, isActive },
+  })
+
+  revalidatePath("/dashboard/users")
+  return { success: true }
+}
+
+// ─── Delete User ──────────────────────────────────────────────
+export async function deleteUser(userId: string) {
+  const { profile: currentProfile } = await requireInvitePermission()
+
+  const targetProfile = await prisma.profile.findUnique({ where: { id: userId } })
+  if (!targetProfile) return { error: "User not found." }
+
+  if (currentProfile.role !== "SUPER_ADMIN" && targetProfile.schoolId !== currentProfile.schoolId) {
+    return { error: "Unauthorized" }
+  }
+
+  if (targetProfile.id === currentProfile.id) {
+    return { error: "You cannot delete your own account." }
+  }
+
+  const serviceClient = await createServiceClient()
+  await serviceClient.auth.admin.deleteUser(userId)
+
+  await prisma.profile.delete({ where: { id: userId } })
+
+  await logAuditEvent({
+    userId: currentProfile.id,
+    schoolId: currentProfile.schoolId || undefined,
+    branchId: currentProfile.branchId || undefined,
+    action: "DELETE",
+    entityType: "USER",
+    entityId: userId,
+    newValues: { email: targetProfile.email, role: targetProfile.role },
+  })
+
+  revalidatePath("/dashboard/users")
+  return { success: true }
 }
 
 // ─── Helper: Require Invite Permission ─────────────────────────

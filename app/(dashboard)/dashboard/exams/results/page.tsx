@@ -12,7 +12,7 @@ export default async function ResultsPage({
 
   const where: any = {}
   if (profile.role !== "SUPER_ADMIN") {
-    where.exam = { branchId: profile.branchId! }
+    where.exam = { schoolId: profile.schoolId || undefined, branchId: profile.branchId || undefined }
   }
 
   const results = await prisma.examResult.findMany({

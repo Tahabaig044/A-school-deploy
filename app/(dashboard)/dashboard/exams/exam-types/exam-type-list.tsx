@@ -46,10 +46,16 @@ export function ExamTypeList({
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this exam type?")) return
-    const res = await deleteExamType(id)
-    if (res.success) {
-      toast({ title: "Exam type deleted" })
-      router.refresh()
+    try {
+      const res = await deleteExamType(id)
+      if (res.success) {
+        toast({ title: "Exam type deleted" })
+        router.refresh()
+      } else {
+        toast({ title: "Failed to delete exam type", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to delete exam type", variant: "destructive" })
     }
   }
 

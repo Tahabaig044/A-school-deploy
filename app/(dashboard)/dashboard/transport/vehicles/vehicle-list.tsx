@@ -47,10 +47,16 @@ export function VehicleList({
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this vehicle?")) return
-    const res = await deleteVehicle(id)
-    if (res.success) {
-      toast({ title: "Vehicle deleted" })
-      router.refresh()
+    try {
+      const res = await deleteVehicle(id)
+      if (res.success) {
+        toast({ title: "Vehicle deleted" })
+        router.refresh()
+      } else {
+        toast({ title: "Failed to delete vehicle", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Failed to delete vehicle", variant: "destructive" })
     }
   }
 

@@ -32,7 +32,17 @@ type StaffItem = {
   school: { name: string }
 }
 
-export function StaffList({ staff }: { staff: StaffItem[] }) {
+export function StaffList({
+  staff,
+  total,
+  page,
+  totalPages,
+}: {
+  staff: StaffItem[]
+  total: number
+  page: number
+  totalPages: number
+}) {
   const router = useRouter()
   const { toast } = useToast()
   const [editItem, setEditItem] = useState<StaffItem | null>(null)
@@ -80,7 +90,7 @@ export function StaffList({ staff }: { staff: StaffItem[] }) {
   return (
     <>
       <Card>
-        <CardHeader><CardTitle>All Staff ({staff.length})</CardTitle></CardHeader>
+        <CardHeader><CardTitle>All Staff ({total})</CardTitle></CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -125,6 +135,30 @@ export function StaffList({ staff }: { staff: StaffItem[] }) {
           </Table>
         </CardContent>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => router.push(`/dashboard/staff?page=${page - 1}`)}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => router.push(`/dashboard/staff?page=${page + 1}`)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
         <DialogContent className="max-w-2xl">

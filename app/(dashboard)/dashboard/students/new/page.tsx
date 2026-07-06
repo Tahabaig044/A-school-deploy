@@ -10,18 +10,18 @@ export default async function NewStudentPage() {
     "ADMISSION_OFFICER"
   )
 
-  const classes = profile.role === "SUPER_ADMIN"
-    ? await prisma.class.findMany({ orderBy: { order: "asc" } })
-    : await prisma.class.findMany({
-        where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
-        orderBy: { order: "asc" },
-      })
+  const classWhere = profile.role === "SUPER_ADMIN"
+    ? {}
+    : { schoolId: profile.schoolId!, branchId: profile.branchId! }
 
-  const sessions = profile.role === "SUPER_ADMIN"
-    ? await prisma.academicSession.findMany({ where: { isCurrent: true } })
-    : await prisma.academicSession.findMany({
-        where: { schoolId: profile.schoolId!, isCurrent: true },
-      })
+  const sessionWhere = profile.role === "SUPER_ADMIN"
+    ? { isCurrent: true as const }
+    : { schoolId: profile.schoolId!, isCurrent: true as const }
+
+  const [classes, sessions] = await Promise.all([
+    prisma.class.findMany({ where: classWhere, orderBy: { order: "asc" } }),
+    prisma.academicSession.findMany({ where: sessionWhere }),
+  ])
 
   return (
     <div className="grid gap-6">

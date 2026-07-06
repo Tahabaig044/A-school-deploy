@@ -10,7 +10,6 @@ import { z } from "zod"
 const announcementSchema = z.object({
   schoolId: z.string().uuid(),
   branchId: z.string().uuid(),
-  authorId: z.string().uuid(),
   title: z.string().min(1, "Title is required"),
   content: z.string().min(1, "Content is required"),
   audience: z.enum(["ALL", "TEACHERS", "STUDENTS", "PARENTS", "SPECIFIC_CLASS"]),
@@ -26,7 +25,6 @@ export async function createAnnouncement(
 
   const schoolId = getSchoolId(profile, formData, "Create Announcement")
   const branchId = getBranchId(profile, formData, "Create Announcement")
-  const authorId = formData.get("authorId") as string || profile.id
   const title = formData.get("title") as string
   const content = formData.get("content") as string
   const audience = formData.get("audience") as string
@@ -34,7 +32,7 @@ export async function createAnnouncement(
   const isPublished = formData.get("isPublished") !== "false"
 
   const parsed = announcementSchema.safeParse({
-    schoolId, branchId, authorId, title, content, audience, classId, isPublished,
+    schoolId, branchId, title, content, audience, classId, isPublished,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -44,7 +42,7 @@ export async function createAnnouncement(
     data: {
       school: { connect: { id: schoolId } },
       branch: { connect: { id: branchId } },
-      author: { connect: { id: authorId } },
+      author: { connect: { id: profile.id } },
       title, content, audience, classId,
       isPublished,
       publishedAt: isPublished ? new Date() : null,
@@ -69,7 +67,13 @@ export async function updateAnnouncement(
   _prevState: { error?: string; success?: boolean } | null,
   formData: FormData
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const existing = await prisma.announcement.findUnique({ where: { id: announcementId }, select: { schoolId: true } })
+  if (!existing) return { error: "Announcement not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
 
   const title = formData.get("title") as string
   const content = formData.get("content") as string
@@ -90,7 +94,14 @@ export async function updateAnnouncement(
 }
 
 export async function deleteAnnouncement(announcementId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const existing = await prisma.announcement.findUnique({ where: { id: announcementId }, select: { schoolId: true } })
+  if (!existing) return { error: "Announcement not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
   await prisma.announcement.delete({ where: { id: announcementId } })
   revalidatePath("/dashboard/announcements")
   return { success: true }

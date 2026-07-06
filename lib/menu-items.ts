@@ -16,6 +16,10 @@ import {
   DollarSign,
   Wallet,
   UserPlus,
+  BookMarked,
+  Bus,
+  Megaphone,
+  FileText,
   type LucideIcon,
 } from "lucide-react"
 import type { Permission } from "@/lib/permissions"
@@ -32,7 +36,7 @@ export const menuItems: MenuItem[] = [
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
-    permission: "students.view",
+    permission: "settings.view",
   },
   {
     title: "Schools",
@@ -101,6 +105,18 @@ export const menuItems: MenuItem[] = [
     permission: "attendance.view",
   },
   {
+    title: "Exams",
+    href: "/dashboard/exams",
+    icon: ClipboardList,
+    permission: "exams.view",
+  },
+  {
+    title: "Assignments",
+    href: "/dashboard/assignments",
+    icon: CalendarClock,
+    permission: "homework.view",
+  },
+  {
     title: "Fee Structures",
     href: "/dashboard/fees/fee-structures",
     icon: DollarSign,
@@ -131,10 +147,28 @@ export const menuItems: MenuItem[] = [
     permission: "expenses.view",
   },
   {
-    title: "Assignments",
-    href: "/dashboard/assignments",
-    icon: CalendarClock,
-    permission: "homework.view",
+    title: "Library",
+    href: "/dashboard/library",
+    icon: BookMarked,
+    permission: "library.view",
+  },
+  {
+    title: "Transport",
+    href: "/dashboard/transport",
+    icon: Bus,
+    permission: "transport.view",
+  },
+  {
+    title: "Announcements",
+    href: "/dashboard/announcements",
+    icon: Megaphone,
+    permission: "announcements.view",
+  },
+  {
+    title: "Reports",
+    href: "/dashboard/reports",
+    icon: FileText,
+    permission: "reports.view",
   },
   {
     title: "Timetable",

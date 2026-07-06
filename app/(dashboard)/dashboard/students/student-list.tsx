@@ -21,7 +21,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Search } from "lucide-react"
+import { Plus, Search, Pencil, Trash2 } from "lucide-react"
+import { deleteStudent } from "@/actions/student.actions"
+import { useToast } from "@/hooks/use-toast"
 
 type StudentListItem = {
   id: string
@@ -64,6 +66,18 @@ export function StudentList({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchValue, setSearchValue] = useState(initialSearch)
+  const { toast } = useToast()
+
+  async function handleDelete(id: string, name: string) {
+    if (!confirm(`Are you sure you want to delete student "${name}"?`)) return
+    try {
+      await deleteStudent(id)
+      toast({ title: "Student deleted" })
+      router.refresh()
+    } catch {
+      toast({ title: "Failed to delete student", variant: "destructive" })
+    }
+  }
 
   function updateParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString())
@@ -158,6 +172,7 @@ export function StudentList({
                 <TableHead>Class/Section</TableHead>
                 <TableHead>Session</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -194,6 +209,22 @@ export function StudentList({
                     >
                       {student.status.charAt(0) + student.status.slice(1).toLowerCase()}
                     </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Link href={`/dashboard/students/${student.id}/edit`}>
+                        <Button variant="ghost" size="icon">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(student.id, `${student.firstName} ${student.lastName}`)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

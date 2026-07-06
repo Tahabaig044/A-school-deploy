@@ -8,7 +8,6 @@ import { z } from "zod"
 
 const messageSchema = z.object({
   schoolId: z.string().uuid(),
-  senderId: z.string().uuid(),
   receiverId: z.string().uuid(),
   subject: z.string().optional(),
   content: z.string().min(1, "Content is required"),
@@ -21,12 +20,11 @@ export async function sendMessage(
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT")
 
   const schoolId = getSchoolId(profile, formData, "Send Message")
-  const senderId = formData.get("senderId") as string || profile.id
   const receiverId = formData.get("receiverId") as string
   const subject = formData.get("subject") as string || undefined
   const content = formData.get("content") as string
 
-  const parsed = messageSchema.safeParse({ schoolId, senderId, receiverId, subject, content })
+  const parsed = messageSchema.safeParse({ schoolId, receiverId, subject, content })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
   }
@@ -34,7 +32,7 @@ export async function sendMessage(
   await prisma.message.create({
     data: {
       school: { connect: { id: schoolId } },
-      sender: { connect: { id: senderId } },
+      sender: { connect: { id: profile.id } },
       receiver: { connect: { id: receiverId } },
       subject, content,
     },
@@ -56,11 +54,11 @@ export async function markMessageAsRead(messageId: string) {
   return { success: true }
 }
 
-export async function getInboxMessages(userId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+export async function getInboxMessages() {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
 
   return prisma.message.findMany({
-    where: { receiverId: userId },
+    where: { receiverId: profile.id },
     include: {
       sender: { select: { id: true, firstName: true, lastName: true, role: true } },
     },
@@ -68,11 +66,11 @@ export async function getInboxMessages(userId: string) {
   })
 }
 
-export async function getSentMessages(userId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT")
+export async function getSentMessages() {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT")
 
   return prisma.message.findMany({
-    where: { senderId: userId },
+    where: { senderId: profile.id },
     include: {
       receiver: { select: { id: true, firstName: true, lastName: true, role: true } },
     },
@@ -83,8 +81,14 @@ export async function getSentMessages(userId: string) {
 export async function getMessageById(messageId: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
 
-  const message = await prisma.message.findUnique({
-    where: { id: messageId },
+  const message = await prisma.message.findFirst({
+    where: {
+      id: messageId,
+      OR: [
+        { senderId: profile.id },
+        { receiverId: profile.id },
+      ],
+    },
     include: {
       sender: { select: { id: true, firstName: true, lastName: true, role: true } },
       receiver: { select: { id: true, firstName: true, lastName: true, role: true } },
@@ -101,8 +105,10 @@ export async function getMessageById(messageId: string) {
   return message
 }
 
-export async function getUnreadMessageCount(userId: string) {
+export async function getUnreadMessageCount() {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+
   return prisma.message.count({
-    where: { receiverId: userId, isRead: false },
+    where: { receiverId: profile.id, isRead: false },
   })
 }
