@@ -9,6 +9,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased] - 2026-07-06
 
 ### Input Validation & Error Handling (Loop 7)
+- **package.json** — Fixed Vercel build: added `prisma generate` before `next build` in build script
 - **9 action files** — Added Zod schemas to student, teacher, class, fees, staff, subject, branch, session, expenses actions — validates required fields, types, enums, email format, UUID format before database operations
 - **student.actions.ts** — Added `studentSchema` and `enrollmentSchema` with Gender/StudentStatus enum validation
 - **teacher.actions.ts** — Added `teacherSchema` with EmployeeStatus enum validation
