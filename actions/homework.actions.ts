@@ -1,0 +1,248 @@
+"use server"
+
+import { revalidatePath } from "next/cache"
+import { prisma } from "@/lib/prisma"
+import { requireRole } from "@/lib/auth"
+import { getSchoolId, getBranchId } from "@/lib/school-context"
+import { z } from "zod"
+
+const homeworkSchema = z.object({
+  schoolId: z.string().uuid(),
+  branchId: z.string().uuid(),
+  classId: z.string().uuid(),
+  sectionId: z.string().uuid().optional(),
+  subjectId: z.string().uuid(),
+  teacherId: z.string().uuid(),
+  academicSessionId: z.string().uuid(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  dueDate: z.string().min(1, "Due date is required"),
+  totalMarks: z.number().int().min(0).optional(),
+})
+
+const homeworkSubmissionSchema = z.object({
+  homeworkId: z.string().uuid(),
+  studentId: z.string().uuid(),
+  content: z.string().optional(),
+  filePath: z.string().optional(),
+})
+
+export async function createHomework(
+  _prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+) {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const schoolId = getSchoolId(profile, formData, "Create Homework")
+  const branchId = getBranchId(profile, formData, "Create Homework")
+  const classId = formData.get("classId") as string
+  const sectionId = formData.get("sectionId") as string || undefined
+  const subjectId = formData.get("subjectId") as string
+  const teacherId = formData.get("teacherId") as string
+  const academicSessionId = formData.get("academicSessionId") as string
+  const title = formData.get("title") as string
+  const description = formData.get("description") as string || undefined
+  const dueDate = formData.get("dueDate") as string
+  const totalMarksStr = formData.get("totalMarks") as string
+  const totalMarks = totalMarksStr ? Number(totalMarksStr) : undefined
+
+  const parsed = homeworkSchema.safeParse({
+    schoolId, branchId, classId, sectionId, subjectId, teacherId,
+    academicSessionId, title, description, dueDate, totalMarks,
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message, success: false }
+  }
+
+  await prisma.homework.create({
+    data: {
+      school: { connect: { id: schoolId } },
+      branch: { connect: { id: branchId } },
+      class: { connect: { id: classId } },
+      section: sectionId ? { connect: { id: sectionId } } : undefined,
+      subject: { connect: { id: subjectId } },
+      teacher: { connect: { id: teacherId } },
+      academicSession: { connect: { id: academicSessionId } },
+      title, description,
+      dueDate: new Date(dueDate),
+      totalMarks,
+    },
+  })
+
+  revalidatePath("/dashboard/homework")
+  return { success: true, error: undefined }
+}
+
+export async function updateHomework(
+  homeworkId: string,
+  _prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+) {
+  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const title = formData.get("title") as string
+  const description = formData.get("description") as string || undefined
+  const dueDate = formData.get("dueDate") as string
+  const totalMarksStr = formData.get("totalMarks") as string
+  const totalMarks = totalMarksStr ? Number(totalMarksStr) : undefined
+  const isActive = formData.get("isActive") === "true"
+
+  await prisma.homework.update({
+    where: { id: homeworkId },
+    data: {
+      title, description,
+      dueDate: new Date(dueDate),
+      totalMarks, isActive,
+    },
+  })
+
+  revalidatePath("/dashboard/homework")
+  return { success: true, error: undefined }
+}
+
+export async function deleteHomework(homeworkId: string) {
+  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  await prisma.homework.delete({ where: { id: homeworkId } })
+  revalidatePath("/dashboard/homework")
+  return { success: true }
+}
+
+export async function getHomework(
+  schoolId: string,
+  branchId: string,
+  filters?: { classId?: string; subjectId?: string; teacherId?: string; academicSessionId?: string }
+) {
+  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT")
+
+  return prisma.homework.findMany({
+    where: {
+      schoolId, branchId,
+      ...(filters?.classId && { classId: filters.classId }),
+      ...(filters?.subjectId && { subjectId: filters.subjectId }),
+      ...(filters?.teacherId && { teacherId: filters.teacherId }),
+      ...(filters?.academicSessionId && { academicSessionId: filters.academicSessionId }),
+    },
+    include: {
+      class: true,
+      section: true,
+      subject: true,
+      teacher: { select: { id: true, firstName: true, lastName: true } },
+      _count: { select: { submissions: true } },
+    },
+    orderBy: { dueDate: "desc" },
+  })
+}
+
+export async function getHomeworkById(homeworkId: string) {
+  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT")
+
+  return prisma.homework.findUnique({
+    where: { id: homeworkId },
+    include: {
+      class: true,
+      section: true,
+      subject: true,
+      teacher: { select: { id: true, firstName: true, lastName: true } },
+      academicSession: true,
+    },
+  })
+}
+
+export async function submitHomework(
+  _prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+) {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "STUDENT")
+
+  const homeworkId = formData.get("homeworkId") as string
+  const studentId = formData.get("studentId") as string || profile.id
+  const content = formData.get("content") as string || undefined
+  const filePath = formData.get("filePath") as string || undefined
+
+  const parsed = homeworkSubmissionSchema.safeParse({ homeworkId, studentId, content, filePath })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message, success: false }
+  }
+
+  const homework = await prisma.homework.findUnique({ where: { id: homeworkId } })
+  if (!homework) return { error: "Homework not found.", success: false }
+
+  if (new Date() > homework.dueDate) {
+    return { error: "Submission deadline has passed.", success: false }
+  }
+
+  await prisma.homeworkSubmission.upsert({
+    where: { homeworkId_studentId: { homeworkId, studentId } },
+    update: { content, filePath, status: "SUBMITTED" },
+    create: { homeworkId, studentId, content, filePath },
+  })
+
+  revalidatePath("/dashboard/homework/submissions")
+  return { success: true, error: undefined }
+}
+
+export async function gradeHomework(
+  submissionId: string,
+  _prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+) {
+  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const marksObtained = Number(formData.get("marksObtained") as string)
+  const feedback = formData.get("feedback") as string || undefined
+
+  const submission = await prisma.homeworkSubmission.findUnique({
+    where: { id: submissionId },
+    include: { homework: true },
+  })
+  if (!submission) return { error: "Submission not found.", success: false }
+
+  if (submission.homework.totalMarks && marksObtained > submission.homework.totalMarks) {
+    return { error: "Marks cannot exceed total marks.", success: false }
+  }
+
+  await prisma.homeworkSubmission.update({
+    where: { id: submissionId },
+    data: {
+      marksObtained,
+      feedback,
+      status: "GRADED",
+      gradedAt: new Date(),
+    },
+  })
+
+  revalidatePath("/dashboard/homework/check")
+  return { success: true, error: undefined }
+}
+
+export async function getHomeworkSubmissions(homeworkId: string) {
+  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  return prisma.homeworkSubmission.findMany({
+    where: { homeworkId },
+    include: {
+      student: {
+        select: { id: true, firstName: true, lastName: true, admissionNo: true },
+      },
+    },
+    orderBy: { submittedAt: "desc" },
+  })
+}
+
+export async function getStudentSubmissions(studentId: string) {
+  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "STUDENT", "TEACHER")
+
+  return prisma.homeworkSubmission.findMany({
+    where: { studentId },
+    include: {
+      homework: {
+        include: {
+          class: true,
+          subject: true,
+          teacher: { select: { firstName: true, lastName: true } },
+        },
+      },
+    },
+    orderBy: { submittedAt: "desc" },
+  })
+}

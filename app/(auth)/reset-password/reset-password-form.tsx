@@ -1,0 +1,35 @@
+"use client"
+
+import { useActionState } from "react"
+import Link from "next/link"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { resetPassword } from "@/actions/auth.actions"
+
+export function ResetPasswordForm() {
+  const [state, formAction, pending] = useActionState(resetPassword, null)
+
+  return (
+    <form action={formAction} className="grid gap-4">
+      {state?.error && (
+        <p className="text-sm text-destructive">{state.error}</p>
+      )}
+      <div className="grid gap-2">
+        <Label htmlFor="password">New Password</Label>
+        <Input id="password" name="password" type="password" required />
+      </div>
+      <Button type="submit" disabled={pending} className="w-full">
+        {pending ? "Resetting..." : "Reset Password"}
+      </Button>
+      <p className="text-center text-sm text-muted-foreground">
+        <Link
+          href="/login"
+          className="underline underline-offset-4 hover:text-primary"
+        >
+          Back to sign in
+        </Link>
+      </p>
+    </form>
+  )
+}
