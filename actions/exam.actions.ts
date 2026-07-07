@@ -477,17 +477,21 @@ export async function submitBulkExamResults(
     if (toCreate.length > 0) {
       await tx.examResult.createMany({ data: toCreate })
     }
-    for (const item of toUpdate) {
-      await tx.examResult.update({
-        where: { id: item.id },
-        data: {
-          marksObtained: item.marksObtained,
-          grade: item.grade,
-          remarks: item.remarks,
-          gradedBy: item.gradedBy,
-          gradedAt: item.gradedAt,
-        },
-      })
+    if (toUpdate.length > 0) {
+      await Promise.all(
+        toUpdate.map((item) =>
+          tx.examResult.update({
+            where: { id: item.id },
+            data: {
+              marksObtained: item.marksObtained,
+              grade: item.grade,
+              remarks: item.remarks,
+              gradedBy: item.gradedBy,
+              gradedAt: item.gradedAt,
+            },
+          })
+        )
+      )
     }
   })
 
@@ -539,12 +543,14 @@ export async function generateReportCard(
 ) {
   await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
-  const exam = await prisma.exam.findUnique({ where: { id: examId } })
-  if (!exam) return { error: "Exam not found.", success: false }
+  const [exam, result] = await Promise.all([
+    prisma.exam.findUnique({ where: { id: examId } }),
+    prisma.examResult.findUnique({
+      where: { examId_studentId: { examId, studentId } },
+    }),
+  ])
 
-  const result = await prisma.examResult.findUnique({
-    where: { examId_studentId: { examId, studentId } },
-  })
+  if (!exam) return { error: "Exam not found.", success: false }
   if (!result || result.marksObtained === null) {
     return { error: "No marks recorded for this student in this exam.", success: false }
   }

@@ -145,11 +145,15 @@ export async function bulkMarkAttendance(formData: FormData) {
     if (toCreate.length > 0) {
       await tx.studentAttendance.createMany({ data: toCreate })
     }
-    for (const item of toUpdate) {
-      await tx.studentAttendance.update({
-        where: { id: item.id },
-        data: { status: item.status, markedById: item.markedById },
-      })
+    if (toUpdate.length > 0) {
+      await Promise.all(
+        toUpdate.map((item) =>
+          tx.studentAttendance.update({
+            where: { id: item.id },
+            data: { status: item.status, markedById: item.markedById },
+          })
+        )
+      )
     }
   })
 

@@ -37,6 +37,8 @@ model Profile {
   sentMessages          Message[]        @relation("SentMessages")
   notifications         Notification[]
   payments              Payment[]
+  reviewedAdmissions    Admission[]
+  announcementReads     AnnouncementRead[]
   branch                Branch?          @relation(fields: [branchId], references: [id])
   school                School?          @relation(fields: [schoolId], references: [id])
   staff                 Staff?
@@ -80,6 +82,7 @@ model School {
   timetables      Timetable[]
   transportRoutes TransportRoute[]
   vehicles        Vehicle[]
+  admissions      Admission[]
 
   @@map("schools")
 }
@@ -113,6 +116,7 @@ model Branch {
   timetables      Timetable[]
   transportRoutes TransportRoute[]
   vehicles        Vehicle[]
+  admissions      Admission[]
 
   @@index([schoolId])
   @@map("branches")
@@ -140,6 +144,7 @@ model AcademicSession {
   studentTransport   StudentTransport[]
   teacherAssignments TeacherAssignment[]
   timetableSlots     Timetable[]
+  admissions         Admission[]
 
   @@index([schoolId, branchId])
   @@map("academic_sessions")
@@ -177,6 +182,8 @@ model Class {
   enrollments        StudentEnrollment[]
   teacherAssignments TeacherAssignment[]
   timetableSlots     Timetable[]
+  admissions         Admission[]
+  announcements      Announcement[]
 
   @@unique([schoolId, branchId, code])
   @@index([schoolId, branchId])
@@ -196,6 +203,7 @@ model Section {
   enrollments        StudentEnrollment[]
   teacherAssignments TeacherAssignment[]
   timetableSlots     Timetable[]
+  announcements      Announcement[]
 
   @@unique([classId, name])
   @@map("sections")
@@ -237,6 +245,7 @@ model Student {
   transport           StudentTransport[]
   branch              Branch               @relation(fields: [branchId], references: [id])
   school              School               @relation(fields: [schoolId], references: [id])
+  admission           Admission?
 
   @@unique([schoolId, admissionNo])
   @@index([schoolId, branchId])
@@ -271,6 +280,7 @@ model StudentParent {
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@id([studentId, parentId])
+  @@index([parentId])
   @@map("student_parents")
 }
 
@@ -286,6 +296,107 @@ model StudentDocument {
 
   @@index([studentId])
   @@map("student_documents")
+}
+
+// ─── Admission System ──────────────────────────────────────────
+
+enum AdmissionStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  WAITLISTED
+}
+
+model Admission {
+  id                String          @id @default(uuid()) @db.Uuid
+  schoolId          String          @map("school_id") @db.Uuid
+  branchId          String          @map("branch_id") @db.Uuid
+  admissionNo       String          @map("admission_no")
+  studentId         String?         @unique @map("student_id") @db.Uuid
+
+  // Student Details
+  firstName         String          @map("first_name")
+  lastName          String          @map("last_name")
+  dateOfBirth       DateTime?       @map("date_of_birth")
+  gender            Gender          @default(MALE)
+  bloodGroup        String?         @map("blood_group")
+  religion          String?
+  nationality       String?
+  phone             String?
+  email             String?
+  address           String?
+  city              String?
+  state             String?
+  postalCode        String?         @map("postal_code")
+  photoUrl          String?         @map("photo_url")
+
+  // Admission Details
+  appliedClassId    String          @map("applied_class_id") @db.Uuid
+  academicSessionId String          @map("academic_session_id") @db.Uuid
+  previousSchool    String?         @map("previous_school")
+  previousClass     String?         @map("previous_class")
+  reason            String?
+
+  // Status & Review
+  status            AdmissionStatus @default(PENDING)
+  reviewedById      String?         @map("reviewed_by_id") @db.Uuid
+  reviewedAt        DateTime?       @map("reviewed_at")
+  rejectionReason   String?         @map("rejection_reason")
+  approvedAt        DateTime?       @map("approved_at")
+
+  // Timestamps
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  school            School          @relation(fields: [schoolId], references: [id])
+  branch            Branch          @relation(fields: [branchId], references: [id])
+  appliedClass      Class           @relation(fields: [appliedClassId], references: [id])
+  academicSession   AcademicSession @relation(fields: [academicSessionId], references: [id])
+  student           Student?        @relation(fields: [studentId], references: [id])
+  reviewedBy        Profile?        @relation(fields: [reviewedById], references: [id])
+  documents         AdmissionDocument[]
+  guardians         AdmissionGuardian[]
+
+  @@unique([schoolId, admissionNo])
+  @@index([schoolId, branchId])
+  @@index([status])
+  @@index([academicSessionId])
+  @@index([appliedClassId])
+  @@map("admissions")
+}
+
+model AdmissionDocument {
+  id           String    @id @default(uuid()) @db.Uuid
+  admissionId  String    @map("admission_id") @db.Uuid
+  documentType String    @map("document_type")
+  documentName String    @map("document_name")
+  filePath     String    @map("file_path")
+  fileSize     Int?      @map("file_size")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  admission    Admission @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+
+  @@index([admissionId])
+  @@map("admission_documents")
+}
+
+model AdmissionGuardian {
+  id             String             @id @default(uuid()) @db.Uuid
+  admissionId    String             @map("admission_id") @db.Uuid
+  firstName      String             @map("first_name")
+  lastName       String             @map("last_name")
+  relationship   ParentRelationship @default(FATHER)
+  phone          String?
+  email          String?
+  occupation     String?
+  address        String?
+  isPrimary      Boolean            @default(false) @map("is_primary")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  admission      Admission          @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+
+  @@index([admissionId])
+  @@map("admission_guardians")
 }
 
 model StudentEnrollment {
@@ -307,6 +418,7 @@ model StudentEnrollment {
   @@unique([studentId, academicSessionId])
   @@index([sectionId])
   @@index([academicSessionId])
+  @@index([classId])
   @@map("student_enrollments")
 }
 
@@ -486,6 +598,7 @@ model StaffAttendance {
 
   @@unique([staffId, date])
   @@index([staffId])
+  @@index([date])
   @@map("staff_attendance")
 }
 
@@ -504,6 +617,7 @@ model LeaveRequest {
 
   @@index([profileId])
   @@index([status])
+  @@index([approvedBy])
   @@map("leave_requests")
 }
 
@@ -543,6 +657,8 @@ model StudentFeePlan {
 
   @@unique([studentId, feeStructureId, academicSessionId])
   @@index([studentId])
+  @@index([feeStructureId])
+  @@index([academicSessionId])
   @@map("student_fee_plans")
 }
 
@@ -569,6 +685,8 @@ model FeeInvoice {
   @@index([studentId])
   @@index([status])
   @@index([dueDate])
+  @@index([studentId, status])
+  @@index([academicSessionId])
   @@map("fee_invoices")
 }
 
@@ -601,6 +719,7 @@ model Payment {
 
   @@index([invoiceId])
   @@index([paymentDate])
+  @@index([recordedBy])
   @@map("payments")
 }
 
@@ -621,6 +740,7 @@ model Expense {
 
   @@index([schoolId, branchId])
   @@index([expenseDate])
+  @@index([recordedBy])
   @@map("expenses")
 }
 
@@ -767,6 +887,7 @@ model Homework {
   @@index([classId, sectionId])
   @@index([teacherId])
   @@index([academicSessionId])
+  @@index([classId, dueDate])
   @@map("homework")
 }
 
@@ -793,25 +914,61 @@ model HomeworkSubmission {
 }
 
 model Announcement {
-  id          String    @id @default(uuid()) @db.Uuid
-  schoolId    String    @map("school_id") @db.Uuid
-  branchId    String    @map("branch_id") @db.Uuid
-  authorId    String    @map("author_id") @db.Uuid
-  title       String
-  content     String
-  audience    String
-  classId     String?   @map("class_id") @db.Uuid
-  isPublished Boolean   @default(true) @map("is_published")
-  publishedAt DateTime? @map("published_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  author      Profile   @relation(fields: [authorId], references: [id])
-  branch      Branch    @relation(fields: [branchId], references: [id])
-  school      School    @relation(fields: [schoolId], references: [id])
+  id            String                 @id @default(uuid()) @db.Uuid
+  schoolId      String                 @map("school_id") @db.Uuid
+  branchId      String                 @map("branch_id") @db.Uuid
+  authorId      String                 @map("author_id") @db.Uuid
+  title         String
+  content       String
+  audience      String
+  classId       String?                @map("class_id") @db.Uuid
+  sectionId     String?                @map("section_id") @db.Uuid
+  isPublished   Boolean                @default(true) @map("is_published")
+  publishedAt   DateTime?              @map("published_at")
+  scheduledAt   DateTime?              @map("scheduled_at")
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+  author        Profile                @relation(fields: [authorId], references: [id])
+  branch        Branch                 @relation(fields: [branchId], references: [id])
+  school        School                 @relation(fields: [schoolId], references: [id])
+  class         Class?                 @relation(fields: [classId], references: [id])
+  section       Section?               @relation(fields: [sectionId], references: [id])
+  attachments   AnnouncementAttachment[]
+  reads         AnnouncementRead[]
 
   @@index([schoolId, branchId])
   @@index([authorId])
+  @@index([classId])
+  @@index([sectionId])
   @@map("announcements")
+}
+
+model AnnouncementAttachment {
+  id            String      @id @default(uuid()) @db.Uuid
+  announcementId String     @map("announcement_id") @db.Uuid
+  fileName      String      @map("file_name")
+  fileUrl       String      @map("file_url")
+  fileSize      Int?        @map("file_size")
+  fileType      String?     @map("file_type")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  announcement  Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@index([announcementId])
+  @@map("announcement_attachments")
+}
+
+model AnnouncementRead {
+  id            String      @id @default(uuid()) @db.Uuid
+  announcementId String     @map("announcement_id") @db.Uuid
+  profileId     String      @map("profile_id") @db.Uuid
+  readAt        DateTime    @default(now()) @map("read_at")
+  announcement  Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  profile       Profile     @relation(fields: [profileId], references: [id])
+
+  @@unique([announcementId, profileId])
+  @@index([announcementId])
+  @@index([profileId])
+  @@map("announcement_reads")
 }
 
 model Message {
@@ -893,6 +1050,7 @@ model BookIssue {
   @@index([bookId])
   @@index([studentId])
   @@index([status])
+  @@index([studentId, status])
   @@map("book_issues")
 }
 
@@ -1010,6 +1168,7 @@ model RolePermission {
 
   @@unique([role, permissionId])
   @@index([role])
+  @@index([permissionId])
   @@map("role_permissions")
 }
 
@@ -1024,6 +1183,7 @@ model UserPermission {
 
   @@unique([profileId, permissionId])
   @@index([profileId])
+  @@index([permissionId])
   @@map("user_permissions")
 }
 

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 import { TimetableForm } from "./timetable-form"
 import { TimetableGrid } from "./timetable-grid"
+import { ConflictPanel } from "./conflict-panel"
+import { RoomView } from "./room-view"
 
 export default async function TimetablePage({
   searchParams,
@@ -12,6 +14,11 @@ export default async function TimetablePage({
   const params = await searchParams
 
   const where = profile.role === "SUPER_ADMIN" ? undefined : { schoolId: profile.schoolId! }
+
+  const activeSession = await prisma.academicSession.findFirst({
+    where: profile.role === "SUPER_ADMIN" ? undefined : { schoolId: profile.schoolId!, isCurrent: true },
+    select: { id: true },
+  })
 
   const [classes, teachers, subjects, sessions, slots] = await Promise.all([
     prisma.class.findMany({
@@ -42,22 +49,44 @@ export default async function TimetablePage({
     }),
   ])
 
+  const view = params.view || "grid"
+
   return (
     <div className="grid gap-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Timetable</h2>
-        <p className="text-muted-foreground">Manage class timetables</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Timetable</h2>
+          <p className="text-muted-foreground">Manage class timetables</p>
+        </div>
+        <div className="flex gap-2">
+          <a href="/dashboard/timetable?view=grid" className={`px-3 py-1.5 text-sm rounded-md ${view === "grid" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Grid</a>
+          <a href="/dashboard/timetable?view=conflicts" className={`px-3 py-1.5 text-sm rounded-md ${view === "conflicts" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Conflicts</a>
+          <a href="/dashboard/timetable?view=rooms" className={`px-3 py-1.5 text-sm rounded-md ${view === "rooms" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Rooms</a>
+        </div>
       </div>
-      <TimetableForm
-        classes={JSON.parse(JSON.stringify(classes))}
-        teachers={JSON.parse(JSON.stringify(teachers))}
-        subjects={JSON.parse(JSON.stringify(subjects))}
-        sessions={JSON.parse(JSON.stringify(sessions))}
-      />
-      <TimetableGrid
-        slots={JSON.parse(JSON.stringify(slots))}
-        currentClassId={params.classId || ""}
-      />
+
+      {view === "grid" && (
+        <>
+          <TimetableForm
+            classes={JSON.parse(JSON.stringify(classes))}
+            teachers={JSON.parse(JSON.stringify(teachers))}
+            subjects={JSON.parse(JSON.stringify(subjects))}
+            sessions={JSON.parse(JSON.stringify(sessions))}
+          />
+          <TimetableGrid
+            slots={JSON.parse(JSON.stringify(slots))}
+            currentClassId={params.classId || ""}
+          />
+        </>
+      )}
+
+      {view === "conflicts" && activeSession && (
+        <ConflictPanel academicSessionId={activeSession.id} />
+      )}
+
+      {view === "rooms" && activeSession && (
+        <RoomView academicSessionId={activeSession.id} />
+      )}
     </div>
   )
 }

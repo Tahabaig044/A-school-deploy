@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/sidebar"
 import { MobileSidebar } from "@/components/layout/mobile-sidebar"
 import { BranchSelector } from "@/components/layout/branch-selector"
@@ -9,32 +9,48 @@ import { UserDropdown } from "@/components/layout/user-dropdown"
 import { getPermissionsForRole } from "@/lib/permissions"
 import type { Role } from "@/lib/constants"
 import { PORTAL_ROLES } from "@/lib/constants"
+import { setRequestContext, clearRequestContext } from "@/lib/auth"
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const headerStore = await headers()
+  const userId = headerStore.get("X-User-Id")
+  const userRole = headerStore.get("X-User-Role") as Role | null
+  const userSchoolId = headerStore.get("X-User-SchoolId") || null
+  const userBranchId = headerStore.get("X-User-BranchId") || null
+  const userEmail = headerStore.get("X-User-Email") || null
 
-  if (!user) {
+  if (!userId || !userRole || !userEmail) {
     redirect("/login")
   }
 
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
+  const profile = {
+    id: userId,
+    role: userRole,
+    schoolId: userSchoolId || null,
+    branchId: userBranchId || null,
+    firstName: null as string | null,
+    lastName: null as string | null,
+    email: userEmail,
+    phone: null as string | null,
+  }
+
+  const fullProfile = await prisma.profile.findUnique({
+    where: { id: userId },
+    select: { firstName: true, lastName: true, phone: true },
   })
 
-  if (!profile) {
-    redirect("/login")
+  if (fullProfile) {
+    profile.firstName = fullProfile.firstName
+    profile.lastName = fullProfile.lastName
+    profile.phone = fullProfile.phone
   }
 
-  // Redirect portal roles to their respective portals
-  if ((PORTAL_ROLES as readonly string[]).includes(profile.role)) {
-    switch (profile.role) {
+  if ((PORTAL_ROLES as readonly string[]).includes(userRole)) {
+    switch (userRole) {
       case "STUDENT":
         redirect("/portal/student")
       case "PARENT":
@@ -44,43 +60,52 @@ export default async function DashboardLayout({
     }
   }
 
-  const branches = profile.schoolId
-    ? await prisma.branch.findMany({
-        where: { schoolId: profile.schoolId, isActive: true },
-        select: { id: true, name: true },
-        orderBy: { name: "asc" },
-      })
-    : []
+  setRequestContext({
+    user: { id: userId, email: userEmail },
+    profile,
+  })
 
-  // Get permissions for the user's role
-  const permissions = await getPermissionsForRole(profile.role as Role)
+  try {
+    const [branches, permissions] = await Promise.all([
+      userSchoolId
+        ? prisma.branch.findMany({
+            where: { schoolId: userSchoolId, isActive: true },
+            select: { id: true, name: true },
+            orderBy: { name: "asc" },
+          })
+        : Promise.resolve([]),
+      getPermissionsForRole(userRole),
+    ])
 
-  return (
-    <div className="flex min-h-full">
-      <MobileSidebar permissions={permissions} />
-      <Sidebar permissions={permissions} />
-      <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-10 border-b bg-background">
-          <div className="flex h-16 items-center justify-between px-6">
-            <div className="md:hidden" />
-            <div className="hidden md:block" />
-            <div className="flex items-center gap-4">
-              <BranchSelector branches={branches} />
-              <NotificationsDropdown />
-              <UserDropdown
-                email={user.email!}
-                name={
-                  profile.firstName && profile.lastName
-                    ? `${profile.firstName} ${profile.lastName}`
-                    : null
-                }
-                role={profile.role}
-              />
+    return (
+      <div className="flex min-h-full">
+        <MobileSidebar permissions={permissions} />
+        <Sidebar permissions={permissions} />
+        <div className="flex flex-1 flex-col">
+          <header className="sticky top-0 z-10 border-b bg-background">
+            <div className="flex h-16 items-center justify-between px-6">
+              <div className="md:hidden" />
+              <div className="hidden md:block" />
+              <div className="flex items-center gap-4">
+                <BranchSelector branches={branches} />
+                <NotificationsDropdown />
+                <UserDropdown
+                  email={userEmail}
+                  name={
+                    profile.firstName && profile.lastName
+                      ? `${profile.firstName} ${profile.lastName}`
+                      : null
+                  }
+                  role={userRole}
+                />
+              </div>
             </div>
-          </div>
-        </header>
-        <main className="flex-1 p-6">{children}</main>
+          </header>
+          <main className="flex-1 p-6">{children}</main>
+        </div>
       </div>
-    </div>
-  )
+    )
+  } finally {
+    clearRequestContext()
+  }
 }

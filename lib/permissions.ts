@@ -188,14 +188,15 @@ let permissionsCache: Map<string, Set<string>> | null = null
 async function loadPermissionsCache(): Promise<Map<string, Set<string>>> {
   if (permissionsCache) return permissionsCache
 
-  const rolePerms = await prisma.rolePermission.findMany({
-    include: { permission: true },
-  })
-
-  const userPerms = await prisma.userPermission.findMany({
-    where: { granted: true },
-    include: { permission: true },
-  })
+  const [rolePerms, userPerms] = await Promise.all([
+    prisma.rolePermission.findMany({
+      include: { permission: true },
+    }),
+    prisma.userPermission.findMany({
+      where: { granted: true },
+      include: { permission: true },
+    }),
+  ])
 
   const cache = new Map<string, Set<string>>()
 

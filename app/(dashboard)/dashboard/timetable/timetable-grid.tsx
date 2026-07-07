@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { deleteTimetableSlot } from "@/actions/timetable.actions"
+import { TimetablePrintButton } from "./timetable-print"
 
 type SlotItem = {
   id: string
@@ -84,16 +85,22 @@ export function TimetableGrid({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Timetable</CardTitle>
-          <Select value={currentClassId} onValueChange={handleClassFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select class" />
-            </SelectTrigger>
-            <SelectContent>
-              {uniqueClasses.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select value={currentClassId} onValueChange={handleClassFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select class" />
+              </SelectTrigger>
+              <SelectContent>
+                {uniqueClasses.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <TimetablePrintButton
+              slots={slots.filter((s) => !currentClassId || s.class.id === currentClassId)}
+              title={currentClassId ? `Timetable - ${slots.find((s) => s.class.id === currentClassId)?.class.name || ""}` : "Timetable"}
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent>

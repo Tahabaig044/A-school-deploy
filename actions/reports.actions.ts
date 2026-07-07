@@ -104,13 +104,10 @@ export async function getStudentEnrollmentReport(
 ) {
   await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
-  const whereClause: any = { schoolId }
-  if (branchId) whereClause.branchId = branchId
-
   const enrollments = await prisma.studentEnrollment.groupBy({
     by: ["classId"],
     where: {
-      ...whereClause,
+      student: { schoolId, ...(branchId && { branchId }) },
       ...(academicSessionId && { academicSessionId }),
     },
     _count: { id: true },
@@ -220,7 +217,7 @@ export async function getFeeDefaulterReport(schoolId: string, branchId?: string)
 
   const whereClause: any = {
     status: { in: ["PENDING", "PARTIAL"] },
-    ...(branchId && { student: { branchId } }),
+    student: { schoolId, ...(branchId && { branchId }) },
   }
 
   const defaulters = await prisma.feeInvoice.findMany({
@@ -256,10 +253,14 @@ export async function getClassStrengthReport(schoolId: string, branchId?: string
     include: {
       sections: {
         include: {
-          enrollments: {
-            where: {
-              status: "ACTIVE",
-              ...(academicSessionId && { academicSessionId }),
+          _count: {
+            select: {
+              enrollments: {
+                where: {
+                  status: "ACTIVE",
+                  ...(academicSessionId && { academicSessionId }),
+                },
+              },
             },
           },
         },
@@ -272,9 +273,9 @@ export async function getClassStrengthReport(schoolId: string, branchId?: string
     className: c.name,
     sections: c.sections.map((s) => ({
       sectionName: s.name,
-      studentCount: s.enrollments.length,
+      studentCount: s._count.enrollments,
     })),
-    totalStudents: c.sections.reduce((sum, s) => sum + s.enrollments.length, 0),
+    totalStudents: c.sections.reduce((sum, s) => sum + s._count.enrollments, 0),
   }))
 }
 

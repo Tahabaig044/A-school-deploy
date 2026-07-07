@@ -8,6 +8,13 @@ import {
   MessageSquare,
   FileText,
   Users,
+  ClipboardList,
+  Bell,
+  UserCheck,
+  User,
+  Table,
+  Award,
+  BookMarked,
   type LucideIcon,
 } from "lucide-react"
 import type { Role } from "@/lib/constants"
@@ -34,9 +41,9 @@ export const portalMenuItems: PortalMenuItem[] = [
     roles: ["STUDENT"],
   },
   {
-    title: "My Exams",
-    href: "/portal/student/exams",
-    icon: FileText,
+    title: "My Results",
+    href: "/portal/student/results",
+    icon: Award,
     roles: ["STUDENT"],
   },
   {
@@ -52,9 +59,27 @@ export const portalMenuItems: PortalMenuItem[] = [
     roles: ["STUDENT"],
   },
   {
+    title: "Timetable",
+    href: "/portal/student/timetable",
+    icon: Table,
+    roles: ["STUDENT"],
+  },
+  {
+    title: "Leave Requests",
+    href: "/portal/student/leave-requests",
+    icon: UserCheck,
+    roles: ["STUDENT"],
+  },
+  {
     title: "Messages",
     href: "/portal/student/messages",
     icon: MessageSquare,
+    roles: ["STUDENT"],
+  },
+  {
+    title: "Profile",
+    href: "/portal/student/profile",
+    icon: User,
     roles: ["STUDENT"],
   },
 
@@ -72,21 +97,45 @@ export const portalMenuItems: PortalMenuItem[] = [
     roles: ["PARENT"],
   },
   {
+    title: "Attendance",
+    href: "/portal/parent/attendance",
+    icon: ClipboardCheck,
+    roles: ["PARENT"],
+  },
+  {
     title: "Fee Status",
     href: "/portal/parent/fees",
     icon: DollarSign,
     roles: ["PARENT"],
   },
   {
-    title: "Announcements",
-    href: "/portal/parent/announcements",
-    icon: FileText,
+    title: "Results",
+    href: "/portal/parent/results",
+    icon: GraduationCap,
     roles: ["PARENT"],
   },
   {
-    title: "Messages",
-    href: "/portal/parent/messages",
-    icon: MessageSquare,
+    title: "Homework",
+    href: "/portal/parent/homework",
+    icon: CalendarClock,
+    roles: ["PARENT"],
+  },
+  {
+    title: "Notices",
+    href: "/portal/parent/notices",
+    icon: Bell,
+    roles: ["PARENT"],
+  },
+  {
+    title: "Leave Requests",
+    href: "/portal/parent/leave-requests",
+    icon: UserCheck,
+    roles: ["PARENT"],
+  },
+  {
+    title: "Profile",
+    href: "/portal/parent/profile",
+    icon: User,
     roles: ["PARENT"],
   },
 
@@ -104,9 +153,15 @@ export const portalMenuItems: PortalMenuItem[] = [
     roles: ["TEACHER"],
   },
   {
-    title: "Mark Attendance",
+    title: "Attendance",
     href: "/portal/teacher/attendance",
     icon: ClipboardCheck,
+    roles: ["TEACHER"],
+  },
+  {
+    title: "Marks",
+    href: "/portal/teacher/marks",
+    icon: Award,
     roles: ["TEACHER"],
   },
   {
@@ -116,15 +171,21 @@ export const portalMenuItems: PortalMenuItem[] = [
     roles: ["TEACHER"],
   },
   {
-    title: "My Students",
-    href: "/portal/teacher/students",
-    icon: Users,
+    title: "Timetable",
+    href: "/portal/teacher/timetable",
+    icon: Table,
     roles: ["TEACHER"],
   },
   {
-    title: "Messages",
-    href: "/portal/teacher/messages",
-    icon: MessageSquare,
+    title: "Leave Requests",
+    href: "/portal/teacher/leave-requests",
+    icon: UserCheck,
+    roles: ["TEACHER"],
+  },
+  {
+    title: "Profile",
+    href: "/portal/teacher/profile",
+    icon: User,
     roles: ["TEACHER"],
   },
 ]

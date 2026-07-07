@@ -8,6 +8,64 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased] - 2026-07-06
 
+### Student Admission System (Loop 8)
+- **prisma/schema.prisma** — Added `AdmissionStatus` enum (PENDING, UNDER_REVIEW, APPROVED, REJECTED, WAITLISTED), `Admission` model (admission number, student details, previous school, applied class/session, financial info, status tracking), `AdmissionDocument` model, `AdmissionGuardian` model; added `reviewedBy` Profile relation; added admission relations to School, Branch, AcademicSession, Class, Student models
+- **actions/admission.actions.ts** — Full admission workflow: createAdmission, updateAdmission, deleteAdmission, reviewAdmission, approveAndEnroll (creates Student + StudentEnrollment + Parent + StudentParent from approved admission), getAdmissions (search, filter, paginate), getAdmissionById, addGuardian, deleteGuardian, uploadAdmissionDocument, deleteAdmissionDocument, getAdmissionStats (status counts), getAdmissionsByClass, getAdmissionsByMonth; admission number format: `ADM-YYYY-NNNNN`
+- **app/(dashboard)/dashboard/admissions/page.tsx** — Admission list server component
+- **app/(dashboard)/dashboard/admissions/admission-list.tsx** — Client component with search, status filter, pagination
+- **app/(dashboard)/dashboard/admissions/new/page.tsx** — New admission page
+- **app/(dashboard)/dashboard/admissions/new/admission-form.tsx** — Multi-section form: student info, contact details, admission details, financial info, additional notes
+- **app/(dashboard)/dashboard/admissions/[id]/page.tsx** — Admission detail server component
+- **app/(dashboard)/dashboard/admissions/[id]/admission-detail.tsx** — Detail view with tabs (details, guardians, documents), review actions, approve/enroll workflow
+- **app/(dashboard)/dashboard/reports/admissions/page.tsx** — Admission reports: stats cards, status breakdown, by class, monthly trend charts
+- **lib/menu-items.ts** — Added Admissions menu item with UserPlus2 icon
+- **components/ui/textarea.tsx** — Created textarea component
+- **components/ui/alert-dialog.tsx** — Created alert dialog component
+
+### Announcements Enhancement (Loop 12)
+- **prisma/schema.prisma** — Added `AnnouncementAttachment` model (fileName, fileUrl, fileSize, fileType), `AnnouncementRead` model (announcementId, profileId, readAt with unique constraint), `scheduledAt` field to Announcement, `sectionId` field to Announcement, `class` and `section` relations to Announcement, `announcementReads` relation to Profile, `attachments` and `reads` relations to Announcement
+- **actions/announcement.actions.ts** — Enhanced with: updated audience enum (ALL, SCHOOL, BRANCH, CLASS, SECTION, TEACHERS, STUDENTS, PARENTS), scheduled publishing support (scheduledAt field, publishScheduledAnnouncements function), read tracking (markAnnouncementAsRead, getAnnouncementReadStats), attachment management (addAnnouncementAttachment, deleteAnnouncementAttachment), getAnnouncementsForUser (role-based audience filtering with read status)
+- **app/(dashboard)/dashboard/announcements/announcement-list.tsx** — Enhanced: view detail dialog with full content, attachments display, read status, audience/class/section info, schedule publish field, section field, attachment column, improved form with section support
+
+### Student Portal (Loop 11)
+- **actions/student-portal.actions.ts** — Student-specific server actions: getStudentAttendance (month-filtered), getStudentFees (invoices + payments + summary), getStudentResults (exam results by session), getStudentHomework (class-scoped with submissions), getStudentTimetable (weekly schedule), getStudentReportCards, getStudentLeaveRequests, createStudentLeaveRequest, getStudentProfile, getStudentMessages; all actions verify student email linkage
+- **app/portal/student/page.tsx** — Enhanced dashboard: welcome header with class/section, stat cards (attendance, exams, fees, homework, messages)
+- **app/portal/student/attendance/page.tsx** — Attendance view: month navigation, stats cards (total/present/absent/late/leave with percentages), attendance records table
+- **app/portal/student/fees/page.tsx** — Fee status: summary cards (total due/paid/count), invoice list with expandable items and payment history
+- **app/portal/student/results/page.tsx** — Exam results: summary stats (total exams, pass rate, average %), results grouped by exam type with marks/grades
+- **app/portal/student/homework/page.tsx** — Homework list: subject, teacher, due date, submission status badges, overdue highlighting, graded feedback
+- **app/portal/student/timetable/page.tsx** — Weekly timetable: grouped by day (MON-SAT), time/subject/teacher/room per slot
+- **app/portal/student/leave-requests/page.tsx** — Leave requests: create form (type/dates/reason), history with status badges
+- **app/portal/student/messages/page.tsx** — Messages: inbox with unread highlighting, sender info, content preview
+- **app/portal/student/profile/page.tsx** — Profile: personal details, enrollment info, contact info, address
+- **lib/portal-menu-items.ts** — Updated student menu: 9 items (Dashboard, My Attendance, My Results, My Fees, Homework, Timetable, Leave Requests, Messages, Profile)
+
+### Teacher Portal (Loop 10)
+- **actions/teacher-portal.actions.ts** — Teacher-specific server actions: getTeacherClasses (assignments with class/section/subject), getTeacherStudents (by class), getTeacherTimetable (weekly schedule), getTeacherHomework (with submission counts), getTeacherExamResults (by session), getTeacherLeaveRequests, createTeacherLeaveRequest, getTeacherProfile, updateTeacherProfile; all actions verify teacher profileId linkage
+- **app/portal/teacher/page.tsx** — Enhanced dashboard: welcome header, stat cards (classes, students, homework, messages, leave requests)
+- **app/portal/teacher/classes/page.tsx** — Assigned classes: grouped by class name, shows subjects and sections per class
+- **app/portal/teacher/attendance/page.tsx** — Mark attendance: class selector, student list with status dropdowns (PRESENT/ABSENT/LATE/LEAVE), bulk submit
+- **app/portal/teacher/attendance/attendance-form.tsx** — Client component for attendance form with useFormState and bulkMarkAttendance
+- **app/portal/teacher/marks/page.tsx** — Exam results: grouped by exam, shows student marks/grades/pass-fail with summary stats
+- **app/portal/teacher/homework/page.tsx** — Homework list: title, subject, class/section, due date, submission count, overdue highlighting
+- **app/portal/teacher/timetable/page.tsx** — Weekly timetable: grouped by day (MON-SAT), shows time/subject/class/room per slot
+- **app/portal/teacher/leave-requests/page.tsx** — Leave requests: create form (type/dates/reason), history with status badges
+- **app/portal/teacher/profile/page.tsx** — Profile: info card (email, role, employee code, specialization, qualification) and edit form
+- **lib/portal-menu-items.ts** — Updated teacher menu: Dashboard, My Classes, Attendance, Marks, Homework, Timetable, Leave Requests, Profile
+
+### Parent Portal (Loop 9)
+- **actions/parent-portal.actions.ts** — Parent-specific server actions: getParentChildren (with full enrollment, attendance, fees, results, homework data), getChildAttendance (month-filtered), getChildFees (invoices + payments + summary), getChildResults (exam results by session), getChildHomework (class-scoped with submissions), getParentAnnouncements, getParentLeaveRequests, createParentLeaveRequest, getParentProfile, updateParentProfile; all actions verify parent email match and student-parent linkage
+- **app/portal/parent/page.tsx** — Enhanced parent dashboard: welcome header, stat cards (children, pending fees, announcements, messages), children list with class/section and quick links
+- **app/portal/parent/children/page.tsx** — Children overview: card grid with name, admission number, class/section, enrollment status, gender; links to attendance, fees, results per child
+- **app/portal/parent/attendance/page.tsx** — Attendance view: child selector, month navigation, stats cards (total/present/absent/late/leave with percentages), attendance records table with date, status badge, class, remarks
+- **app/portal/parent/fees/page.tsx** — Fee status: child selector, summary cards (total due/paid/invoices), invoice list with collapsible details showing items and payment history, status badges
+- **app/portal/parent/results/page.tsx** — Exam results: child selector, summary stats (total exams, pass rate, passed, average %), results grouped by exam type with marks, grade, pass/fail indicators
+- **app/portal/parent/homework/page.tsx** — Homework: child selector, homework list with subject, teacher, due date, submission status, marks, overdue highlighting, feedback display
+- **app/portal/parent/notices/page.tsx** — Notices/announcements: published announcements with title, audience, content preview, author, date
+- **app/portal/parent/leave-requests/page.tsx** — Leave requests: create form (type, dates, reason), request history with status badges (PENDING/APPROVED/REJECTED)
+- **app/portal/parent/profile/page.tsx** — Profile: email, role, member since info; edit form for firstName, lastName, phone with success/error feedback
+- **lib/portal-menu-items.ts** — Updated parent menu: Dashboard, My Children, Attendance, Fee Status, Results, Homework, Notices, Leave Requests, Profile
+
 ### Input Validation & Error Handling (Loop 7)
 - **package.json** — Fixed Vercel build: added `prisma generate` before `next build` in build script
 - **9 action files** — Added Zod schemas to student, teacher, class, fees, staff, subject, branch, session, expenses actions — validates required fields, types, enums, email format, UUID format before database operations

@@ -1,27 +1,15 @@
-import { createClient } from "@/lib/supabase/server"
-import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { headers } from "next/headers"
 
 export default async function PortalPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const headerStore = await headers()
+  const userRole = headerStore.get("X-User-Role")
 
-  if (!user) {
+  if (!userRole) {
     redirect("/login")
   }
 
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-  })
-
-  if (!profile) {
-    redirect("/login")
-  }
-
-  // Redirect to role-specific portal
-  switch (profile.role) {
+  switch (userRole) {
     case "STUDENT":
       redirect("/portal/student")
     case "PARENT":

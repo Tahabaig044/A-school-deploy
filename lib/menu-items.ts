@@ -20,6 +20,7 @@ import {
   Bus,
   Megaphone,
   FileText,
+  UserPlus2,
   type LucideIcon,
 } from "lucide-react"
 import type { Permission } from "@/lib/permissions"
@@ -54,6 +55,12 @@ export const menuItems: MenuItem[] = [
     title: "Students",
     href: "/dashboard/students",
     icon: Users,
+    permission: "students.view",
+  },
+  {
+    title: "Admissions",
+    href: "/dashboard/admissions",
+    icon: UserPlus2,
     permission: "students.view",
   },
   {

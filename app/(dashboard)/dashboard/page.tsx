@@ -1,43 +1,29 @@
-import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import { getDashboardStats } from "@/actions/reports.actions"
 import { DashboardCards } from "./dashboard-cards"
+import { requireRole } from "@/lib/auth"
+import { Suspense } from "react"
+import { PageSkeleton } from "@/components/shared/loading-skeleton"
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect("/login")
-  }
-
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-  })
-
-  if (!profile) {
-    redirect("/login")
-  }
+  const { profile } = await requireRole(
+    "SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT",
+    "PRINCIPAL", "ACCOUNTANT", "ADMISSION_OFFICER", "LIBRARIAN", "TRANSPORT_MANAGER"
+  )
 
   const cookieStore = await cookies()
   const selectedBranch = cookieStore.get("selected_branch")?.value
 
-  const branch = selectedBranch
-    ? await prisma.branch.findUnique({ where: { id: selectedBranch } })
-    : null
-
-  let stats
-  try {
-    stats = await getDashboardStats(
+  const [branch, statsResult] = await Promise.all([
+    selectedBranch
+      ? prisma.branch.findUnique({ where: { id: selectedBranch }, select: { name: true } })
+      : Promise.resolve(null),
+    getDashboardStats(
       profile.schoolId || undefined,
       selectedBranch || profile.branchId || undefined
-    )
-  } catch {
-    stats = {
+    ).catch(() => ({
       totalStudents: 0,
       totalTeachers: 0,
       todayAttendance: 0,
@@ -46,16 +32,18 @@ export default async function DashboardPage() {
       newAdmissions: 0,
       pendingLeaveRequests: 0,
       upcomingExams: 0,
-    }
-  }
+    })),
+  ])
 
   return (
     <div className="space-y-6">
-      <DashboardCards
-        stats={stats}
-        profile={JSON.parse(JSON.stringify(profile))}
-        branchName={branch?.name}
-      />
+      <Suspense fallback={<PageSkeleton />}>
+        <DashboardCards
+          stats={statsResult}
+          profile={profile}
+          branchName={branch?.name}
+        />
+      </Suspense>
     </div>
   )
 }

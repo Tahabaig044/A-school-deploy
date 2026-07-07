@@ -3,7 +3,6 @@ import { updateSession } from "@/lib/supabase/middleware"
 
 const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/setup-password"]
 
-// Role-based route access: maps route prefixes to allowed roles
 const roleRouteMap: Record<string, string[]> = {
   "/dashboard/schools": ["SUPER_ADMIN"],
   "/dashboard/branches": ["SUPER_ADMIN", "SCHOOL_ADMIN"],
@@ -28,7 +27,6 @@ const roleRouteMap: Record<string, string[]> = {
   "/dashboard/settings": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"],
 }
 
-// Portal routes: only STUDENT, PARENT, TEACHER
 const portalAllowedRoles = ["STUDENT", "PARENT", "TEACHER"]
 
 export async function proxy(request: NextRequest) {
@@ -78,22 +76,19 @@ export async function proxy(request: NextRequest) {
     return Response.redirect(url)
   }
 
-  // Role-based route protection
   const { prisma } = await import("@/lib/prisma")
   const profile = await prisma.profile.findUnique({
     where: { id: user.id },
-    select: { role: true },
+    select: { role: true, schoolId: true, branchId: true },
   })
 
   if (profile) {
-    // Portal route protection
     if (pathname.startsWith("/portal") && !portalAllowedRoles.includes(profile.role)) {
       const url = request.nextUrl.clone()
       url.pathname = "/dashboard"
       return Response.redirect(url)
     }
 
-    // Dashboard route protection by role
     for (const [route, allowedRoles] of Object.entries(roleRouteMap)) {
       if (pathname.startsWith(route) && !allowedRoles.includes(profile.role)) {
         const url = request.nextUrl.clone()
@@ -101,9 +96,14 @@ export async function proxy(request: NextRequest) {
         return Response.redirect(url)
       }
     }
+
+    supabaseResponse.headers.set("X-User-Id", user.id)
+    supabaseResponse.headers.set("X-User-Role", profile.role)
+    supabaseResponse.headers.set("X-User-SchoolId", profile.schoolId || "")
+    supabaseResponse.headers.set("X-User-BranchId", profile.branchId || "")
+    supabaseResponse.headers.set("X-User-Email", user.email || "")
   }
 
-  // Security headers
   supabaseResponse.headers.set("X-Frame-Options", "DENY")
   supabaseResponse.headers.set("X-Content-Type-Options", "nosniff")
   supabaseResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
