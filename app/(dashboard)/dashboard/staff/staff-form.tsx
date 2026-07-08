@@ -17,7 +17,7 @@ export function StaffForm() {
       </CardHeader>
       <CardContent>
         <form action={formAction} className="grid gap-4 max-w-lg">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="firstName">First Name *</Label>
               <Input id="firstName" name="firstName" required />
@@ -31,7 +31,7 @@ export function StaffForm() {
             <Label htmlFor="employeeCode">Employee Code *</Label>
             <Input id="employeeCode" name="employeeCode" required />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="department">Department *</Label>
               <Input id="department" name="department" placeholder="e.g. Admin, Accounts, Transport" required />
@@ -41,7 +41,7 @@ export function StaffForm() {
               <Input id="designation" name="designation" required />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="phone">Phone</Label>
               <Input id="phone" name="phone" type="tel" />

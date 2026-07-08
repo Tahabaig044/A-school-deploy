@@ -16,14 +16,14 @@ export default async function StudentProfilePage() {
         <p className="text-muted-foreground">View your personal and enrollment details</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-1 sm:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center gap-2">
             <User className="h-5 w-5 text-muted-foreground" />
             <CardTitle>Personal Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Full Name</p>
                 <p className="font-medium">{student.firstName} {student.lastName}</p>
@@ -70,7 +70,7 @@ export default async function StudentProfilePage() {
             <CardTitle>Enrollment Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Class</p>
                 <p className="font-medium">{enrollment?.class?.name || "N/A"}</p>
@@ -97,7 +97,7 @@ export default async function StudentProfilePage() {
             <CardTitle>Contact Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Phone</p>
                 <p className="font-medium">{student.phone || "N/A"}</p>
@@ -116,7 +116,7 @@ export default async function StudentProfilePage() {
             <CardTitle>Address</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="col-span-2">
                 <p className="text-muted-foreground">Street Address</p>
                 <p className="font-medium">{student.address || "N/A"}</p>

@@ -117,10 +117,10 @@ export function UsersList({ users }: { users: User[] }) {
               <thead>
                 <tr className="border-b">
                   <th className="text-left p-2 font-medium">Name</th>
-                  <th className="text-left p-2 font-medium">Email</th>
+                  <th className="text-left p-2 font-medium hidden md:table-cell">Email</th>
                   <th className="text-left p-2 font-medium">Role</th>
                   <th className="text-left p-2 font-medium">Status</th>
-                  <th className="text-left p-2 font-medium">Joined</th>
+                  <th className="text-left p-2 font-medium hidden lg:table-cell">Joined</th>
                   <th className="text-right p-2 font-medium">Actions</th>
                 </tr>
               </thead>
@@ -130,10 +130,10 @@ export function UsersList({ users }: { users: User[] }) {
                     <td className="p-2">
                       {user.firstName} {user.lastName}
                     </td>
-                    <td className="p-2 text-muted-foreground">{user.email || "—"}</td>
+                    <td className="p-2 text-muted-foreground hidden md:table-cell">{user.email || "—"}</td>
                     <td className="p-2">{getRoleBadge(user.role)}</td>
                     <td className="p-2">{getStatusBadge(user.status)}</td>
-                    <td className="p-2 text-muted-foreground">
+                    <td className="p-2 text-muted-foreground hidden lg:table-cell">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                     <td className="p-2 text-right">

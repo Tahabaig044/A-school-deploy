@@ -55,7 +55,7 @@ export function ConflictPanel({ academicSessionId }: { academicSessionId: string
                       </Badge>
                       <span className="font-medium text-sm">{c.message}</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-muted-foreground">
                       <div>
                         <p className="font-medium text-foreground">{c.slotA.subject.name}</p>
                         <p>{DAY_LABELS[c.slotA.dayOfWeek]} {c.slotA.startTime}-{c.slotA.endTime}</p>

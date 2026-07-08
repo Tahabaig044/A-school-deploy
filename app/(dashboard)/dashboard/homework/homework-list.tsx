@@ -81,7 +81,7 @@ export function HomeworkList({
             </DialogHeader>
             <form action={handleSubmit} className="space-y-4">
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="title">Title</Label>
                   <Input id="title" name="title" defaultValue={editItem?.title || ""} required />

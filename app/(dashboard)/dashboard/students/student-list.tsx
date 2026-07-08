@@ -98,7 +98,7 @@ export function StudentList({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <CardTitle>All Students ({total})</CardTitle>
           <Link href="/dashboard/students/new">
             <Button>
@@ -164,72 +164,74 @@ export function StudentList({
             No students found.
           </p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Admission No</TableHead>
-                <TableHead>Class/Section</TableHead>
-                <TableHead>Session</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {students.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell className="font-medium">
-                    <Link
-                      href={`/dashboard/students/${student.id}`}
-                      className="hover:underline"
-                    >
-                      {student.firstName} {student.lastName}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{student.admissionNo || "-"}</TableCell>
-                  <TableCell>
-                    {student.enrollments[0]
-                      ? `${student.enrollments[0].class.name}${student.enrollments[0].section ? ` - ${student.enrollments[0].section.name}` : ""}`
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {student.enrollments[0]?.academicSession.name || "-"}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        student.status === "ACTIVE"
-                          ? "bg-green-100 text-green-800"
-                          : student.status === "TRANSFERRED"
-                            ? "bg-blue-100 text-blue-800"
-                            : student.status === "WITHDRAWN"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {student.status.charAt(0) + student.status.slice(1).toLowerCase()}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Link href={`/dashboard/students/${student.id}/edit`}>
-                        <Button variant="ghost" size="icon">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(student.id, `${student.firstName} ${student.lastName}`)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="hidden md:table-cell">Admission No</TableHead>
+                  <TableHead>Class/Section</TableHead>
+                  <TableHead className="hidden lg:table-cell">Session</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {students.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell className="font-medium">
+                      <Link
+                        href={`/dashboard/students/${student.id}`}
+                        className="hover:underline"
+                      >
+                        {student.firstName} {student.lastName}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{student.admissionNo || "-"}</TableCell>
+                    <TableCell>
+                      {student.enrollments[0]
+                        ? `${student.enrollments[0].class.name}${student.enrollments[0].section ? ` - ${student.enrollments[0].section.name}` : ""}`
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {student.enrollments[0]?.academicSession.name || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          student.status === "ACTIVE"
+                            ? "bg-green-100 text-green-800"
+                            : student.status === "TRANSFERRED"
+                              ? "bg-blue-100 text-blue-800"
+                              : student.status === "WITHDRAWN"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {student.status.charAt(0) + student.status.slice(1).toLowerCase()}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Link href={`/dashboard/students/${student.id}/edit`}>
+                          <Button variant="ghost" size="icon">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(student.id, `${student.firstName} ${student.lastName}`)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
 
         {totalPages > 1 && (

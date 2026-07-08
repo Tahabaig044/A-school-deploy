@@ -41,7 +41,7 @@ export function AttendanceReportView({
           <CardTitle>Filter by Date Range</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 items-end">
+          <div className="flex flex-wrap gap-4 items-end">
             <div>
               <Label htmlFor="fromDate">From Date</Label>
               <Input
@@ -65,7 +65,7 @@ export function AttendanceReportView({
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Total Present</CardTitle>
@@ -117,7 +117,7 @@ export function AttendanceReportView({
           <CardTitle>Daily Attendance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="border rounded-lg overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b bg-muted/50">

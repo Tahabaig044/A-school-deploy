@@ -50,13 +50,11 @@ export default async function PortalLayout({
   try {
     return (
       <div className="flex min-h-full">
-        <PortalMobileSidebar role={role} />
         <PortalSidebar role={role} />
         <div className="flex flex-1 flex-col">
           <header className="sticky top-0 z-10 border-b bg-background">
             <div className="flex h-16 items-center justify-between px-6">
-              <div className="md:hidden" />
-              <div className="hidden md:block" />
+              <PortalMobileSidebar role={role} />
               <div className="flex items-center gap-4">
                 <NotificationsDropdown />
                 <UserDropdown

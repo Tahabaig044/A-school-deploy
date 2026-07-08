@@ -101,7 +101,7 @@ export function PaymentView({
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Total Amount</p>
                     <p className="text-lg font-bold">${Number(invoice.totalAmount).toFixed(2)}</p>
@@ -125,52 +125,56 @@ export function PaymentView({
                 {invoice.items?.length > 0 && (
                   <div>
                     <p className="text-sm font-medium mb-2">Invoice Items</p>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Fee Structure</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {invoice.items.map((item: any) => (
-                          <TableRow key={item.id}>
-                            <TableCell>{item.feeStructure.name}</TableCell>
-                            <TableCell className="text-right">${Number(item.amount).toFixed(2)}</TableCell>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Fee Structure</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {invoice.items.map((item: any) => (
+                            <TableRow key={item.id}>
+                              <TableCell>{item.feeStructure.name}</TableCell>
+                              <TableCell className="text-right">${Number(item.amount).toFixed(2)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                 )}
 
                 {invoice.payments?.length > 0 && (
                   <div>
                     <p className="text-sm font-medium mb-2">Payment History</p>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Receipt #</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Mode</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
-                          <TableHead>Reference</TableHead>
-                          <TableHead>Recorded By</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {invoice.payments.map((payment: any) => (
-                          <TableRow key={payment.id}>
-                            <TableCell className="font-mono text-xs">{payment.receiptNumber}</TableCell>
-                            <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
-                            <TableCell>{payment.paymentMode.replace(/_/g, " ")}</TableCell>
-                            <TableCell className="text-right font-medium">${Number(payment.amount).toFixed(2)}</TableCell>
-                            <TableCell>{payment.referenceNumber || "—"}</TableCell>
-                            <TableCell>{payment.recorder.firstName} {payment.recorder.lastName}</TableCell>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Receipt #</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Mode</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead>Reference</TableHead>
+                            <TableHead>Recorded By</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {invoice.payments.map((payment: any) => (
+                            <TableRow key={payment.id}>
+                              <TableCell className="font-mono text-xs">{payment.receiptNumber}</TableCell>
+                              <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
+                              <TableCell>{payment.paymentMode.replace(/_/g, " ")}</TableCell>
+                              <TableCell className="text-right font-medium">${Number(payment.amount).toFixed(2)}</TableCell>
+                              <TableCell>{payment.referenceNumber || "—"}</TableCell>
+                              <TableCell>{payment.recorder.firstName} {payment.recorder.lastName}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                 )}
 

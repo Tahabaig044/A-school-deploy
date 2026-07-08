@@ -35,7 +35,7 @@ export function CollectionReport({
         description="Daily collection summary"
       />
 
-      <form action={handleFilter} className="flex items-end gap-4">
+      <form action={handleFilter} className="flex flex-wrap items-end gap-4">
         <div>
           <label className="text-sm font-medium">From</label>
           <Input name="fromDate" type="date" defaultValue={fromDate} />
@@ -47,7 +47,7 @@ export function CollectionReport({
         <Button type="submit">Filter</Button>
       </form>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">Total Collected</p>
@@ -103,32 +103,34 @@ export function CollectionReport({
           {payments.length === 0 ? (
             <p className="text-center text-muted-foreground py-4">No payments found.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Receipt #</TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Mode</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Recorded By</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {payments.map((payment: any) => (
-                  <TableRow key={payment.id}>
-                    <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
-                    <TableCell className="font-mono text-xs">{payment.receiptNumber}</TableCell>
-                    <TableCell>
-                      {payment.invoice.student.firstName} {payment.invoice.student.lastName}
-                    </TableCell>
-                    <TableCell>{payment.paymentMode.replace(/_/g, " ")}</TableCell>
-                    <TableCell className="text-right font-medium">${Number(payment.amount).toFixed(2)}</TableCell>
-                    <TableCell>{payment.recorder.firstName} {payment.recorder.lastName}</TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="hidden md:table-cell">Receipt #</TableHead>
+                    <TableHead>Student</TableHead>
+                    <TableHead className="hidden md:table-cell">Mode</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="hidden lg:table-cell">Recorded By</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {payments.map((payment: any) => (
+                    <TableRow key={payment.id}>
+                      <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
+                      <TableCell className="hidden md:table-cell font-mono text-xs">{payment.receiptNumber}</TableCell>
+                      <TableCell>
+                        {payment.invoice.student.firstName} {payment.invoice.student.lastName}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">{payment.paymentMode.replace(/_/g, " ")}</TableCell>
+                      <TableCell className="text-right font-medium">${Number(payment.amount).toFixed(2)}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{payment.recorder.firstName} {payment.recorder.lastName}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

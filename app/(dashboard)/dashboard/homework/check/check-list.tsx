@@ -49,7 +49,7 @@ export function CheckList({
             <CardTitle>{homework.title}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div><span className="font-medium">Class:</span> {homework.class?.name}</div>
               <div><span className="font-medium">Subject:</span> {homework.subject?.name}</div>
               <div><span className="font-medium">Due Date:</span> {new Date(homework.dueDate).toLocaleDateString()}</div>
@@ -59,16 +59,16 @@ export function CheckList({
         </Card>
       )}
 
-      <div className="border rounded-lg">
+      <div className="border rounded-lg overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b bg-muted/50">
               <th className="p-3 text-left">Admission No</th>
               <th className="p-3 text-left">Student Name</th>
-              <th className="p-3 text-left">Content</th>
-              <th className="p-3 text-left">Submitted At</th>
+              <th className="p-3 text-left hidden md:table-cell">Content</th>
+              <th className="p-3 text-left hidden md:table-cell">Submitted At</th>
               <th className="p-3 text-left">Marks</th>
-              <th className="p-3 text-left">Feedback</th>
+              <th className="p-3 text-left hidden lg:table-cell">Feedback</th>
               <th className="p-3 text-left">Action</th>
             </tr>
           </thead>
@@ -77,8 +77,8 @@ export function CheckList({
               <tr key={sub.id} className="border-b">
                 <td className="p-3">{sub.student?.admissionNo}</td>
                 <td className="p-3">{sub.student?.firstName} {sub.student?.lastName}</td>
-                <td className="p-3 max-w-xs truncate">{sub.content || "-"}</td>
-                <td className="p-3">{new Date(sub.submittedAt).toLocaleDateString()}</td>
+                <td className="p-3 max-w-xs truncate hidden md:table-cell">{sub.content || "-"}</td>
+                <td className="p-3 hidden md:table-cell">{new Date(sub.submittedAt).toLocaleDateString()}</td>
                 <td className="p-3">
                   {sub.status === "GRADED" ? (
                     <Badge>{sub.marksObtained}</Badge>
@@ -93,7 +93,7 @@ export function CheckList({
                     />
                   )}
                 </td>
-                <td className="p-3">
+                <td className="p-3 hidden lg:table-cell">
                   {sub.status === "GRADED" ? (
                     <span className="text-sm">{sub.feedback || "-"}</span>
                   ) : (

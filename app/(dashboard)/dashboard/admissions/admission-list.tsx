@@ -96,7 +96,7 @@ export function AdmissionList({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Admissions</h1>
           <p className="text-muted-foreground">
@@ -111,8 +111,8 @@ export function AdmissionList({
         </Link>
       </div>
 
-      <div className="flex gap-4">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-wrap gap-4">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by name, admission no, or email..."
@@ -144,18 +144,18 @@ export function AdmissionList({
         </Select>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Admission No</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Class</TableHead>
-              <TableHead>Session</TableHead>
+              <TableHead className="hidden md:table-cell">Session</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Documents</TableHead>
-              <TableHead>Guardians</TableHead>
-              <TableHead>Applied</TableHead>
+              <TableHead className="hidden lg:table-cell">Documents</TableHead>
+              <TableHead className="hidden lg:table-cell">Guardians</TableHead>
+              <TableHead className="hidden md:table-cell">Applied</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -176,15 +176,15 @@ export function AdmissionList({
                     {admission.firstName} {admission.lastName}
                   </TableCell>
                   <TableCell>{admission.appliedClass.name}</TableCell>
-                  <TableCell>{admission.academicSession.name}</TableCell>
+                  <TableCell className="hidden md:table-cell">{admission.academicSession.name}</TableCell>
                   <TableCell>
                     <Badge className={statusColors[admission.status] || ""}>
                       {admission.status.replace("_", " ")}
                     </Badge>
                   </TableCell>
-                  <TableCell>{admission._count.documents}</TableCell>
-                  <TableCell>{admission._count.guardians}</TableCell>
-                  <TableCell>
+                  <TableCell className="hidden lg:table-cell">{admission._count.documents}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{admission._count.guardians}</TableCell>
+                  <TableCell className="hidden md:table-cell">
                     {new Date(admission.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell>

@@ -38,7 +38,7 @@ export function TimetableForm({
       </CardHeader>
       <CardContent>
         <form action={formAction} className="grid gap-4 max-w-md">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="classId">Class *</Label>
               <select id="classId" name="classId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required
@@ -59,7 +59,7 @@ export function TimetableForm({
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="subjectId">Subject *</Label>
               <select id="subjectId" name="subjectId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
@@ -88,7 +88,7 @@ export function TimetableForm({
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="startTime">Start Time *</Label>
               <Input id="startTime" name="startTime" placeholder="09:00" required />

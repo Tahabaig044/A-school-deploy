@@ -79,43 +79,45 @@ export function SchoolList({ schools }: { schools: School[] }) {
           <CardTitle>All Schools ({schools.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead>Address</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {schools.map((school) => (
-                <TableRow key={school.id}>
-                  <TableCell className="font-medium">{school.name}</TableCell>
-                  <TableCell>{school.code}</TableCell>
-                  <TableCell>{school.address || "-"}</TableCell>
-                  <TableCell>{school.phone || "-"}</TableCell>
-                  <TableCell>{school.email || "-"}</TableCell>
-                  <TableCell>
-                    {school.isActive ? "Active" : "Inactive"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditItem(school); setError(null) }}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(school.id, school.name)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="hidden md:table-cell">Code</TableHead>
+                  <TableHead className="hidden lg:table-cell">Address</TableHead>
+                  <TableHead className="hidden md:table-cell">Phone</TableHead>
+                  <TableHead className="hidden lg:table-cell">Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {schools.map((school) => (
+                  <TableRow key={school.id}>
+                    <TableCell className="font-medium">{school.name}</TableCell>
+                    <TableCell className="hidden md:table-cell">{school.code}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{school.address || "-"}</TableCell>
+                    <TableCell className="hidden md:table-cell">{school.phone || "-"}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{school.email || "-"}</TableCell>
+                    <TableCell>
+                      {school.isActive ? "Active" : "Inactive"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditItem(school); setError(null) }}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(school.id, school.name)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -138,7 +140,7 @@ export function SchoolList({ schools }: { schools: School[] }) {
               <Label htmlFor="edit-address">Address</Label>
               <Input id="edit-address" name="address" defaultValue={editItem?.address || ""} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-phone">Phone</Label>
                 <Input id="edit-phone" name="phone" defaultValue={editItem?.phone || ""} />

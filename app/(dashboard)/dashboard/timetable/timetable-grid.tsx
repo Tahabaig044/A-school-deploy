@@ -83,9 +83,9 @@ export function TimetableGrid({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <CardTitle>Timetable</CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Select value={currentClassId} onValueChange={handleClassFilter}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Select class" />
@@ -107,12 +107,12 @@ export function TimetableGrid({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-24">Day</TableHead>
-              <TableHead>Time</TableHead>
+              <TableHead className="w-20 md:w-24">Day</TableHead>
+              <TableHead className="hidden md:table-cell">Time</TableHead>
               <TableHead>Subject</TableHead>
-              <TableHead>Teacher</TableHead>
-              <TableHead>Room</TableHead>
-              <TableHead>Section</TableHead>
+              <TableHead className="hidden lg:table-cell">Teacher</TableHead>
+              <TableHead className="hidden lg:table-cell">Room</TableHead>
+              <TableHead className="hidden md:table-cell">Section</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -132,12 +132,12 @@ export function TimetableGrid({
                     <TableCell colSpan={6} className="p-0">
                       <div className="divide-y">
                         {daySlots.map((slot) => (
-                          <div key={slot.id} className="flex items-center gap-4 px-4 py-2 text-sm">
-                            <span className="w-24 font-medium">{slot.startTime} - {slot.endTime}</span>
-                            <span className="w-32">{slot.subject.name}</span>
-                            <span className="w-36">{slot.teacher.firstName} {slot.teacher.lastName}</span>
-                            <span className="w-20">{slot.room || "-"}</span>
-                            <span className="w-16">{slot.section?.name || "All"}</span>
+                          <div key={slot.id} className="flex flex-wrap items-center gap-2 px-4 py-2 text-sm md:gap-4">
+                            <span className="hidden md:inline md:w-24 font-medium">{slot.startTime} - {slot.endTime}</span>
+                            <span className="md:w-32">{slot.subject.name}</span>
+                            <span className="hidden lg:inline lg:w-36">{slot.teacher.firstName} {slot.teacher.lastName}</span>
+                            <span className="hidden lg:inline lg:w-20">{slot.room || "-"}</span>
+                            <span className="hidden md:inline md:w-16">{slot.section?.name || "All"}</span>
                             <form action={deleteTimetableSlot.bind(null, slot.id)}>
                               <Button variant="ghost" size="sm" type="submit" className="text-destructive">
                                 Remove

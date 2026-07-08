@@ -97,51 +97,53 @@ export function TeacherList({
           <CardTitle>All Teachers ({total})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Employee Code</TableHead>
-                <TableHead>School</TableHead>
-                <TableHead>Qualifications</TableHead>
-                <TableHead>Assignments</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {teachers.map((teacher) => (
-                <TableRow key={teacher.id}>
-                  <TableCell className="font-medium">
-                    {teacher.firstName} {teacher.lastName}
-                  </TableCell>
-                  <TableCell>{teacher.employeeCode}</TableCell>
-                  <TableCell>{teacher.school.name}</TableCell>
-                  <TableCell>
-                    {[teacher.qualification, teacher.specialization].filter(Boolean).join(", ") || "-"}
-                  </TableCell>
-                  <TableCell>{teacher.assignments.length}</TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      teacher.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                    }`}>
-                      {teacher.status.charAt(0) + teacher.status.slice(1).toLowerCase()}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditItem(teacher); setError(null) }}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(teacher.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="hidden md:table-cell">Employee Code</TableHead>
+                  <TableHead className="hidden lg:table-cell">School</TableHead>
+                  <TableHead className="hidden lg:table-cell">Qualifications</TableHead>
+                  <TableHead className="hidden md:table-cell">Assignments</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {teachers.map((teacher) => (
+                  <TableRow key={teacher.id}>
+                    <TableCell className="font-medium">
+                      {teacher.firstName} {teacher.lastName}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{teacher.employeeCode}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{teacher.school.name}</TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {[teacher.qualification, teacher.specialization].filter(Boolean).join(", ") || "-"}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{teacher.assignments.length}</TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        teacher.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                      }`}>
+                        {teacher.status.charAt(0) + teacher.status.slice(1).toLowerCase()}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditItem(teacher); setError(null) }}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(teacher.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -176,7 +178,7 @@ export function TeacherList({
           </DialogHeader>
           <form action={handleUpdate} className="space-y-4">
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-firstName">First Name</Label>
                 <Input id="edit-firstName" name="firstName" defaultValue={editItem?.firstName} required />
@@ -190,7 +192,7 @@ export function TeacherList({
               <Label htmlFor="edit-employeeCode">Employee Code</Label>
               <Input id="edit-employeeCode" name="employeeCode" defaultValue={editItem?.employeeCode} required />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-phone">Phone</Label>
                 <Input id="edit-phone" name="phone" type="tel" defaultValue={editItem?.phone || ""} />
@@ -200,7 +202,7 @@ export function TeacherList({
                 <Input id="edit-email" name="email" type="email" defaultValue={editItem?.email || ""} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-qualification">Qualification</Label>
                 <Input id="edit-qualification" name="qualification" defaultValue={editItem?.qualification || ""} />

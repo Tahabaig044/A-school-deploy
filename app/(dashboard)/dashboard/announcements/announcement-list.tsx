@@ -101,7 +101,7 @@ export function AnnouncementList({
                 <Label htmlFor="content">Content</Label>
                 <Textarea id="content" name="content" defaultValue={editItem?.content || ""} required rows={5} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="audience">Audience</Label>
                   <select name="audience" defaultValue={editItem?.audience || "ALL"} className="w-full border rounded p-2">
@@ -118,7 +118,7 @@ export function AnnouncementList({
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="classId">Class (optional)</Label>
                   <Input id="classId" name="classId" defaultValue={editItem?.classId || ""} placeholder="UUID" />

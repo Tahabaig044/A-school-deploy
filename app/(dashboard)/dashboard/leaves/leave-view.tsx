@@ -45,7 +45,7 @@ export function LeaveView({ leaves, isAdmin }: { leaves: LeaveItem[]; isAdmin: b
                 <option value="OTHER">Other</option>
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="startDate">Start Date *</Label>
                 <Input id="startDate" name="startDate" type="date" required />
@@ -76,59 +76,61 @@ export function LeaveView({ leaves, isAdmin }: { leaves: LeaveItem[]; isAdmin: b
           {leaves.length === 0 ? (
             <p className="text-sm text-muted-foreground">No leave requests.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Dates</TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead>Status</TableHead>
-                  {isAdmin && <TableHead>Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leaves.map((leave) => (
-                  <TableRow key={leave.id}>
-                    <TableCell className="font-medium">
-                      {leave.profile.firstName} {leave.profile.lastName}
-                      <span className="ml-1 text-xs text-muted-foreground">({leave.profile.role})</span>
-                    </TableCell>
-                    <TableCell className="capitalize">{leave.leaveType.toLowerCase()}</TableCell>
-                    <TableCell>
-                      {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="max-w-40 truncate">{leave.reason}</TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        leave.status === "APPROVED" ? "bg-green-100 text-green-800" :
-                        leave.status === "REJECTED" ? "bg-red-100 text-red-800" :
-                        "bg-yellow-100 text-yellow-800"
-                      }`}>
-                        {leave.status.charAt(0) + leave.status.slice(1).toLowerCase()}
-                      </span>
-                    </TableCell>
-                    {isAdmin && leave.status === "PENDING" && (
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <form action={approveLeave.bind(null, leave.id)}>
-                            <Button size="sm" variant="default">Approve</Button>
-                          </form>
-                          <form action={rejectLeave.bind(null, leave.id)}>
-                            <Button size="sm" variant="destructive">Reject</Button>
-                          </form>
-                        </div>
-                      </TableCell>
-                    )}
-                    {isAdmin && leave.status !== "PENDING" && (
-                      <TableCell className="text-xs text-muted-foreground">
-                        {leave.status === "APPROVED" ? "Approved" : "Rejected"}
-                      </TableCell>
-                    )}
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Employee</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead className="hidden md:table-cell">Dates</TableHead>
+                    <TableHead className="hidden lg:table-cell">Reason</TableHead>
+                    <TableHead>Status</TableHead>
+                    {isAdmin && <TableHead>Actions</TableHead>}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {leaves.map((leave) => (
+                    <TableRow key={leave.id}>
+                      <TableCell className="font-medium">
+                        {leave.profile.firstName} {leave.profile.lastName}
+                        <span className="ml-1 text-xs text-muted-foreground">({leave.profile.role})</span>
+                      </TableCell>
+                      <TableCell className="capitalize">{leave.leaveType.toLowerCase()}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell max-w-40 truncate">{leave.reason}</TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          leave.status === "APPROVED" ? "bg-green-100 text-green-800" :
+                          leave.status === "REJECTED" ? "bg-red-100 text-red-800" :
+                          "bg-yellow-100 text-yellow-800"
+                        }`}>
+                          {leave.status.charAt(0) + leave.status.slice(1).toLowerCase()}
+                        </span>
+                      </TableCell>
+                      {isAdmin && leave.status === "PENDING" && (
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <form action={approveLeave.bind(null, leave.id)}>
+                              <Button size="sm" variant="default">Approve</Button>
+                            </form>
+                            <form action={rejectLeave.bind(null, leave.id)}>
+                              <Button size="sm" variant="destructive">Reject</Button>
+                            </form>
+                          </div>
+                        </TableCell>
+                      )}
+                      {isAdmin && leave.status !== "PENDING" && (
+                        <TableCell className="text-xs text-muted-foreground">
+                          {leave.status === "APPROVED" ? "Approved" : "Rejected"}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -92,47 +92,49 @@ export function StaffList({
       <Card>
         <CardHeader><CardTitle>All Staff ({total})</CardTitle></CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Designation</TableHead>
-                <TableHead>School</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {staff.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell className="font-medium">{s.firstName} {s.lastName}</TableCell>
-                  <TableCell>{s.employeeCode}</TableCell>
-                  <TableCell>{s.department}</TableCell>
-                  <TableCell>{s.designation}</TableCell>
-                  <TableCell>{s.school.name}</TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      s.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                    }`}>
-                      {s.status.charAt(0) + s.status.slice(1).toLowerCase()}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditItem(s); setError(null) }}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="hidden md:table-cell">Code</TableHead>
+                  <TableHead className="hidden lg:table-cell">Department</TableHead>
+                  <TableHead className="hidden lg:table-cell">Designation</TableHead>
+                  <TableHead className="hidden md:table-cell">School</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {staff.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.firstName} {s.lastName}</TableCell>
+                    <TableCell className="hidden md:table-cell">{s.employeeCode}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{s.department}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{s.designation}</TableCell>
+                    <TableCell className="hidden md:table-cell">{s.school.name}</TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        s.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                      }`}>
+                        {s.status.charAt(0) + s.status.slice(1).toLowerCase()}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditItem(s); setError(null) }}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -167,7 +169,7 @@ export function StaffList({
           </DialogHeader>
           <form action={handleUpdate} className="space-y-4">
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-firstName">First Name</Label>
                 <Input id="edit-firstName" name="firstName" defaultValue={editItem?.firstName} required />
@@ -181,7 +183,7 @@ export function StaffList({
               <Label htmlFor="edit-employeeCode">Employee Code</Label>
               <Input id="edit-employeeCode" name="employeeCode" defaultValue={editItem?.employeeCode} required />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-department">Department</Label>
                 <Input id="edit-department" name="department" defaultValue={editItem?.department} required />
@@ -191,7 +193,7 @@ export function StaffList({
                 <Input id="edit-designation" name="designation" defaultValue={editItem?.designation} required />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-phone">Phone</Label>
                 <Input id="edit-phone" name="phone" type="tel" defaultValue={editItem?.phone || ""} />
