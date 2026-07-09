@@ -82,7 +82,7 @@ export default async function DashboardLayout({
         <Sidebar permissions={permissions} />
         <div className="flex flex-1 flex-col">
           <header className="sticky top-0 z-10 border-b bg-background">
-            <div className="flex h-16 items-center justify-between px-6">
+            <div className="flex h-16 items-center justify-between px-3">
               <MobileSidebar permissions={permissions} />
               <div className="flex items-center gap-4">
                 <BranchSelector branches={branches} />
