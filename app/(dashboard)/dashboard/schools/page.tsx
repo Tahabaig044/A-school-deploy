@@ -3,12 +3,37 @@ import { requireRole } from "@/lib/auth"
 import { SchoolForm } from "./school-form"
 import { SchoolList } from "./school-list"
 
-export default async function SchoolsPage() {
-  await requireRole("SUPER_ADMIN")
+const PAGE_SIZE = 20
 
-  const schools = await prisma.school.findMany({
-    orderBy: { createdAt: "desc" },
-  })
+export default async function SchoolsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  await requireRole("SUPER_ADMIN")
+  const params = await searchParams
+  const page = Math.max(1, Number(params.page) || 1)
+  const skip = (page - 1) * PAGE_SIZE
+
+  const [schools, total] = await Promise.all([
+    prisma.school.findMany({
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        address: true,
+        phone: true,
+        email: true,
+        isActive: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: PAGE_SIZE,
+    }),
+    prisma.school.count(),
+  ])
+
+  const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
     <div className="grid gap-6">
@@ -17,7 +42,7 @@ export default async function SchoolsPage() {
         <p className="text-muted-foreground">Manage all schools in the system</p>
       </div>
       <SchoolForm />
-      <SchoolList schools={schools} />
+      <SchoolList schools={schools} total={total} page={page} totalPages={totalPages} />
     </div>
   )
 }
