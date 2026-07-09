@@ -29,7 +29,17 @@ type School = {
   isActive: boolean
 }
 
-export function SchoolList({ schools }: { schools: School[] }) {
+export function SchoolList({
+  schools,
+  total,
+  page,
+  totalPages,
+}: {
+  schools: School[]
+  total: number
+  page: number
+  totalPages: number
+}) {
   const router = useRouter()
   const { toast } = useToast()
   const [editItem, setEditItem] = useState<School | null>(null)
@@ -120,6 +130,30 @@ export function SchoolList({ schools }: { schools: School[] }) {
           </div>
         </CardContent>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => router.push(`/dashboard/schools?page=${page - 1}`)}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => router.push(`/dashboard/schools?page=${page + 1}`)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
         <DialogContent className="max-w-2xl">
