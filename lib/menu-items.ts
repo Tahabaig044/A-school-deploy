@@ -21,6 +21,9 @@ import {
   Megaphone,
   FileText,
   UserPlus2,
+  MessageSquare,
+  Bell,
+  Calendar,
   type LucideIcon,
 } from "lucide-react"
 import type { Permission } from "@/lib/permissions"
@@ -170,6 +173,36 @@ export const menuItems: MenuItem[] = [
     href: "/dashboard/announcements",
     icon: Megaphone,
     permission: "announcements.view",
+  },
+  {
+    title: "Messages",
+    href: "/dashboard/messages",
+    icon: MessageSquare,
+    permission: "messages.view",
+  },
+  {
+    title: "Notifications",
+    href: "/dashboard/notifications",
+    icon: Bell,
+    permission: "notifications.view",
+  },
+  {
+    title: "Meetings",
+    href: "/dashboard/meetings",
+    icon: CalendarClock,
+    permission: "meetings.view",
+  },
+  {
+    title: "Events",
+    href: "/dashboard/events",
+    icon: Megaphone,
+    permission: "events.view",
+  },
+  {
+    title: "Calendar",
+    href: "/dashboard/calendar",
+    icon: Calendar,
+    permission: "calendar.view",
   },
   {
     title: "Reports",

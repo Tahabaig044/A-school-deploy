@@ -19,7 +19,11 @@ export default async function NewStudentPage() {
     : { schoolId: profile.schoolId!, isCurrent: true as const }
 
   const [classes, sessions] = await Promise.all([
-    prisma.class.findMany({ where: classWhere, orderBy: { order: "asc" } }),
+    prisma.class.findMany({
+      where: classWhere,
+      orderBy: { order: "asc" },
+      include: { sections: { select: { id: true, name: true }, orderBy: { name: "asc" } } },
+    }),
     prisma.academicSession.findMany({ where: sessionWhere }),
   ])
 

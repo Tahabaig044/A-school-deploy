@@ -370,6 +370,94 @@ async function main() {
 
   console.log("Messages, notifications, audit logs created")
 
+  // ── Calendar Events (batch SQL) ──
+  const calEventTypes = ["HOLIDAY","EXAM","EVENT","MEETING","ACADEMIC_SESSION","OTHER"]
+  const calEventTitles = [
+    "Independence Day",
+    "Summer Break",
+    "Winter Vacation",
+    "Mid Term Exams",
+    "Final Exams",
+    "Science Fair",
+    "Sports Day",
+    "Annual Day",
+    "Staff Meeting",
+    "PTM",
+    "Diwali Break",
+    "Holiday - Eid",
+  ]
+  const ceVals: string[] = []
+  for (let i = 0; i < 15; i++) {
+    const start = fromNow(-5 + i * 7)
+    const end = fromNow(-3 + i * 7)
+    ceVals.push(`('${u()}','${school.id}','${b1.id}','${calEventTitles[i % calEventTitles.length].replace(/'/g,"''")}','Description for ${calEventTitles[i % calEventTitles.length]}','${calEventTypes[i % calEventTypes.length]}','${start.toISOString().split("T")[0]}','${end.toISOString().split("T")[0]}',true,NULL,NULL,NULL,NULL,'${ADMIN_ID}',NOW(),NOW())`)
+  }
+  if (ceVals.length) await prisma.$executeRawUnsafe(`INSERT INTO calendar_events (id,school_id,branch_id,title,description,event_type,start_date,end_date,is_all_day,start_time,end_time,color,academic_session_id,created_by_id,created_at,updated_at) VALUES ${ceVals.join(",")}`)
+  console.log(`Calendar events: ${ceVals.length}`)
+
+  // ── Meetings (batch SQL) ──
+  const meetingTypes = ["PARENT_TEACHER","STAFF","DEPARTMENT"]
+  const meetingStatuses = ["SCHEDULED","CONFIRMED","COMPLETED","CANCELLED"]
+  const meetingVals: string[] = []
+  const meetingIds: string[] = []
+  for (let i = 0; i < 8; i++) {
+    const mid = u(); meetingIds.push(mid)
+    const start = fromNow(-10 + i * 3)
+    const end = fromNow(-10 + i * 3)
+    end.setHours(end.getHours() + 1)
+    meetingVals.push(`('${mid}','${school.id}','${b1.id}','${["Parent-Teacher Meeting","Staff Planning","Department Review","Curriculum Meeting","Budget Review","Committee Meeting","Training Session","All-Hands Meeting"][i]}','Description for meeting ${i+1}','${meetingTypes[i % meetingTypes.length]}','${start.toISOString()}','${end.toISOString()}','Room ${100+i}','${meetingStatuses[i % meetingStatuses.length]}','${ADMIN_ID}',NOW(),NOW())`)
+  }
+  if (meetingVals.length) await prisma.$executeRawUnsafe(`INSERT INTO meetings (id,school_id,branch_id,title,description,meeting_type,start_date_time,end_date_time,location,status,created_by_id,created_at,updated_at) VALUES ${meetingVals.join(",")}`)
+  console.log(`Meetings: ${meetingIds.length}`)
+
+  // ── Meeting Attendees (batch SQL) ──
+  const allProfileIds = [ADMIN_ID, ...tProfiles.map(p => p.id), ...sProfiles.map(p => p.id), acctProfile.id, adminTP.id]
+  const attVals: string[] = []
+  for (const mid of meetingIds) {
+    const selectedProfiles = allProfileIds.sort(() => Math.random() - 0.5).slice(0, 3)
+    for (const pid of selectedProfiles) {
+      const attStatus = ["PENDING","ACCEPTED","DECLINED","TENTATIVE"]
+      attVals.push(`('${u()}','${mid}','${pid}','${attStatus[Math.floor(Math.random() * attStatus.length)]}',NOW())`)
+    }
+  }
+  if (attVals.length) await prisma.$executeRawUnsafe(`INSERT INTO meeting_attendees (id,meeting_id,profile_id,status,created_at) VALUES ${attVals.join(",")}`)
+  console.log(`Meeting attendees: ${attVals.length}`)
+
+  // ── Meeting Notes (batch SQL) ──
+  const noteVals: string[] = []
+  for (const mid of meetingIds.slice(0, 4)) {
+    noteVals.push(`('${u()}','${mid}','${ADMIN_ID}','Discussed agenda items and action points for next steps.',NOW())`)
+  }
+  if (noteVals.length) await prisma.$executeRawUnsafe(`INSERT INTO meeting_notes (id,meeting_id,author_id,content,created_at) VALUES ${noteVals.join(",")}`)
+  console.log(`Meeting notes: ${noteVals.length}`)
+
+  // ── Events (batch SQL) ──
+  const eventTypes = ["SCHOOL","BRANCH","CLASS"]
+  const eventStatuses = ["DRAFT","PUBLISHED","COMPLETED","CANCELLED"]
+  const eventTitles = ["Science Exhibition","Art Competition","Sports Tournament","Debate Competition","Cultural Fest","Workshop","Seminar","Field Trip"]
+  const eventLocations = ["Auditorium","Playground","Science Lab","Library","Main Hall","Campus Grounds","Online (Google Meet)","Room 101"]
+  const eventVals: string[] = []
+  const eventIds: string[] = []
+  for (let i = 0; i < 8; i++) {
+    const eid = u(); eventIds.push(eid)
+    const start = fromNow(-5 + i * 7)
+    const end = fromNow(-4 + i * 7)
+    eventVals.push(`('${eid}','${school.id}','${b1.id}','${eventTitles[i]}','Description for ${eventTitles[i]}','${eventTypes[i % eventTypes.length]}','${start.toISOString()}','${end.toISOString()}','${eventLocations[i]}',${i % 2 === 0},${20 + i * 5},'${eventStatuses[i % eventStatuses.length]}','${ADMIN_ID}',NOW(),NOW())`)
+  }
+  if (eventVals.length) await prisma.$executeRawUnsafe(`INSERT INTO events (id,school_id,branch_id,title,description,event_type,start_date_time,end_date_time,location,is_registration_required,max_participants,status,created_by_id,created_at,updated_at) VALUES ${eventVals.join(",")}`)
+  console.log(`Events: ${eventIds.length}`)
+
+  // ── Event Registrations (batch SQL) ──
+  const regVals: string[] = []
+  for (const eid of eventIds.slice(0, 5)) {
+    const selectedProfiles = allProfileIds.sort(() => Math.random() - 0.5).slice(0, 3)
+    for (const pid of selectedProfiles) {
+      regVals.push(`('${u()}','${eid}','${pid}',NOW())`)
+    }
+  }
+  if (regVals.length) await prisma.$executeRawUnsafe(`INSERT INTO event_registrations (id,event_id,profile_id,created_at) VALUES ${regVals.join(",")}`)
+  console.log(`Event registrations: ${regVals.length}`)
+
   console.log("\n✅ Seeding complete!")
   console.log("Login: superadmin@school.com / Super@123456")
 }

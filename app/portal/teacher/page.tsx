@@ -1,11 +1,11 @@
-import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { headers } from "next/headers"
 import { setRequestContext, clearRequestContext } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import { Suspense } from "react"
 import { PageSkeleton } from "@/components/shared/loading-skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { GraduationCap, ClipboardCheck, CalendarClock, Users, MessageSquare } from "lucide-react"
+import { GraduationCap, ClipboardCheck, CalendarClock, Users, MessageSquare, Award, ClipboardList, BookOpen, Megaphone, UserCheck } from "lucide-react"
 import Link from "next/link"
 
 async function TeacherPortalContent() {
@@ -27,11 +27,25 @@ async function TeacherPortalContent() {
   })
 
   try {
+    // Validate teacher portal access
     const profile = await prisma.profile.findUnique({
       where: { id: userId },
-      select: { firstName: true },
+      select: { firstName: true, status: true, isActive: true },
     })
 
+    if (!profile || profile.status !== "ACTIVE" || !profile.isActive) {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold text-destructive">Account Not Active</h1>
+            <p className="text-muted-foreground">Your account is not active. Please contact administration.</p>
+            <a href="/login" className="text-primary underline">Return to Login</a>
+          </div>
+        </div>
+      )
+    }
+
+    // Find teacher record linked to this profile
     let teacher
     try {
       teacher = await prisma.teacher.findFirst({
@@ -41,65 +55,83 @@ async function TeacherPortalContent() {
       teacher = null
     }
 
-    const [classCount, studentCount, homeworkCount, messageCount, leaveCount] = await Promise.all([
-      teacher?.id
-        ? prisma.class.count({
-            where: {
-              sections: {
-                some: {
-                  timetableSlots: {
-                    some: { teacherId: teacher.id },
-                  },
-                },
+    if (!teacher) {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold text-destructive">Teacher Record Not Found</h1>
+            <p className="text-muted-foreground">Your teacher profile could not be found. Please contact administration.</p>
+            <a href="/login" className="text-primary underline">Return to Login</a>
+          </div>
+        </div>
+      )
+    }
+
+    const [classCount, studentCount, homeworkCount, messageCount, leaveCount, examCount] = await Promise.all([
+      prisma.class.count({
+        where: {
+          sections: {
+            some: {
+              timetableSlots: {
+                some: { teacherId: teacher.id },
               },
             },
-          }).catch(() => 0)
-        : 0,
-      teacher?.id
-        ? prisma.student.count({
-            where: {
-              enrollments: {
-                some: {
-                  class: {
-                    sections: {
-                      some: {
-                        timetableSlots: {
-                          some: { teacherId: teacher.id },
-                        },
-                      },
+          },
+        },
+      }).catch(() => 0),
+      prisma.student.count({
+        where: {
+          enrollments: {
+            some: {
+              class: {
+                sections: {
+                  some: {
+                    timetableSlots: {
+                      some: { teacherId: teacher.id },
                     },
                   },
-                  status: "ACTIVE",
                 },
               },
+              status: "ACTIVE",
             },
-          }).catch(() => 0)
-        : 0,
-      teacher?.id
-        ? prisma.homework.count({
-            where: { teacherId: teacher.id, isActive: true },
-          }).catch(() => 0)
-        : 0,
+          },
+        },
+      }).catch(() => 0),
+      prisma.homework.count({
+        where: { teacherId: teacher.id, isActive: true },
+      }).catch(() => 0),
       prisma.message.count({
         where: { receiverId: userId },
       }).catch(() => 0),
       prisma.leaveRequest.count({
         where: { profileId: userId, status: "PENDING" },
       }).catch(() => 0),
+      prisma.exam.count({
+        where: {
+          class: {
+            sections: {
+              some: {
+                timetableSlots: { some: { teacherId: teacher.id } },
+              },
+            },
+          },
+        },
+      }).catch(() => 0),
     ])
 
     const cards = [
       { title: "My Classes", value: classCount, icon: GraduationCap, href: "/portal/teacher/classes", description: "Assigned classes" },
       { title: "My Students", value: studentCount, icon: Users, href: "/portal/teacher/students", description: "Total students" },
-      { title: "Homework", value: homeworkCount, icon: CalendarClock, href: "/portal/teacher/homework", description: "Active assignments" },
+      { title: "Assignments", value: homeworkCount, icon: CalendarClock, href: "/portal/teacher/assignments", description: "Active assignments" },
+      { title: "Exams", value: examCount, icon: ClipboardList, href: "/portal/teacher/exams", description: "Scheduled exams" },
       { title: "Messages", value: messageCount, icon: MessageSquare, href: "/portal/teacher/messages", description: "Unread messages" },
-      { title: "Leave Requests", value: leaveCount, icon: ClipboardCheck, href: "/portal/teacher/attendance", description: "Pending leave requests" },
+      { title: "Leave Requests", value: leaveCount, icon: UserCheck, href: "/portal/teacher/leave-requests", description: "Pending requests" },
     ]
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Welcome, {profile?.firstName}!</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Welcome, {profile.firstName}!</h2>
           <p className="text-muted-foreground">Teacher Portal</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

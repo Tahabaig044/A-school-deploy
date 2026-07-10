@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { CheckCircle, Copy, Mail } from "lucide-react"
 import { createStudent } from "@/actions/student.actions"
 import { enrollStudent } from "@/actions/parent.actions"
 
@@ -30,23 +31,74 @@ export function StudentForm({
   const [state, formAction, pending] = useActionState(createStudent, null)
   const [selectedClassId, setSelectedClassId] = useState("")
   const [sections, setSections] = useState<{ id: string; name: string }[]>([])
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const cls = classes.find((c) => c.id === selectedClassId)
     setSections(cls?.sections || [])
   }, [selectedClassId, classes])
 
-  useEffect(() => {
-    if (state?.success) {
-      router.push("/dashboard/students")
-      router.refresh()
+  const handleCopyLink = async () => {
+    if (state?.invitationLink) {
+      await navigator.clipboard.writeText(state.invitationLink)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
-  }, [state, router])
+  }
+
+  if (state?.success && state?.invitationLink) {
+    return (
+      <Card className="max-w-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-500" />
+            Student Created Successfully!
+          </CardTitle>
+          <CardDescription>
+            Share this invitation link with the student to set their password.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
+            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+            <code className="text-sm break-all flex-1">{state.invitationLink}</code>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyLink}
+              className="shrink-0"
+            >
+              {copied ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4 mr-1" />
+                  Copy Link
+                </>
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            This link expires in 24 hours. The student will set their password and activate their account.
+          </p>
+          <Button variant="outline" onClick={() => router.push("/dashboard/students")}>
+            View All Students
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Student Information</CardTitle>
+        <CardDescription>
+          Creating a student will also create their portal account if an email is provided.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-8">

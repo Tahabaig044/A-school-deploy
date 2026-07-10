@@ -24,10 +24,16 @@ const roleRouteMap: Record<string, string[]> = {
   "/dashboard/transport": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TRANSPORT_MANAGER"],
   "/dashboard/reports": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER"],
   "/dashboard/notifications": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT"],
+  "/dashboard/messages": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT"],
+  "/dashboard/meetings": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "PARENT"],
+  "/dashboard/events": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "STUDENT", "PARENT"],
+  "/dashboard/calendar": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "STUDENT", "PARENT"],
   "/dashboard/settings": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"],
 }
 
 const portalAllowedRoles = ["STUDENT", "PARENT", "TEACHER"]
+
+const teacherBlockedRoutes = ["/dashboard"]
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -83,6 +89,13 @@ export async function proxy(request: NextRequest) {
   })
 
   if (profile) {
+    // Block teachers from admin dashboard
+    if (profile.role === "TEACHER" && teacherBlockedRoutes.some((route) => pathname.startsWith(route))) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/portal/teacher"
+      return Response.redirect(url)
+    }
+
     if (pathname.startsWith("/portal") && !portalAllowedRoles.includes(profile.role)) {
       const url = request.nextUrl.clone()
       url.pathname = "/dashboard"

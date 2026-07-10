@@ -41,6 +41,12 @@ const SELF_REGISTER_ROLES: Role[] = ["STUDENT", "PARENT", "TEACHER"]
 // Roles that School Admin CANNOT invite
 const RESTRICTED_ROLES_FOR_SCHOOL_ADMIN: Role[] = ["SUPER_ADMIN", "SCHOOL_ADMIN"]
 
+// System-level roles only - academic roles (Teacher, Student, Parent) must be created from their modules
+const USERS_MODULE_ALLOWED_ROLES: Role[] = [
+  "SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL",
+  "ACCOUNTANT", "ADMISSION_OFFICER", "LIBRARIAN", "TRANSPORT_MANAGER",
+]
+
 // ─── Invite User ───────────────────────────────────────────────
 export async function inviteUser(
   _prevState: ActionResult | null,
@@ -58,7 +64,17 @@ export async function inviteUser(
     return { error: "All required fields must be filled." }
   }
 
-  // Requirement 7: School Admin can't invite School Admin or Super Admin
+  // Academic roles must be created from their respective modules
+  if (["TEACHER", "STUDENT", "PARENT"].includes(role)) {
+    return { error: "Teachers, Students, and Parents must be created from their respective modules." }
+  }
+
+  // Validate role is allowed for Users module
+  if (!USERS_MODULE_ALLOWED_ROLES.includes(role)) {
+    return { error: "Invalid role for user creation." }
+  }
+
+  // School Admin can't invite School Admin or Super Admin
   if (profile.role === "SCHOOL_ADMIN" && RESTRICTED_ROLES_FOR_SCHOOL_ADMIN.includes(role)) {
     return { error: "You cannot invite users with this role." }
   }

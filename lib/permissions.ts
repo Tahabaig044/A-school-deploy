@@ -53,6 +53,21 @@ const ALL_PERMISSIONS = [
   // Messages
   "messages.view",
   "messages.send",
+  // Notifications
+  "notifications.view",
+  "notifications.manage",
+  // Meetings
+  "meetings.view",
+  "meetings.create",
+  "meetings.edit",
+  // Events
+  "events.view",
+  "events.create",
+  "events.edit",
+  // Calendar
+  "calendar.view",
+  "calendar.create",
+  "calendar.edit",
   // Reports
   "reports.view",
   "reports.export",
@@ -99,6 +114,10 @@ const ROLE_DEFAULTS: Record<Role, Permission[]> = {
     "transport.view", "transport.manage",
     "announcements.view", "announcements.create", "announcements.edit",
     "messages.view", "messages.send",
+    "notifications.view", "notifications.manage",
+    "meetings.view", "meetings.create", "meetings.edit",
+    "events.view", "events.create", "events.edit",
+    "calendar.view", "calendar.create", "calendar.edit",
     "reports.view", "reports.export",
     "settings.view", "settings.edit",
     "branches.view", "branches.create", "branches.edit",
@@ -118,6 +137,10 @@ const ROLE_DEFAULTS: Record<Role, Permission[]> = {
     "transport.view",
     "announcements.view", "announcements.create",
     "messages.view", "messages.send",
+    "notifications.view", "notifications.manage",
+    "meetings.view", "meetings.create", "meetings.edit",
+    "events.view", "events.create", "events.edit",
+    "calendar.view", "calendar.create", "calendar.edit",
     "reports.view",
     "staff.view", "staff.create", "staff.edit",
     "expenses.view", "expenses.create",
@@ -132,6 +155,10 @@ const ROLE_DEFAULTS: Record<Role, Permission[]> = {
     "homework.view", "homework.create", "homework.edit",
     "announcements.view", "announcements.create",
     "messages.view", "messages.send",
+    "notifications.view", "notifications.manage",
+    "meetings.view", "meetings.create", "meetings.edit",
+    "events.view", "events.create", "events.edit",
+    "calendar.view", "calendar.create", "calendar.edit",
     "reports.view",
   ],
   TEACHER: [
@@ -263,10 +290,12 @@ export async function getPermissionsForRole(role: Role): Promise<string[]> {
   const cache = await loadPermissionsCache()
   const roleKey = `role:${role}`
   const perms = cache.get(roleKey)
-  if (perms) return Array.from(perms)
-
-  // Fallback to defaults
-  return ROLE_DEFAULTS[role] || []
+  const defaults = ROLE_DEFAULTS[role] || []
+  if (perms) {
+    const merged = new Set([...Array.from(perms), ...defaults])
+    return Array.from(merged)
+  }
+  return defaults
 }
 
 export function getDefaultPermissions(): typeof ROLE_DEFAULTS {

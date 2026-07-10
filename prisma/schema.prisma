@@ -44,6 +44,12 @@ model Profile {
   staff                 Staff?
   teacher               Teacher?
   userPermissions       UserPermission[]
+  meetingAttendances    MeetingAttendee[]
+  createdMeetings       Meeting[]
+  meetingNotes          MeetingNote[]
+  createdEvents         Event[]
+  eventRegistrations    EventRegistration[]
+  createdCalendarEvents CalendarEvent[]
 
   @@index([schoolId, branchId])
   @@index([invitationToken])
@@ -83,6 +89,9 @@ model School {
   transportRoutes TransportRoute[]
   vehicles        Vehicle[]
   admissions      Admission[]
+  meetings        Meeting[]
+  events          Event[]
+  calendarEvents  CalendarEvent[]
 
   @@map("schools")
 }
@@ -117,6 +126,9 @@ model Branch {
   transportRoutes TransportRoute[]
   vehicles        Vehicle[]
   admissions      Admission[]
+  meetings        Meeting[]
+  events          Event[]
+  calendarEvents  CalendarEvent[]
 
   @@index([schoolId])
   @@map("branches")
@@ -145,6 +157,8 @@ model AcademicSession {
   teacherAssignments TeacherAssignment[]
   timetableSlots     Timetable[]
   admissions         Admission[]
+  meetings           Meeting[]
+  calendarEvents     CalendarEvent[]
 
   @@index([schoolId, branchId])
   @@map("academic_sessions")
@@ -184,6 +198,7 @@ model Class {
   timetableSlots     Timetable[]
   admissions         Admission[]
   announcements      Announcement[]
+  events             Event[]
 
   @@unique([schoolId, branchId, code])
   @@index([schoolId, branchId])
@@ -204,6 +219,7 @@ model Section {
   teacherAssignments TeacherAssignment[]
   timetableSlots     Timetable[]
   announcements      Announcement[]
+  events             Event[]
 
   @@unique([classId, name])
   @@map("sections")
@@ -250,6 +266,7 @@ model Student {
   @@unique([schoolId, admissionNo])
   @@index([schoolId, branchId])
   @@index([branchId, status])
+  @@index([email])
   @@map("students")
 }
 
@@ -270,6 +287,7 @@ model Parent {
   students     StudentParent[]
 
   @@index([schoolId])
+  @@index([email])
   @@map("parents")
 }
 
@@ -448,6 +466,7 @@ model Teacher {
 
   @@unique([schoolId, employeeCode])
   @@index([schoolId, branchId])
+  @@index([email])
   @@map("teachers")
 }
 
@@ -972,24 +991,49 @@ model AnnouncementRead {
 }
 
 model Message {
-  id         String    @id @default(uuid()) @db.Uuid
-  schoolId   String    @map("school_id") @db.Uuid
-  senderId   String    @map("sender_id") @db.Uuid
-  receiverId String    @map("receiver_id") @db.Uuid
-  subject    String?
-  content    String
-  isRead     Boolean   @default(false) @map("is_read")
-  readAt     DateTime? @map("read_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  receiver   Profile   @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  school     School    @relation(fields: [schoolId], references: [id])
-  sender     Profile   @relation("SentMessages", fields: [senderId], references: [id])
+  id              String     @id @default(uuid()) @db.Uuid
+  schoolId        String     @map("school_id") @db.Uuid
+  senderId        String     @map("sender_id") @db.Uuid
+  receiverId      String     @map("receiver_id") @db.Uuid
+  subject         String?
+  content         String
+  isRead          Boolean    @default(false) @map("is_read")
+  isStarred       Boolean    @default(false) @map("is_starred")
+  isDeleted       Boolean    @default(false) @map("is_deleted")
+  isDraft         Boolean    @default(false) @map("is_draft")
+  readAt          DateTime?  @map("read_at")
+  parentMessageId String?    @map("parent_message_id") @db.Uuid
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @default(now()) @map("updated_at")
+  receiver        Profile    @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  school          School     @relation(fields: [schoolId], references: [id])
+  sender          Profile    @relation("SentMessages", fields: [senderId], references: [id])
+  parentMessage   Message?   @relation("MessageThread", fields: [parentMessageId], references: [id])
+  replies         Message[]  @relation("MessageThread")
+  attachments     MessageAttachment[]
 
   @@index([schoolId])
   @@index([senderId])
   @@index([receiverId])
   @@index([isRead])
+  @@index([isDeleted])
+  @@index([isStarred])
+  @@index([parentMessageId])
   @@map("messages")
+}
+
+model MessageAttachment {
+  id        String  @id @default(uuid()) @db.Uuid
+  messageId String  @map("message_id") @db.Uuid
+  fileName  String  @map("file_name")
+  fileUrl   String  @map("file_url")
+  fileSize  Int?    @map("file_size")
+  fileType  String? @map("file_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("message_attachments")
 }
 
 model Notification {
@@ -998,6 +1042,8 @@ model Notification {
   title     String
   content   String
   type      String
+  category  String    @default("GENERAL")
+  priority  String    @default("NORMAL")
   isRead    Boolean   @default(false) @map("is_read")
   readAt    DateTime? @map("read_at")
   link      String?
@@ -1005,6 +1051,7 @@ model Notification {
   user      Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
+  @@index([userId, category])
   @@map("notifications")
 }
 
@@ -1308,4 +1355,216 @@ enum PaymentMode {
   CHEQUE
   BANK_TRANSFER
   ONLINE
+}
+
+// ─── Meeting System ──────────────────────────────────────────
+
+enum MeetingType {
+  PARENT_TEACHER
+  STAFF
+  DEPARTMENT
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+model Meeting {
+  id            String          @id @default(uuid()) @db.Uuid
+  schoolId      String          @map("school_id") @db.Uuid
+  branchId      String          @map("branch_id") @db.Uuid
+  title         String
+  description   String?
+  meetingType   MeetingType     @map("meeting_type")
+  status        MeetingStatus   @default(SCHEDULED)
+  startDateTime DateTime        @map("start_date_time")
+  endDateTime   DateTime        @map("end_date_time")
+  location      String?
+  isRecurring   Boolean         @default(false) @map("is_recurring")
+  recurrenceRule String?        @map("recurrence_rule")
+  createdById   String          @map("created_by_id") @db.Uuid
+  academicSessionId String?     @map("academic_session_id") @db.Uuid
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  school        School          @relation(fields: [schoolId], references: [id])
+  branch        Branch          @relation(fields: [branchId], references: [id])
+  createdBy     Profile         @relation(fields: [createdById], references: [id])
+  academicSession AcademicSession? @relation(fields: [academicSessionId], references: [id])
+  attendees     MeetingAttendee[]
+  notes         MeetingNote[]
+  attachments   MeetingAttachment[]
+
+  @@index([schoolId, branchId])
+  @@index([meetingType])
+  @@index([status])
+  @@index([startDateTime])
+  @@index([createdById])
+  @@map("meetings")
+}
+
+model MeetingAttendee {
+  id        String      @id @default(uuid()) @db.Uuid
+  meetingId String      @map("meeting_id") @db.Uuid
+  profileId String      @map("profile_id") @db.Uuid
+  status    String      @default("PENDING")
+  notes     String?
+  createdAt DateTime    @default(now()) @map("created_at")
+  meeting   Meeting     @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  profile   Profile     @relation(fields: [profileId], references: [id])
+
+  @@unique([meetingId, profileId])
+  @@index([meetingId])
+  @@index([profileId])
+  @@map("meeting_attendees")
+}
+
+model MeetingNote {
+  id        String   @id @default(uuid()) @db.Uuid
+  meetingId String   @map("meeting_id") @db.Uuid
+  authorId  String   @map("author_id") @db.Uuid
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  author    Profile  @relation(fields: [authorId], references: [id])
+
+  @@index([meetingId])
+  @@map("meeting_notes")
+}
+
+model MeetingAttachment {
+  id        String   @id @default(uuid()) @db.Uuid
+  meetingId String   @map("meeting_id") @db.Uuid
+  fileName  String   @map("file_name")
+  fileUrl   String   @map("file_url")
+  fileSize  Int?     @map("file_size")
+  fileType  String?  @map("file_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@map("meeting_attachments")
+}
+
+// ─── Event System ──────────────────────────────────────────
+
+enum EventType {
+  SCHOOL
+  BRANCH
+  CLASS
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+model Event {
+  id              String            @id @default(uuid()) @db.Uuid
+  schoolId        String            @map("school_id") @db.Uuid
+  branchId        String            @map("branch_id") @db.Uuid
+  title           String
+  description     String?
+  eventType       EventType         @map("event_type")
+  status          EventStatus       @default(DRAFT)
+  startDateTime   DateTime          @map("start_date_time")
+  endDateTime     DateTime          @map("end_date_time")
+  location        String?
+  isRegistrationRequired Boolean    @default(false) @map("is_registration_required")
+  maxParticipants Int?              @map("max_participants")
+  classId         String?           @map("class_id") @db.Uuid
+  sectionId       String?           @map("section_id") @db.Uuid
+  createdById     String            @map("created_by_id") @db.Uuid
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  school          School            @relation(fields: [schoolId], references: [id])
+  branch          Branch            @relation(fields: [branchId], references: [id])
+  createdBy       Profile           @relation(fields: [createdById], references: [id])
+  class           Class?            @relation(fields: [classId], references: [id])
+  section         Section?          @relation(fields: [sectionId], references: [id])
+  registrations   EventRegistration[]
+  attachments     EventAttachment[]
+
+  @@index([schoolId, branchId])
+  @@index([eventType])
+  @@index([status])
+  @@index([startDateTime])
+  @@index([createdById])
+  @@map("events")
+}
+
+model EventRegistration {
+  id        String   @id @default(uuid()) @db.Uuid
+  eventId   String   @map("event_id") @db.Uuid
+  profileId String   @map("profile_id") @db.Uuid
+  status    String   @default("REGISTERED")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  profile   Profile  @relation(fields: [profileId], references: [id])
+
+  @@unique([eventId, profileId])
+  @@index([eventId])
+  @@index([profileId])
+  @@map("event_registrations")
+}
+
+model EventAttachment {
+  id        String   @id @default(uuid()) @db.Uuid
+  eventId   String   @map("event_id") @db.Uuid
+  fileName  String   @map("file_name")
+  fileUrl   String   @map("file_url")
+  fileSize  Int?     @map("file_size")
+  fileType  String?  @map("file_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("event_attachments")
+}
+
+// ─── Academic Calendar System ──────────────────────────────────────────
+
+enum CalendarEventType {
+  HOLIDAY
+  EXAM
+  EVENT
+  MEETING
+  ACADEMIC_SESSION
+  OTHER
+}
+
+model CalendarEvent {
+  id              String              @id @default(uuid()) @db.Uuid
+  schoolId        String              @map("school_id") @db.Uuid
+  branchId        String              @map("branch_id") @db.Uuid
+  title           String
+  description     String?
+  eventType       CalendarEventType   @map("event_type")
+  startDate       DateTime            @map("start_date") @db.Date
+  endDate         DateTime            @map("end_date") @db.Date
+  isAllDay        Boolean             @default(true) @map("is_all_day")
+  startTime       String?             @map("start_time")
+  endTime         String?             @map("end_time")
+  color           String?
+  academicSessionId String?           @map("academic_session_id") @db.Uuid
+  createdById     String              @map("created_by_id") @db.Uuid
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  school          School              @relation(fields: [schoolId], references: [id])
+  branch          Branch              @relation(fields: [branchId], references: [id])
+  createdBy       Profile             @relation(fields: [createdById], references: [id])
+  academicSession AcademicSession?    @relation(fields: [academicSessionId], references: [id])
+
+  @@index([schoolId, branchId])
+  @@index([eventType])
+  @@index([startDate, endDate])
+  @@index([academicSessionId])
+  @@map("calendar_events")
 }

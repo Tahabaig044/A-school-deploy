@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { headers } from "next/headers"
 import { setRequestContext, clearRequestContext } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import { Suspense } from "react"
 import { PageSkeleton } from "@/components/shared/loading-skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,15 +27,29 @@ async function StudentPortalContent() {
   })
 
   try {
+    // Validate student portal access
     const profile = await prisma.profile.findUnique({
       where: { id: userId },
-      select: { firstName: true },
+      select: { firstName: true, email: true, status: true, isActive: true },
     })
 
+    if (!profile || profile.status !== "ACTIVE" || !profile.isActive) {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold text-destructive">Account Not Active</h1>
+            <p className="text-muted-foreground">Your account is not active. Please contact administration.</p>
+            <a href="/login" className="text-primary underline">Return to Login</a>
+          </div>
+        </div>
+      )
+    }
+
+    // Find student record linked to this profile by email
     let student
     try {
       student = await prisma.student.findFirst({
-        where: { email: userEmail },
+        where: { email: profile.email! },
         include: {
           enrollments: {
             where: { status: "ACTIVE" },
@@ -48,23 +62,29 @@ async function StudentPortalContent() {
       student = null
     }
 
+    if (!student) {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold text-destructive">Student Record Not Found</h1>
+            <p className="text-muted-foreground">Your student profile could not be found. Please contact administration.</p>
+            <a href="/login" className="text-primary underline">Return to Login</a>
+          </div>
+        </div>
+      )
+    }
+
     const [attendanceCount, examCount, feeInvoiceCount, homeworkCount, messageCount] = await Promise.all([
-      student?.id
-        ? prisma.studentAttendance.count({
-            where: { studentId: student.id, status: "PRESENT" },
-          }).catch(() => 0)
-        : 0,
-      student?.id
-        ? prisma.examResult.count({
-            where: { studentId: student.id },
-          }).catch(() => 0)
-        : 0,
-      student?.id
-        ? prisma.feeInvoice.count({
-            where: { studentId: student.id, status: { in: ["PENDING", "PARTIAL"] } },
-          }).catch(() => 0)
-        : 0,
-      student?.enrollments[0]?.classId
+      prisma.studentAttendance.count({
+        where: { studentId: student.id, status: "PRESENT" },
+      }).catch(() => 0),
+      prisma.examResult.count({
+        where: { studentId: student.id },
+      }).catch(() => 0),
+      prisma.feeInvoice.count({
+        where: { studentId: student.id, status: { in: ["PENDING", "PARTIAL"] } },
+      }).catch(() => 0),
+      student.enrollments[0]?.classId
         ? prisma.homework.count({
             where: {
               classId: student.enrollments[0].classId,
@@ -77,11 +97,11 @@ async function StudentPortalContent() {
       }).catch(() => 0),
     ])
 
-    const enrollment = student?.enrollments[0]
+    const enrollment = student.enrollments[0]
 
     const cards = [
       { title: "Attendance", value: attendanceCount, icon: ClipboardCheck, href: "/portal/student/attendance", description: "Days present" },
-      { title: "Exams", value: examCount, icon: FileText, href: "/portal/student/exams", description: "Exam results" },
+      { title: "Exams", value: examCount, icon: FileText, href: "/portal/student/results", description: "Exam results" },
       { title: "Pending Fees", value: feeInvoiceCount, icon: DollarSign, href: "/portal/student/fees", description: "Unpaid invoices" },
       { title: "Homework", value: homeworkCount, icon: CalendarClock, href: "/portal/student/homework", description: "Pending assignments" },
       { title: "Messages", value: messageCount, icon: MessageSquare, href: "/portal/student/messages", description: "Unread messages" },
@@ -90,7 +110,7 @@ async function StudentPortalContent() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Welcome, {profile?.firstName}!</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Welcome, {profile.firstName}!</h2>
           <p className="text-muted-foreground">
             {enrollment
               ? `${enrollment.class.name} - Section ${enrollment.section?.name || "N/A"}`

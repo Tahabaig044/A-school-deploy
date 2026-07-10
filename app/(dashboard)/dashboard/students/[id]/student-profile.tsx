@@ -253,6 +253,7 @@ export function StudentProfile({ student }: { student: StudentData }) {
 
               <form action={parentAction} className="grid gap-4 max-w-md border-t pt-4">
                 <h4 className="text-sm font-medium">Add Parent</h4>
+                <p className="text-xs text-muted-foreground">Providing an email will create a portal account for the parent.</p>
                 <input type="hidden" name="studentId" value={student.id} />
                 <div className="grid grid-cols-2 gap-2">
                   <div className="grid gap-1">
@@ -303,6 +304,13 @@ export function StudentProfile({ student }: { student: StudentData }) {
                 </Button>
                 {parentState?.error && (
                   <p className="text-sm text-destructive">{parentState.error}</p>
+                )}
+                {parentState?.success && parentState?.invitationLink && (
+                  <div className="rounded-md bg-green-50 p-3 text-sm">
+                    <p className="font-medium text-green-800">Parent added successfully!</p>
+                    <p className="text-green-700 mt-1">Share this invitation link:</p>
+                    <code className="text-xs break-all text-green-600">{parentState.invitationLink}</code>
+                  </div>
                 )}
               </form>
             </CardContent>

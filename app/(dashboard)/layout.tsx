@@ -10,6 +10,7 @@ import { getPermissionsForRole } from "@/lib/permissions"
 import type { Role } from "@/lib/constants"
 import { PORTAL_ROLES } from "@/lib/constants"
 import { setRequestContext, clearRequestContext } from "@/lib/auth"
+import { validateDashboardAccess } from "@/lib/dashboard-validation"
 
 export default async function DashboardLayout({
   children,
@@ -25,6 +26,21 @@ export default async function DashboardLayout({
 
   if (!userId || !userRole || !userEmail) {
     redirect("/login")
+  }
+
+  // Validate dashboard access
+  const validation = await validateDashboardAccess()
+  if (!validation.valid) {
+    // Show professional error page instead of blank page
+    return (
+      <div className="flex min-h-full items-center justify-center">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold text-destructive">Access Error</h1>
+          <p className="text-muted-foreground">{validation.error}</p>
+          <a href="/login" className="text-primary underline">Return to Login</a>
+        </div>
+      </div>
+    )
   }
 
   const profile = {
@@ -49,6 +65,7 @@ export default async function DashboardLayout({
     profile.phone = fullProfile.phone
   }
 
+  // Portal roles should not access admin dashboard
   if ((PORTAL_ROLES as readonly string[]).includes(userRole)) {
     switch (userRole) {
       case "STUDENT":

@@ -9,12 +9,14 @@ export async function createNotification(
   title: string,
   content: string,
   type: string,
-  link?: string
+  link?: string,
+  category: string = "GENERAL",
+  priority: string = "NORMAL"
 ) {
   await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
 
   await prisma.notification.create({
-    data: { userId, title, content, type, link },
+    data: { userId, title, content, type, link, category, priority },
   })
 
   return { success: true }
@@ -29,6 +31,9 @@ export async function markNotificationAsRead(notificationId: string) {
   })
 
   revalidatePath("/dashboard")
+  revalidatePath("/portal/teacher")
+  revalidatePath("/portal/student")
+  revalidatePath("/portal/parent")
   return { success: true }
 }
 
@@ -41,17 +46,48 @@ export async function markAllNotificationsAsRead() {
   })
 
   revalidatePath("/dashboard")
+  revalidatePath("/portal/teacher")
+  revalidatePath("/portal/student")
+  revalidatePath("/portal/parent")
   return { success: true }
 }
 
-export async function getNotifications(limit?: number) {
+export async function getNotifications(limit?: number, category?: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
 
   return prisma.notification.findMany({
-    where: { userId: profile.id },
+    where: {
+      userId: profile.id,
+      ...(category ? { category } : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: limit || 50,
   })
+}
+
+export async function getNotificationHistory(page: number = 1, pageSize: number = 20) {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+
+  const skip = (page - 1) * pageSize
+
+  const [notifications, total] = await Promise.all([
+    prisma.notification.findMany({
+      where: { userId: profile.id },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: pageSize,
+    }),
+    prisma.notification.count({
+      where: { userId: profile.id },
+    }),
+  ])
+
+  return {
+    notifications,
+    total,
+    totalPages: Math.ceil(total / pageSize),
+    page,
+  }
 }
 
 export async function getUnreadNotificationCount() {
@@ -70,5 +106,8 @@ export async function deleteNotification(notificationId: string) {
   })
 
   revalidatePath("/dashboard")
+  revalidatePath("/portal/teacher")
+  revalidatePath("/portal/student")
+  revalidatePath("/portal/parent")
   return { success: true }
 }

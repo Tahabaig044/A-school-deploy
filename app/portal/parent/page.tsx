@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { headers } from "next/headers"
 import { setRequestContext, clearRequestContext } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import { Suspense } from "react"
 import { PageSkeleton } from "@/components/shared/loading-skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,15 +27,29 @@ async function ParentPortalContent() {
   })
 
   try {
+    // Validate parent portal access
     const profile = await prisma.profile.findUnique({
       where: { id: userId },
-      select: { firstName: true },
+      select: { firstName: true, email: true, status: true, isActive: true },
     })
 
+    if (!profile || profile.status !== "ACTIVE" || !profile.isActive) {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold text-destructive">Account Not Active</h1>
+            <p className="text-muted-foreground">Your account is not active. Please contact administration.</p>
+            <a href="/login" className="text-primary underline">Return to Login</a>
+          </div>
+        </div>
+      )
+    }
+
+    // Find parent record linked to this profile by email
     let parent
     try {
       parent = await prisma.parent.findFirst({
-        where: { email: userEmail },
+        where: { email: profile.email! },
         include: {
           students: {
             include: {
@@ -56,7 +70,19 @@ async function ParentPortalContent() {
       parent = null
     }
 
-    const children = parent?.students.map((sp) => sp.student) || []
+    if (!parent) {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold text-destructive">Parent Record Not Found</h1>
+            <p className="text-muted-foreground">Your parent profile could not be found. Please contact administration.</p>
+            <a href="/login" className="text-primary underline">Return to Login</a>
+          </div>
+        </div>
+      )
+    }
+
+    const children = parent.students.map((sp) => sp.student) || []
     const childIds = children.map((s) => s.id)
 
     const [feeInvoiceCount, messageCount, announcementCount] = await Promise.all([
@@ -76,14 +102,14 @@ async function ParentPortalContent() {
     const cards = [
       { title: "My Children", value: children.length, icon: Users, href: "/portal/parent/children", description: "Enrolled students" },
       { title: "Pending Fees", value: feeInvoiceCount, icon: DollarSign, href: "/portal/parent/fees", description: "Unpaid invoices" },
-      { title: "Announcements", value: announcementCount, icon: FileText, href: "/portal/parent/announcements", description: "Active announcements" },
+      { title: "Announcements", value: announcementCount, icon: FileText, href: "/portal/parent/notices", description: "Active announcements" },
       { title: "Messages", value: messageCount, icon: MessageSquare, href: "/portal/parent/messages", description: "Unread messages" },
     ]
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Welcome, {profile?.firstName}!</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Welcome, {profile.firstName}!</h2>
           <p className="text-muted-foreground">Parent Portal</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

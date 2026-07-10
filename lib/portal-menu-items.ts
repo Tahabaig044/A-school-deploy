@@ -15,6 +15,9 @@ import {
   Table,
   Award,
   BookMarked,
+  Megaphone,
+  Settings,
+  Calendar,
   type LucideIcon,
 } from "lucide-react"
 import type { Role } from "@/lib/constants"
@@ -77,6 +80,18 @@ export const portalMenuItems: PortalMenuItem[] = [
     roles: ["STUDENT"],
   },
   {
+    title: "Events",
+    href: "/dashboard/events",
+    icon: Megaphone,
+    roles: ["STUDENT"],
+  },
+  {
+    title: "Calendar",
+    href: "/dashboard/calendar",
+    icon: Calendar,
+    roles: ["STUDENT"],
+  },
+  {
     title: "Profile",
     href: "/portal/student/profile",
     icon: User,
@@ -127,6 +142,24 @@ export const portalMenuItems: PortalMenuItem[] = [
     roles: ["PARENT"],
   },
   {
+    title: "Meetings",
+    href: "/dashboard/meetings",
+    icon: CalendarClock,
+    roles: ["PARENT"],
+  },
+  {
+    title: "Events",
+    href: "/dashboard/events",
+    icon: Megaphone,
+    roles: ["PARENT"],
+  },
+  {
+    title: "Calendar",
+    href: "/dashboard/calendar",
+    icon: Calendar,
+    roles: ["PARENT"],
+  },
+  {
     title: "Leave Requests",
     href: "/portal/parent/leave-requests",
     icon: UserCheck,
@@ -153,9 +186,27 @@ export const portalMenuItems: PortalMenuItem[] = [
     roles: ["TEACHER"],
   },
   {
+    title: "My Students",
+    href: "/portal/teacher/students",
+    icon: Users,
+    roles: ["TEACHER"],
+  },
+  {
     title: "Attendance",
     href: "/portal/teacher/attendance",
     icon: ClipboardCheck,
+    roles: ["TEACHER"],
+  },
+  {
+    title: "Assignments",
+    href: "/portal/teacher/assignments",
+    icon: CalendarClock,
+    roles: ["TEACHER"],
+  },
+  {
+    title: "Exams",
+    href: "/portal/teacher/exams",
+    icon: ClipboardList,
     roles: ["TEACHER"],
   },
   {
@@ -165,15 +216,45 @@ export const portalMenuItems: PortalMenuItem[] = [
     roles: ["TEACHER"],
   },
   {
+    title: "Timetable",
+    href: "/portal/teacher/timetable",
+    icon: Table,
+    roles: ["TEACHER"],
+  },
+  {
     title: "Homework",
     href: "/portal/teacher/homework",
+    icon: BookOpen,
+    roles: ["TEACHER"],
+  },
+  {
+    title: "Announcements",
+    href: "/portal/teacher/announcements",
+    icon: Megaphone,
+    roles: ["TEACHER"],
+  },
+  {
+    title: "Messages",
+    href: "/portal/teacher/messages",
+    icon: MessageSquare,
+    roles: ["TEACHER"],
+  },
+  {
+    title: "Meetings",
+    href: "/dashboard/meetings",
     icon: CalendarClock,
     roles: ["TEACHER"],
   },
   {
-    title: "Timetable",
-    href: "/portal/teacher/timetable",
-    icon: Table,
+    title: "Events",
+    href: "/dashboard/events",
+    icon: Megaphone,
+    roles: ["TEACHER"],
+  },
+  {
+    title: "Calendar",
+    href: "/dashboard/calendar",
+    icon: Calendar,
     roles: ["TEACHER"],
   },
   {
@@ -186,6 +267,12 @@ export const portalMenuItems: PortalMenuItem[] = [
     title: "Profile",
     href: "/portal/teacher/profile",
     icon: User,
+    roles: ["TEACHER"],
+  },
+  {
+    title: "Settings",
+    href: "/portal/teacher/settings",
+    icon: Settings,
     roles: ["TEACHER"],
   },
 ]

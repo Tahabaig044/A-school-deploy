@@ -11,16 +11,13 @@ import { inviteUser } from "@/actions/auth.actions"
 import type { Role } from "@/lib/constants"
 
 const INVITABLE_ROLES: { value: Role; label: string }[] = [
-  { value: "TEACHER", label: "Teacher" },
-  { value: "STUDENT", label: "Student" },
-  { value: "PARENT", label: "Parent" },
+  { value: "SCHOOL_ADMIN", label: "School Admin" },
+  { value: "BRANCH_ADMIN", label: "Branch Admin" },
+  { value: "PRINCIPAL", label: "Principal" },
   { value: "ACCOUNTANT", label: "Accountant" },
   { value: "ADMISSION_OFFICER", label: "Admission Officer" },
   { value: "LIBRARIAN", label: "Librarian" },
   { value: "TRANSPORT_MANAGER", label: "Transport Manager" },
-  { value: "SCHOOL_ADMIN", label: "School Admin" },
-  { value: "BRANCH_ADMIN", label: "Branch Admin" },
-  { value: "PRINCIPAL", label: "Principal" },
 ]
 
 export function InviteUserForm() {

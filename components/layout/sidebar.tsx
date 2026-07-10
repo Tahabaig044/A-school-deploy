@@ -14,7 +14,7 @@ export function Sidebar({ permissions }: SidebarProps) {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col md:border-r">
+    <aside className="hidden md:flex md:w-64 md:flex-col md:border-r h-full">
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/dashboard">
           <h1 className="text-lg font-semibold">SchoolMS</h1>

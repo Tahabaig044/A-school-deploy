@@ -44,6 +44,7 @@ import {
   uploadAdmissionDocument,
   deleteAdmissionDocument,
 } from "@/actions/admission.actions"
+import { approveAndEnrollStudent } from "@/actions/student.actions"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Check, X, Clock, FileText, Users, Upload, Trash2 } from "lucide-react"
 
@@ -87,9 +88,12 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
   async function handleApproveAndEnroll() {
     setLoading(true)
     try {
-      const result = await approveAndEnroll(admission.id)
+      const result = await approveAndEnrollStudent(admission.id)
       if (result.success) {
         toast({ title: "Student enrolled successfully" })
+        if (result.invitationLink) {
+          toast({ title: "Invitation link generated. Share with student." })
+        }
         router.refresh()
       } else {
         toast({ title: result.error, variant: "destructive" })
