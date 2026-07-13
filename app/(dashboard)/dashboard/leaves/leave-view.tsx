@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { createLeaveRequest, approveLeave, rejectLeave } from "@/actions/leave.actions"
+import { createLeaveRequest, approveLeaveWithSubstitute, rejectLeave } from "@/actions/leave.actions"
 
 type LeaveItem = {
   id: string
@@ -22,11 +22,24 @@ type LeaveItem = {
   endDate: string
   reason: string
   status: string
+  substituteTeacherId: string | null
+  substituteTeacher?: { id: string; firstName: string; lastName: string } | null
   profile: { firstName: string | null; lastName: string | null; role: string }
 }
 
-export function LeaveView({ leaves, isAdmin }: { leaves: LeaveItem[]; isAdmin: boolean }) {
+type TeacherItem = { id: string; firstName: string; lastName: string; employeeCode: string }
+
+export function LeaveView({
+  leaves,
+  isAdmin,
+  teachers,
+}: {
+  leaves: LeaveItem[]
+  isAdmin: boolean
+  teachers?: TeacherItem[]
+}) {
   const [state, formAction, pending] = useActionState(createLeaveRequest, null)
+  const [approveState, approveAction, approvePending] = useActionState(approveLeaveWithSubstitute, null)
 
   return (
     <div className="grid gap-6">
@@ -85,6 +98,7 @@ export function LeaveView({ leaves, isAdmin }: { leaves: LeaveItem[]; isAdmin: b
                     <TableHead className="hidden md:table-cell">Dates</TableHead>
                     <TableHead className="hidden lg:table-cell">Reason</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="hidden lg:table-cell">Substitute</TableHead>
                     {isAdmin && <TableHead>Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
@@ -109,14 +123,36 @@ export function LeaveView({ leaves, isAdmin }: { leaves: LeaveItem[]; isAdmin: b
                           {leave.status.charAt(0) + leave.status.slice(1).toLowerCase()}
                         </span>
                       </TableCell>
+                      <TableCell className="hidden lg:table-cell text-sm">
+                        {leave.substituteTeacher
+                          ? `${leave.substituteTeacher.firstName} ${leave.substituteTeacher.lastName}`
+                          : leave.substituteTeacherId
+                            ? "Assigned"
+                            : <span className="text-muted-foreground">-</span>}
+                      </TableCell>
                       {isAdmin && leave.status === "PENDING" && (
                         <TableCell>
-                          <div className="flex gap-2">
-                            <form action={approveLeave.bind(null, leave.id)}>
-                              <Button size="sm" variant="default">Approve</Button>
-                            </form>
-                            <form action={rejectLeave.bind(null, leave.id)}>
-                              <Button size="sm" variant="destructive">Reject</Button>
+                          <div className="flex gap-2 flex-col sm:flex-row">
+                            <form action={approveAction}>
+                              <input type="hidden" name="leaveId" value={leave.id} />
+                              {teachers && teachers.length > 0 && (
+                                <select name="substituteTeacherId" className="flex h-8 w-32 rounded-md border border-input bg-background px-2 py-1 text-xs mb-1">
+                                  <option value="">No substitute</option>
+                                  {teachers.map((t) => (
+                                    <option key={t.id} value={t.id}>
+                                      {t.firstName} {t.lastName}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="default" type="submit" disabled={approvePending}>
+                                  {approvePending ? "..." : "Approve"}
+                                </Button>
+                                <form action={rejectLeave.bind(null, leave.id)}>
+                                  <Button size="sm" variant="destructive" type="submit">Reject</Button>
+                                </form>
+                              </div>
                             </form>
                           </div>
                         </TableCell>
@@ -132,6 +168,7 @@ export function LeaveView({ leaves, isAdmin }: { leaves: LeaveItem[]; isAdmin: b
               </Table>
             </div>
           )}
+          {approveState?.error && <p className="text-sm text-destructive mt-2">{approveState.error}</p>}
         </CardContent>
       </Card>
     </div>

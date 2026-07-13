@@ -117,6 +117,7 @@ export default async function TeacherMarksPage() {
                 </div>
               </CardHeader>
               <CardContent>
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -175,6 +176,7 @@ export default async function TeacherMarksPage() {
                     })}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           ))}

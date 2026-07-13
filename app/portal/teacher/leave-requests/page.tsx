@@ -6,15 +6,27 @@ import { UserCheck, Plus, X, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   getTeacherLeaveRequests,
   createTeacherLeaveRequest,
+  cancelTeacherLeaveRequest,
 } from "@/actions/teacher-portal.actions";
 
 type LeaveType = "SICK" | "CASUAL" | "ANNUAL" | "OTHER";
-type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED";
+type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 interface LeaveRequest {
   id: string;
@@ -37,6 +49,7 @@ const statusStyles: Record<LeaveStatus, string> = {
   PENDING: "bg-yellow-100 text-yellow-800 border-yellow-200",
   APPROVED: "bg-green-100 text-green-800 border-green-200",
   REJECTED: "bg-red-100 text-red-800 border-red-200",
+  CANCELLED: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
 function formatDate(date: Date): string {
@@ -192,7 +205,7 @@ export default function TeacherLeaveRequestsPage() {
                     key={request.id}
                     className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
                   >
-                    <div className="flex items-start justify-between">
+                      <div className="flex items-start justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
                           <h3 className="font-medium text-gray-900">
@@ -212,9 +225,34 @@ export default function TeacherLeaveRequestsPage() {
                         </div>
                         <p className="text-sm text-gray-600">{request.reason}</p>
                       </div>
-                      <span className="text-xs text-gray-400">
-                        {formatDate(request.createdAt)}
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="text-xs text-gray-400">
+                          {formatDate(request.createdAt)}
+                        </span>
+                        {request.status === "PENDING" && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
+                                Cancel
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Cancel Leave Request</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to cancel this {leaveTypeLabels[request.leaveType]}?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>No, keep it</AlertDialogCancel>
+                                <AlertDialogAction onClick={async () => { await cancelTeacherLeaveRequest(request.id); loadLeaveRequests(); }}>
+                                  Yes, cancel it
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

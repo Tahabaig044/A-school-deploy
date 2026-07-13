@@ -17,8 +17,10 @@ type Slot = {
   room: string | null
   class: { name: string }
   section: { name: string } | null
-  subject: { name: string }
-  teacher: { firstName: string; lastName: string }
+  subject: { name: string } | null
+  teacher: { firstName: string; lastName: string } | null
+  isFree?: boolean
+  freePeriodReason?: string | null
 }
 
 export function TimetablePrintButton({ slots, title }: { slots: Slot[]; title?: string }) {
@@ -44,8 +46,8 @@ export function TimetablePrintButton({ slots, title }: { slots: Slot[]; title?: 
                 (s) => `
               <div style="padding:6px 8px;border-bottom:1px solid #eee;display:flex;gap:12px;align-items:center">
                 <span style="font-weight:500;min-width:100px">${s.startTime} - ${s.endTime}</span>
-                <span style="min-width:120px">${s.subject.name}</span>
-                <span style="min-width:120px">${s.teacher.firstName} ${s.teacher.lastName}</span>
+                <span style="min-width:120px">${s.isFree ? "FREE" : (s.subject?.name || "-")}${s.freePeriodReason ? ` (${s.freePeriodReason})` : ""}</span>
+                <span style="min-width:120px">${s.isFree ? "-" : `${s.teacher?.firstName || ""} ${s.teacher?.lastName || ""}`}</span>
                 <span style="min-width:80px">${s.room || "-"}</span>
               </div>`
               )

@@ -167,6 +167,76 @@ export async function addParent(
   }
 }
 
+export async function updateParent(
+  parentId: string,
+  _prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const parent = await prisma.parent.findUnique({
+    where: { id: parentId },
+    select: { schoolId: true },
+  })
+  if (!parent) return { error: "Parent not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && parent.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
+
+  const firstName = formData.get("firstName") as string
+  const lastName = formData.get("lastName") as string
+  const relationship = formData.get("relationship") as string
+  const phone = formData.get("phone") as string
+  const email = formData.get("email") as string
+  const occupation = formData.get("occupation") as string
+  const address = formData.get("address") as string
+  const isPrimary = formData.get("isPrimary") === "on"
+
+  const parsed = parentSchema.safeParse({
+    firstName, lastName, relationship, phone, email, occupation, address, isPrimary,
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message, success: false }
+  }
+
+  try {
+    await prisma.parent.update({
+      where: { id: parentId },
+      data: {
+        firstName,
+        lastName,
+        relationship: relationship as any,
+        phone: phone || null,
+        email: email || null,
+        occupation: occupation || null,
+        address: address || null,
+        isPrimary,
+      },
+    })
+
+    revalidatePath("/dashboard/parents")
+    return { success: true }
+  } catch {
+    return { error: "Failed to update parent.", success: false }
+  }
+}
+
+export async function deleteParent(parentId: string) {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
+
+  const parent = await prisma.parent.findUnique({
+    where: { id: parentId },
+    select: { schoolId: true },
+  })
+  if (!parent) return
+  if (profile.role !== "SUPER_ADMIN" && parent.schoolId !== profile.schoolId) return
+
+  await prisma.studentParent.deleteMany({ where: { parentId } })
+  await prisma.parent.delete({ where: { id: parentId } })
+
+  revalidatePath("/dashboard/parents")
+}
+
 export async function removeParent(studentId: string, parentId: string) {
   await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 

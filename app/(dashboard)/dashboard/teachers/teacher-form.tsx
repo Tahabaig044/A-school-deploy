@@ -88,8 +88,16 @@ export function TeacherForm() {
             </div>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="employeeCode">Employee Code *</Label>
-            <Input id="employeeCode" name="employeeCode" required />
+            <Label htmlFor="employeeCode">Employee Code</Label>
+            <Input
+              id="employeeCode"
+              value="Auto-generated (EMP-YYYY-NNNNN)"
+              disabled
+              className="text-muted-foreground"
+            />
+            <p className="text-xs text-muted-foreground">
+              Employee code will be auto-generated upon creation.
+            </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
@@ -114,6 +122,20 @@ export function TeacherForm() {
               <Label htmlFor="specialization">Specialization</Label>
               <Input id="specialization" name="specialization" />
             </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="designation">Designation</Label>
+              <Input id="designation" name="designation" placeholder="e.g. Senior Teacher" />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="department">Department</Label>
+              <Input id="department" name="department" placeholder="e.g. Science" />
+            </div>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="experience">Experience (Years)</Label>
+            <Input id="experience" name="experience" type="number" min="0" placeholder="e.g. 5" />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="joiningDate">Joining Date</Label>

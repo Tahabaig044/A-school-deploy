@@ -49,7 +49,7 @@ export function RoomView({ academicSessionId }: { academicSessionId: string }) {
                       <span className="text-muted-foreground">
                         {DAY_LABELS[b.dayOfWeek]} {b.startTime}-{b.endTime}
                       </span>
-                      <span className="font-medium">{b.subject.name}</span>
+                      <span className="font-medium">{b.isFree ? "Free Period" : b.subject?.name}</span>
                       <span className="text-muted-foreground">{b.class.name}</span>
                     </div>
                   ))}

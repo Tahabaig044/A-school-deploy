@@ -11,6 +11,7 @@ const roleRouteMap: Record<string, string[]> = {
   "/dashboard/classes": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PRINCIPAL"],
   "/dashboard/subjects": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PRINCIPAL"],
   "/dashboard/teachers": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"],
+  "/dashboard/parents": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"],
   "/dashboard/students": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ADMISSION_OFFICER", "TEACHER"],
   "/dashboard/staff": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"],
   "/dashboard/attendance": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER"],

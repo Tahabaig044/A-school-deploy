@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 import { SectionForm } from "./section-form"
 import { SectionList } from "./section-list"
+import { ClassTeacherForm } from "./class-teacher-form"
 
 export default async function ClassDetailPage({
   params,
@@ -22,10 +23,21 @@ export default async function ClassDetailPage({
     include: {
       sections: { orderBy: { name: "asc" } },
       school: true,
+      classTeacher: { select: { id: true, firstName: true, lastName: true, employeeCode: true } },
     },
   })
 
   if (!classData) notFound()
+
+  const teachers = await prisma.teacher.findMany({
+    where: {
+      schoolId: classData.schoolId,
+      branchId: classData.branchId,
+      status: "ACTIVE",
+    },
+    select: { id: true, firstName: true, lastName: true, employeeCode: true, department: true },
+    orderBy: { firstName: "asc" },
+  })
 
   return (
     <div className="grid gap-6">
@@ -33,6 +45,11 @@ export default async function ClassDetailPage({
         <h2 className="text-3xl font-bold tracking-tight">{classData.name}</h2>
         <p className="text-muted-foreground">{classData.school.name} — Code: {classData.code}</p>
       </div>
+      <ClassTeacherForm
+        classId={id}
+        currentTeacher={classData.classTeacher}
+        teachers={JSON.parse(JSON.stringify(teachers))}
+      />
       <SectionForm classId={id} />
       <SectionList sections={classData.sections} classId={id} />
     </div>

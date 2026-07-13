@@ -24,6 +24,7 @@ import {
   MessageSquare,
   Bell,
   Calendar,
+  Briefcase,
   type LucideIcon,
 } from "lucide-react"
 import type { Permission } from "@/lib/permissions"
@@ -77,6 +78,12 @@ export const menuItems: MenuItem[] = [
     href: "/dashboard/teachers",
     icon: BookOpen,
     permission: "teachers.view",
+  },
+  {
+    title: "Parents",
+    href: "/dashboard/parents",
+    icon: Users,
+    permission: "parents.view",
   },
   {
     title: "Staff",
@@ -215,6 +222,12 @@ export const menuItems: MenuItem[] = [
     href: "/dashboard/timetable",
     icon: Table2,
     permission: "classes.view",
+  },
+  {
+    title: "Workload",
+    href: "/dashboard/workload",
+    icon: Briefcase,
+    permission: "workload.view",
   },
   {
     title: "Sessions",

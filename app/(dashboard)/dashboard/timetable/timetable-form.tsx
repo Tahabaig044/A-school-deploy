@@ -23,6 +23,7 @@ export function TimetableForm({
   const [state, formAction, pending] = useActionState(createTimetableSlot, null)
   const [selectedClassId, setSelectedClassId] = useState("")
   const [sections, setSections] = useState<{ id: string; name: string }[]>([])
+  const [isFree, setIsFree] = useState("false")
 
   useEffect(() => {
     const cls = classes.find((c) => c.id === selectedClassId)
@@ -38,6 +39,18 @@ export function TimetableForm({
       </CardHeader>
       <CardContent>
         <form action={formAction} className="grid gap-4 max-w-md">
+          <fieldset className="flex gap-4">
+            <legend className="text-sm font-medium mb-1">Period Type</legend>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="radio" name="isFree" value="false" checked={isFree === "false"} onChange={(e) => setIsFree(e.target.value)} className="h-4 w-4" />
+              Teaching Period
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="radio" name="isFree" value="true" checked={isFree === "true"} onChange={(e) => setIsFree(e.target.value)} className="h-4 w-4" />
+              Free Period
+            </label>
+          </fieldset>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="classId">Class *</Label>
@@ -59,26 +72,37 @@ export function TimetableForm({
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="subjectId">Subject *</Label>
-              <select id="subjectId" name="subjectId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-                <option value="">Select subject</option>
-                {subjects.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
+
+          {isFree === "false" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="subjectId">Subject *</Label>
+                <select id="subjectId" name="subjectId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                  <option value="">Select subject</option>
+                  {subjects.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="teacherId">Teacher *</Label>
+                <select id="teacherId" name="teacherId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                  <option value="">Select teacher</option>
+                  {teachers.map((t) => (
+                    <option key={t.id} value={t.id}>{t.firstName} {t.lastName}</option>
+                  ))}
+                </select>
+              </div>
             </div>
+          )}
+
+          {isFree === "true" && (
             <div className="grid gap-2">
-              <Label htmlFor="teacherId">Teacher *</Label>
-              <select id="teacherId" name="teacherId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-                <option value="">Select teacher</option>
-                {teachers.map((t) => (
-                  <option key={t.id} value={t.id}>{t.firstName} {t.lastName}</option>
-                ))}
-              </select>
+              <Label htmlFor="freePeriodReason">Free Period Reason (optional)</Label>
+              <Input id="freePeriodReason" name="freePeriodReason" placeholder="e.g. Sports, Library, Study Hall" />
             </div>
-          </div>
+          )}
+
           <div className="grid gap-2">
             <Label htmlFor="dayOfWeek">Day *</Label>
             <select id="dayOfWeek" name="dayOfWeek" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
@@ -111,6 +135,12 @@ export function TimetableForm({
               ))}
             </select>
           </div>
+          {isFree === "false" && (
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="overrideWorkload" name="overrideWorkload" value="true" className="h-4 w-4 rounded border-gray-300" />
+              <Label htmlFor="overrideWorkload" className="text-sm text-muted-foreground">Override workload limits</Label>
+            </div>
+          )}
           <Button type="submit" disabled={pending}>
             {pending ? "Adding..." : "Add Slot"}
           </Button>

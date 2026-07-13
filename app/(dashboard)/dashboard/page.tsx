@@ -26,12 +26,21 @@ export default async function DashboardPage() {
     ).catch(() => ({
       totalStudents: 0,
       totalTeachers: 0,
+      totalParents: 0,
+      totalClasses: 0,
+      totalSections: 0,
       todayAttendance: 0,
+      attendanceRate: 0,
+      totalStudentsCount: 0,
       monthlyFeeCollection: 0,
       pendingFeeAmount: 0,
       newAdmissions: 0,
       pendingLeaveRequests: 0,
       upcomingExams: 0,
+      teachersOnLeave: 0,
+      upcomingMeetings: 0,
+      unreadNotifications: 0,
+      timetableConflicts: 0,
     })),
   ])
 

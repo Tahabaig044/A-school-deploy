@@ -8,20 +8,38 @@ export default async function LeavesPage() {
     "TEACHER", "ACCOUNTANT", "ADMISSION_OFFICER", "LIBRARIAN", "TRANSPORT_MANAGER"
   )
 
-  const leaves = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"].includes(profile.role)
+  const isAdmin = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"].includes(profile.role)
+
+  const leaves = isAdmin
     ? await prisma.leaveRequest.findMany({
         where: profile.role === "SUPER_ADMIN" ? {} : { profile: { schoolId: profile.schoolId } },
-        include: { profile: { select: { firstName: true, lastName: true, role: true, schoolId: true } } },
+        include: {
+          profile: { select: { firstName: true, lastName: true, role: true, schoolId: true } },
+          substituteTeacher: { select: { id: true, firstName: true, lastName: true } },
+        },
         orderBy: { createdAt: "desc" },
         take: 50,
       })
     : await prisma.leaveRequest.findMany({
         where: { profileId: profile.id },
-        include: { profile: { select: { firstName: true, lastName: true, role: true, schoolId: true } } },
+        include: {
+          profile: { select: { firstName: true, lastName: true, role: true, schoolId: true } },
+          substituteTeacher: { select: { id: true, firstName: true, lastName: true } },
+        },
         orderBy: { createdAt: "desc" },
       })
 
-  const isAdmin = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"].includes(profile.role)
+  const teachers = isAdmin
+    ? await prisma.teacher.findMany({
+        where: {
+          schoolId: profile.schoolId!,
+          branchId: profile.branchId!,
+          status: "ACTIVE",
+        },
+        select: { id: true, firstName: true, lastName: true, employeeCode: true },
+        orderBy: { firstName: "asc" },
+      })
+    : []
 
   return (
     <div className="grid gap-6">
@@ -32,6 +50,7 @@ export default async function LeavesPage() {
       <LeaveView
         leaves={JSON.parse(JSON.stringify(leaves))}
         isAdmin={isAdmin}
+        teachers={JSON.parse(JSON.stringify(teachers))}
       />
     </div>
   )

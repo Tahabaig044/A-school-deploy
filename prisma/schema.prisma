@@ -184,11 +184,13 @@ model Class {
   name               String
   code               String
   order              Int                 @default(0)
+  classTeacherId     String?             @map("class_teacher_id") @db.Uuid
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @updatedAt @map("updated_at")
   classSubjects      ClassSubject[]
   branch             Branch              @relation(fields: [branchId], references: [id])
   school             School              @relation(fields: [schoolId], references: [id])
+  classTeacher       Teacher?            @relation("ClassTeacher", fields: [classTeacherId], references: [id])
   exams              Exam[]
   homework           Homework[]
   sections           Section[]
@@ -454,6 +456,12 @@ model Teacher {
   qualification  String?
   specialization String?
   joiningDate    DateTime?           @map("joining_date")
+  designation    String?
+  department     String?
+  experience     Int?
+  photoUrl       String?             @map("photo_url")
+  maxPeriodsPerDay  Int?              @map("max_periods_per_day")
+  maxPeriodsPerWeek Int?              @map("max_periods_per_week")
   status         EmployeeStatus      @default(ACTIVE)
   createdAt      DateTime            @default(now()) @map("created_at")
   updatedAt      DateTime            @updatedAt @map("updated_at")
@@ -463,6 +471,8 @@ model Teacher {
   profile        Profile?            @relation(fields: [profileId], references: [id])
   school         School              @relation(fields: [schoolId], references: [id])
   timetableSlots Timetable[]
+  classTeacherFor Class[]            @relation("ClassTeacher")
+  substituteFor   LeaveRequest[]     @relation("SubstituteTeacher")
 
   @@unique([schoolId, employeeCode])
   @@index([schoolId, branchId])
@@ -559,12 +569,14 @@ model Timetable {
   branchId          String          @map("branch_id") @db.Uuid
   classId           String          @map("class_id") @db.Uuid
   sectionId         String?         @map("section_id") @db.Uuid
-  subjectId         String          @map("subject_id") @db.Uuid
-  teacherId         String          @map("teacher_id") @db.Uuid
+  subjectId         String?         @map("subject_id") @db.Uuid
+  teacherId         String?         @map("teacher_id") @db.Uuid
   dayOfWeek         DayOfWeek       @map("day_of_week")
   startTime         String          @map("start_time")
   endTime           String          @map("end_time")
   room              String?
+  isFree            Boolean         @default(false) @map("is_free")
+  freePeriodReason  String?         @map("free_period_reason")
   academicSessionId String          @map("academic_session_id") @db.Uuid
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
@@ -573,8 +585,8 @@ model Timetable {
   class             Class           @relation(fields: [classId], references: [id])
   school            School          @relation(fields: [schoolId], references: [id])
   section           Section?        @relation(fields: [sectionId], references: [id])
-  subject           Subject         @relation(fields: [subjectId], references: [id])
-  teacher           Teacher         @relation(fields: [teacherId], references: [id])
+  subject           Subject?        @relation(fields: [subjectId], references: [id])
+  teacher           Teacher?        @relation(fields: [teacherId], references: [id])
 
   @@index([classId, sectionId, dayOfWeek])
   @@index([teacherId, dayOfWeek])
@@ -622,21 +634,24 @@ model StaffAttendance {
 }
 
 model LeaveRequest {
-  id         String      @id @default(uuid()) @db.Uuid
-  profileId  String      @map("profile_id") @db.Uuid
-  leaveType  LeaveType   @map("leave_type")
-  startDate  DateTime    @map("start_date") @db.Date
-  endDate    DateTime    @map("end_date") @db.Date
-  reason     String
-  status     LeaveStatus @default(PENDING)
-  approvedBy String?     @map("approved_by") @db.Uuid
-  createdAt  DateTime    @default(now()) @map("created_at")
-  updatedAt  DateTime    @updatedAt @map("updated_at")
-  profile    Profile     @relation(fields: [profileId], references: [id])
+  id                  String           @id @default(uuid()) @db.Uuid
+  profileId           String           @map("profile_id") @db.Uuid
+  leaveType           LeaveType        @map("leave_type")
+  startDate           DateTime         @map("start_date") @db.Date
+  endDate             DateTime         @map("end_date") @db.Date
+  reason              String
+  status              LeaveStatus      @default(PENDING)
+  approvedBy          String?          @map("approved_by") @db.Uuid
+  substituteTeacherId String?          @map("substitute_teacher_id") @db.Uuid
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
+  profile             Profile          @relation(fields: [profileId], references: [id])
+  substituteTeacher   Teacher?         @relation("SubstituteTeacher", fields: [substituteTeacherId], references: [id])
 
   @@index([profileId])
   @@index([status])
   @@index([approvedBy])
+  @@index([substituteTeacherId])
   @@map("leave_requests")
 }
 
@@ -898,8 +913,8 @@ model Homework {
   class             Class                @relation(fields: [classId], references: [id])
   school            School               @relation(fields: [schoolId], references: [id])
   section           Section?             @relation(fields: [sectionId], references: [id])
-  subject           Subject              @relation(fields: [subjectId], references: [id])
-  teacher           Teacher              @relation(fields: [teacherId], references: [id])
+  subject           Subject?        @relation(fields: [subjectId], references: [id])
+  teacher           Teacher?        @relation(fields: [teacherId], references: [id])
   submissions       HomeworkSubmission[]
 
   @@index([schoolId, branchId])
@@ -915,21 +930,41 @@ model HomeworkSubmission {
   homeworkId    String    @map("homework_id") @db.Uuid
   studentId     String    @map("student_id") @db.Uuid
   content       String?
+  fileName      String?   @map("file_name")
+  fileType      String?   @map("file_type")
+  fileSize      Int?      @map("file_size")
   filePath      String?   @map("file_path")
   marksObtained Int?      @map("marks_obtained")
   feedback      String?
+  returnReason  String?   @map("return_reason")
   status        String    @default("SUBMITTED")
+  isLate        Boolean   @default(false) @map("is_late")
   submittedAt   DateTime  @default(now()) @map("submitted_at")
   gradedAt      DateTime? @map("graded_at")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   homework      Homework  @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
   student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  attachments   SubmissionAttachment[]
 
-  @@unique([homeworkId, studentId])
   @@index([homeworkId])
   @@index([studentId])
+  @@index([homeworkId, studentId])
   @@map("homework_submissions")
+}
+
+model SubmissionAttachment {
+  id             String             @id @default(uuid()) @db.Uuid
+  submissionId   String             @map("submission_id") @db.Uuid
+  fileName       String             @map("file_name")
+  fileType       String             @map("file_type")
+  fileSize       Int?               @map("file_size")
+  filePath       String             @map("file_path")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  submission     HomeworkSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@map("submission_attachments")
 }
 
 model Announcement {
@@ -1312,6 +1347,7 @@ enum LeaveStatus {
   PENDING
   APPROVED
   REJECTED
+  CANCELLED
 }
 
 enum Grade {
@@ -1366,9 +1402,9 @@ enum MeetingType {
 }
 
 enum MeetingStatus {
-  SCHEDULED
-  CONFIRMED
-  IN_PROGRESS
+  PENDING
+  APPROVED
+  REJECTED
   COMPLETED
   CANCELLED
   RESCHEDULED
@@ -1381,9 +1417,10 @@ model Meeting {
   title         String
   description   String?
   meetingType   MeetingType     @map("meeting_type")
-  status        MeetingStatus   @default(SCHEDULED)
+  status        MeetingStatus   @default(PENDING)
   startDateTime DateTime        @map("start_date_time")
   endDateTime   DateTime        @map("end_date_time")
+  rescheduledAt DateTime?       @map("rescheduled_at")
   location      String?
   isRecurring   Boolean         @default(false) @map("is_recurring")
   recurrenceRule String?        @map("recurrence_rule")

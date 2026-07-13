@@ -112,7 +112,7 @@ export default async function ParentHomeworkPage({
                     <div className="space-y-1">
                       <CardTitle className="text-base">{hw.title}</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {hw.subject.name} &middot; {hw.teacher.firstName} {hw.teacher.lastName}
+                        {hw.subject?.name ?? "General"} &middot; {hw.teacher?.firstName ?? "Unknown"} {hw.teacher?.lastName ?? ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">

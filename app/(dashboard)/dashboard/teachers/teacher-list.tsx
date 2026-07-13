@@ -15,9 +15,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { updateTeacher, deleteTeacher } from "@/actions/teacher.actions"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { updateTeacher, deleteTeacher, suspendTeacher, activateTeacher } from "@/actions/teacher.actions"
 import { useToast } from "@/hooks/use-toast"
-import { Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, Eye, Pencil, Trash2, UserX, UserCheck } from "lucide-react"
 
 type TeacherItem = {
   id: string
@@ -26,6 +32,9 @@ type TeacherItem = {
   employeeCode: string
   qualification: string | null
   specialization: string | null
+  designation: string | null
+  department: string | null
+  experience: number | null
   phone: string | null
   email: string | null
   status: string
@@ -72,8 +81,29 @@ export function TeacherList({
       await deleteTeacher(id)
       toast({ title: "Teacher deleted" })
       router.refresh()
-    } catch (e) {
-      toast({ title: e instanceof Error ? e.message : "Failed to delete teacher", variant: "destructive" })
+    } catch {
+      toast({ title: "Failed to delete teacher", variant: "destructive" })
+    }
+  }
+
+  async function handleSuspend(id: string) {
+    if (!confirm("Suspend this teacher? Their account will be deactivated.")) return
+    try {
+      await suspendTeacher(id)
+      toast({ title: "Teacher suspended" })
+      router.refresh()
+    } catch {
+      toast({ title: "Failed to suspend teacher", variant: "destructive" })
+    }
+  }
+
+  async function handleActivate(id: string) {
+    try {
+      await activateTeacher(id)
+      toast({ title: "Teacher activated" })
+      router.refresh()
+    } catch {
+      toast({ title: "Failed to activate teacher", variant: "destructive" })
     }
   }
 
@@ -103,9 +133,10 @@ export function TeacherList({
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead className="hidden md:table-cell">Employee Code</TableHead>
-                  <TableHead className="hidden lg:table-cell">School</TableHead>
-                  <TableHead className="hidden lg:table-cell">Qualifications</TableHead>
-                  <TableHead className="hidden md:table-cell">Assignments</TableHead>
+                  <TableHead className="hidden lg:table-cell">Department</TableHead>
+                  <TableHead className="hidden lg:table-cell">Designation</TableHead>
+                  <TableHead className="hidden xl:table-cell">School</TableHead>
+                  <TableHead className="hidden xl:table-cell">Assignments</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -117,27 +148,52 @@ export function TeacherList({
                       {teacher.firstName} {teacher.lastName}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{teacher.employeeCode}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{teacher.school.name}</TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {[teacher.qualification, teacher.specialization].filter(Boolean).join(", ") || "-"}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">{teacher.assignments.length}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{teacher.department || "-"}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{teacher.designation || "-"}</TableCell>
+                    <TableCell className="hidden xl:table-cell">{teacher.school.name}</TableCell>
+                    <TableCell className="hidden xl:table-cell">{teacher.assignments.length}</TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        teacher.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        teacher.status === "ACTIVE" ? "bg-green-100 text-green-800" :
+                        teacher.status === "INACTIVE" ? "bg-yellow-100 text-yellow-800" :
+                        "bg-red-100 text-red-800"
                       }`}>
                         {teacher.status.charAt(0) + teacher.status.slice(1).toLowerCase()}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditItem(teacher); setError(null) }}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(teacher.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem onClick={() => router.push(`/dashboard/teachers/${teacher.id}`)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Profile
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setEditItem(teacher); setError(null) }}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          {teacher.status === "ACTIVE" ? (
+                            <DropdownMenuItem onClick={() => handleSuspend(teacher.id)}>
+                              <UserX className="h-4 w-4 mr-2" />
+                              Suspend
+                            </DropdownMenuItem>
+                          ) : teacher.status === "INACTIVE" ? (
+                            <DropdownMenuItem onClick={() => handleActivate(teacher.id)}>
+                              <UserCheck className="h-4 w-4 mr-2" />
+                              Activate
+                            </DropdownMenuItem>
+                          ) : null}
+                          <DropdownMenuItem onClick={() => handleDelete(teacher.id)} className="text-destructive">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -172,7 +228,7 @@ export function TeacherList({
       )}
 
       <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Teacher</DialogTitle>
           </DialogHeader>
@@ -211,6 +267,20 @@ export function TeacherList({
                 <Label htmlFor="edit-specialization">Specialization</Label>
                 <Input id="edit-specialization" name="specialization" defaultValue={editItem?.specialization || ""} />
               </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-designation">Designation</Label>
+                <Input id="edit-designation" name="designation" defaultValue={editItem?.designation || ""} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-department">Department</Label>
+                <Input id="edit-department" name="department" defaultValue={editItem?.department || ""} />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-experience">Experience (Years)</Label>
+              <Input id="edit-experience" name="experience" type="number" min="0" defaultValue={editItem?.experience?.toString() || ""} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-status">Status</Label>

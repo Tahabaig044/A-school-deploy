@@ -136,6 +136,12 @@ export const portalMenuItems: PortalMenuItem[] = [
     roles: ["PARENT"],
   },
   {
+    title: "Timetable",
+    href: "/portal/parent/timetable",
+    icon: Calendar,
+    roles: ["PARENT"],
+  },
+  {
     title: "Notices",
     href: "/portal/parent/notices",
     icon: Bell,
@@ -143,7 +149,7 @@ export const portalMenuItems: PortalMenuItem[] = [
   },
   {
     title: "Meetings",
-    href: "/dashboard/meetings",
+    href: "/portal/parent/meetings",
     icon: CalendarClock,
     roles: ["PARENT"],
   },
@@ -157,6 +163,12 @@ export const portalMenuItems: PortalMenuItem[] = [
     title: "Calendar",
     href: "/dashboard/calendar",
     icon: Calendar,
+    roles: ["PARENT"],
+  },
+  {
+    title: "Messages",
+    href: "/portal/parent/messages",
+    icon: MessageSquare,
     roles: ["PARENT"],
   },
   {
@@ -241,7 +253,7 @@ export const portalMenuItems: PortalMenuItem[] = [
   },
   {
     title: "Meetings",
-    href: "/dashboard/meetings",
+    href: "/portal/teacher/meetings",
     icon: CalendarClock,
     roles: ["TEACHER"],
   },

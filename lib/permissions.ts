@@ -12,6 +12,11 @@ const ALL_PERMISSIONS = [
   "teachers.create",
   "teachers.edit",
   "teachers.delete",
+  // Parents
+  "parents.view",
+  "parents.create",
+  "parents.edit",
+  "parents.delete",
   // Classes
   "classes.view",
   "classes.create",
@@ -60,6 +65,8 @@ const ALL_PERMISSIONS = [
   "meetings.view",
   "meetings.create",
   "meetings.edit",
+  "meetings.delete",
+  "meetings.approve",
   // Events
   "events.view",
   "events.create",
@@ -92,6 +99,9 @@ const ALL_PERMISSIONS = [
   "sessions.edit",
   // Audit
   "audit.view",
+  // Workload
+  "workload.view",
+  "workload.manage",
   // Expenses
   "expenses.view",
   "expenses.create",
@@ -105,6 +115,7 @@ const ROLE_DEFAULTS: Record<Role, Permission[]> = {
   SCHOOL_ADMIN: [
     "students.view", "students.create", "students.edit", "students.delete",
     "teachers.view", "teachers.create", "teachers.edit", "teachers.delete",
+    "parents.view", "parents.create", "parents.edit", "parents.delete",
     "classes.view", "classes.create", "classes.edit", "classes.delete",
     "attendance.view", "attendance.mark",
     "exams.view", "exams.create", "exams.edit", "exams.delete", "exams.marks_entry", "exams.report_cards",
@@ -115,7 +126,7 @@ const ROLE_DEFAULTS: Record<Role, Permission[]> = {
     "announcements.view", "announcements.create", "announcements.edit",
     "messages.view", "messages.send",
     "notifications.view", "notifications.manage",
-    "meetings.view", "meetings.create", "meetings.edit",
+    "meetings.view", "meetings.create", "meetings.edit", "meetings.delete", "meetings.approve",
     "events.view", "events.create", "events.edit",
     "calendar.view", "calendar.create", "calendar.edit",
     "reports.view", "reports.export",
@@ -124,10 +135,12 @@ const ROLE_DEFAULTS: Record<Role, Permission[]> = {
     "staff.view", "staff.create", "staff.edit",
     "sessions.view", "sessions.create", "sessions.edit",
     "expenses.view", "expenses.create", "expenses.edit",
+    "workload.view", "workload.manage",
   ],
   BRANCH_ADMIN: [
     "students.view", "students.create", "students.edit",
     "teachers.view", "teachers.create", "teachers.edit",
+    "parents.view", "parents.create", "parents.edit",
     "classes.view", "classes.create", "classes.edit",
     "attendance.view", "attendance.mark",
     "exams.view", "exams.create", "exams.edit", "exams.marks_entry", "exams.report_cards",
@@ -138,7 +151,7 @@ const ROLE_DEFAULTS: Record<Role, Permission[]> = {
     "announcements.view", "announcements.create",
     "messages.view", "messages.send",
     "notifications.view", "notifications.manage",
-    "meetings.view", "meetings.create", "meetings.edit",
+    "meetings.view", "meetings.create", "meetings.edit", "meetings.approve",
     "events.view", "events.create", "events.edit",
     "calendar.view", "calendar.create", "calendar.edit",
     "reports.view",
@@ -156,10 +169,11 @@ const ROLE_DEFAULTS: Record<Role, Permission[]> = {
     "announcements.view", "announcements.create",
     "messages.view", "messages.send",
     "notifications.view", "notifications.manage",
-    "meetings.view", "meetings.create", "meetings.edit",
+    "meetings.view", "meetings.create", "meetings.edit", "meetings.approve",
     "events.view", "events.create", "events.edit",
     "calendar.view", "calendar.create", "calendar.edit",
     "reports.view",
+    "workload.view",
   ],
   TEACHER: [
     "students.view",

@@ -65,13 +65,20 @@ export default async function TeacherTimetablePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {slots.map((slot) => (
+                    {slots.map((slot) => (
                     <div
                       key={slot.id}
-                      className="rounded-lg border p-3 space-y-2"
+                      className={`rounded-lg border p-3 space-y-2 ${slot.isFree ? "bg-muted/30 border-dashed" : ""}`}
                     >
                       <div className="flex items-center justify-between">
-                        <p className="font-medium">{slot.subject.name}</p>
+                        {slot.isFree ? (
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-muted-foreground">Free Period</Badge>
+                            {slot.freePeriodReason && <span className="text-sm text-muted-foreground">{slot.freePeriodReason}</span>}
+                          </div>
+                        ) : (
+                          <p className="font-medium">{slot.subject?.name}</p>
+                        )}
                         <Badge variant="secondary">
                           {slot.class.name}
                           {slot.section ? ` - ${slot.section.name}` : ""}

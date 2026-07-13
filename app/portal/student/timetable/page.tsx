@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, User } from "lucide-react";
 
 const DAY_ORDER = [
@@ -65,7 +66,7 @@ export default async function StudentTimetablePage() {
                     {slots.map((slot, index) => (
                       <div
                         key={index}
-                        className="rounded-lg border p-3 space-y-2"
+                        className={`rounded-lg border p-3 space-y-2 ${slot.isFree ? "bg-muted/30 border-dashed" : ""}`}
                       >
                         <div className="flex items-center gap-2 text-sm font-medium">
                           <Clock className="h-4 w-4 text-muted-foreground" />
@@ -73,16 +74,25 @@ export default async function StudentTimetablePage() {
                             {slot.startTime} – {slot.endTime}
                           </span>
                         </div>
-                        <p className="text-sm font-semibold">
-                          {slot.subject.name}
-                        </p>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <User className="h-4 w-4" />
-                          <span>
-                            {slot.teacher.firstName}{" "}
-                            {slot.teacher.lastName}
-                          </span>
-                        </div>
+                        {slot.isFree ? (
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs text-muted-foreground">Free Period</Badge>
+                            {slot.freePeriodReason && <span className="text-xs text-muted-foreground">{slot.freePeriodReason}</span>}
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-sm font-semibold">
+                              {slot.subject?.name}
+                            </p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <User className="h-4 w-4" />
+                              <span>
+                                {slot.teacher?.firstName}{" "}
+                                {slot.teacher?.lastName}
+                              </span>
+                            </div>
+                          </>
+                        )}
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4" />
                           <span>{slot.room}</span>

@@ -29,7 +29,10 @@ export async function createLeaveRequest(
   return { success: true, error: undefined }
 }
 
-export async function approveLeave(leaveId: string) {
+export async function approveLeave(
+  leaveId: string,
+  substituteTeacherId?: string | null
+) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
   // School isolation: verify leave request belongs to user's school
@@ -45,12 +48,78 @@ export async function approveLeave(leaveId: string) {
   if (!leaveProfile) return
   if (profile.role !== "SUPER_ADMIN" && leaveProfile.schoolId !== profile.schoolId) return
 
+  // If substitute teacher provided, validate they exist and belong to same school
+  if (substituteTeacherId) {
+    const substitute = await prisma.teacher.findUnique({
+      where: { id: substituteTeacherId },
+      select: { schoolId: true, status: true },
+    })
+    if (!substitute || substitute.status !== "ACTIVE") {
+      return
+    }
+    if (profile.role !== "SUPER_ADMIN" && substitute.schoolId !== profile.schoolId) {
+      return
+    }
+  }
+
   await prisma.leaveRequest.update({
     where: { id: leaveId },
-    data: { status: "APPROVED", approvedBy: profile.id },
+    data: {
+      status: "APPROVED",
+      approvedBy: profile.id,
+      substituteTeacherId: substituteTeacherId || null,
+    },
   })
 
   revalidatePath("/dashboard/leaves")
+}
+
+export async function approveLeaveWithSubstitute(
+  _prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  const leaveId = formData.get("leaveId") as string
+  const substituteTeacherId = formData.get("substituteTeacherId") as string
+
+  if (!leaveId) return { error: "Leave ID is required.", success: false }
+
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
+
+  const existing = await prisma.leaveRequest.findUnique({
+    where: { id: leaveId },
+    select: { profileId: true },
+  })
+  if (!existing) return { error: "Leave request not found.", success: false }
+
+  const leaveProfile = await prisma.profile.findUnique({
+    where: { id: existing.profileId },
+    select: { schoolId: true },
+  })
+  if (!leaveProfile) return { error: "Profile not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && leaveProfile.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
+
+  if (substituteTeacherId) {
+    const substitute = await prisma.teacher.findUnique({
+      where: { id: substituteTeacherId },
+      select: { schoolId: true, status: true },
+    })
+    if (!substitute) return { error: "Substitute teacher not found.", success: false }
+    if (substitute.status !== "ACTIVE") return { error: "Substitute teacher is not active.", success: false }
+  }
+
+  await prisma.leaveRequest.update({
+    where: { id: leaveId },
+    data: {
+      status: "APPROVED",
+      approvedBy: profile.id,
+      substituteTeacherId: substituteTeacherId || null,
+    },
+  })
+
+  revalidatePath("/dashboard/leaves")
+  return { success: true }
 }
 
 export async function rejectLeave(leaveId: string) {

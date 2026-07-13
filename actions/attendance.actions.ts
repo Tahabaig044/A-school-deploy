@@ -66,6 +66,8 @@ export async function markAttendance(
   }
 
   revalidatePath("/dashboard/attendance")
+  revalidatePath("/portal/student/attendance")
+  revalidatePath("/portal/parent/attendance")
   return { success: true, error: undefined }
 }
 
@@ -158,6 +160,8 @@ export async function bulkMarkAttendance(formData: FormData) {
   })
 
   revalidatePath("/dashboard/attendance")
+  revalidatePath("/portal/student/attendance")
+  revalidatePath("/portal/parent/attendance")
 }
 
 export async function markStaffAttendance(

@@ -21,21 +21,34 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
   const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
 
+  const classWhere: any = {}
+  if (effectiveSchoolId) classWhere.schoolId = effectiveSchoolId
+  if (effectiveBranchId) classWhere.branchId = effectiveBranchId
+
   const [
     totalStudents,
     totalTeachers,
+    totalParents,
+    totalClasses,
+    totalSections,
     todayAttendance,
+    totalStudentsCount,
     monthlyFeeCollection,
     pendingFeeAmount,
     newAdmissions,
     pendingLeaveRequests,
     upcomingExams,
+    teachersOnLeave,
+    upcomingMeetings,
+    unreadNotifications,
+    timetableConflicts,
   ] = await Promise.all([
-    prisma.student.count({
-      where: { ...whereClause, status: "ACTIVE" },
-    }),
-    prisma.teacher.count({
-      where: { ...whereClause, status: "ACTIVE" },
+    prisma.student.count({ where: { ...whereClause, status: "ACTIVE" } }),
+    prisma.teacher.count({ where: { ...whereClause, status: "ACTIVE" } }),
+    prisma.parent.count({ where: effectiveSchoolId ? { schoolId: effectiveSchoolId } : {} }),
+    prisma.class.count({ where: classWhere }),
+    prisma.section.count({
+      where: classWhere.schoolId ? { class: { schoolId: classWhere.schoolId, ...(classWhere.branchId ? { branchId: classWhere.branchId } : {}) } } : {},
     }),
     prisma.studentAttendance.count({
       where: {
@@ -46,12 +59,11 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
         date: { gte: today, lt: tomorrow },
       },
     }),
+    prisma.student.count({ where: { ...whereClause } }),
     prisma.payment.aggregate({
       where: {
         paymentDate: { gte: firstDayOfMonth, lte: lastDayOfMonth },
-        ...(effectiveBranchId && {
-          invoice: { student: { branchId: effectiveBranchId } },
-        }),
+        ...(effectiveBranchId && { invoice: { student: { branchId: effectiveBranchId } } }),
       },
       _sum: { amount: true },
     }),
@@ -71,7 +83,7 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
     prisma.leaveRequest.count({
       where: {
         status: "PENDING",
-        ...(effectiveBranchId && { profile: { branchId: effectiveBranchId } }),
+        ...(effectiveBranchId ? { profile: { branchId: effectiveBranchId } } : effectiveSchoolId ? { profile: { schoolId: effectiveSchoolId } } : {}),
       },
     }),
     prisma.exam.count({
@@ -81,19 +93,65 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
         isPublished: true,
       },
     }),
+    prisma.leaveRequest.count({
+      where: {
+        status: "APPROVED",
+        startDate: { lte: today },
+        endDate: { gte: today },
+        ...(effectiveBranchId ? { profile: { branchId: effectiveBranchId } } : effectiveSchoolId ? { profile: { schoolId: effectiveSchoolId } } : {}),
+      },
+    }),
+    prisma.meeting.count({
+      where: {
+        startDateTime: { gte: today },
+        status: { in: ["PENDING", "APPROVED"] },
+        ...(effectiveSchoolId ? { schoolId: effectiveSchoolId } : {}),
+        ...(effectiveBranchId ? { branchId: effectiveBranchId } : {}),
+      },
+    }),
+    prisma.notification.count({
+      where: {
+        userId: profile.id,
+        isRead: false,
+      },
+    }),
+    // Timetable conflicts: count slots where same teacher has overlapping time
+    prisma.$queryRawUnsafe<{ count: bigint }[]>(
+      `SELECT COUNT(*) as count FROM (
+        SELECT t1.id FROM timetables t1
+        INNER JOIN timetables t2 ON t1.teacher_id = t2.teacher_id
+          AND t1.day_of_week = t2.day_of_week
+          AND t1.id < t2.id
+          AND t1.start_time < t2.end_time
+          AND t2.start_time < t1.end_time
+          AND t1.academic_session_id = t2.academic_session_id
+        ${effectiveSchoolId ? "WHERE t1.school_id = $1" : ""}
+      ) conflicts`,
+      ...(effectiveSchoolId ? [effectiveSchoolId] : [])
+    ).then((r) => Number(r[0]?.count || 0)).catch(() => 0),
   ])
 
   const pendingFee = Number(pendingFeeAmount._sum.totalAmount || 0) - Number(pendingFeeAmount._sum.paidAmount || 0)
+  const attendanceRate = totalStudentsCount > 0 ? Math.round((todayAttendance / totalStudentsCount) * 100) : 0
 
   return {
     totalStudents,
     totalTeachers,
+    totalParents,
+    totalClasses,
+    totalSections,
     todayAttendance,
+    attendanceRate,
+    totalStudentsCount,
     monthlyFeeCollection: Number(monthlyFeeCollection._sum.amount || 0),
     pendingFeeAmount: pendingFee,
     newAdmissions,
     pendingLeaveRequests,
     upcomingExams,
+    teachersOnLeave,
+    upcomingMeetings,
+    unreadNotifications,
+    timetableConflicts,
   }
 }
 

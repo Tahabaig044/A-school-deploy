@@ -419,6 +419,8 @@ export async function submitExamResult(
   })
 
   revalidatePath("/dashboard/exams/marks-entry")
+  revalidatePath("/portal/student")
+  revalidatePath("/portal/parent/results")
   return { success: true, error: undefined }
 }
 
@@ -496,6 +498,8 @@ export async function submitBulkExamResults(
   })
 
   revalidatePath("/dashboard/exams/marks-entry")
+  revalidatePath("/portal/student")
+  revalidatePath("/portal/parent/results")
   return { success: true, error: undefined }
 }
 

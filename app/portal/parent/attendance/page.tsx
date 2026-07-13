@@ -157,6 +157,7 @@ export default async function ParentAttendancePage({
           {attendance.length === 0 ? (
             <p className="py-8 text-center text-muted-foreground">No attendance records for this month.</p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -188,6 +189,7 @@ export default async function ParentAttendancePage({
                 })}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

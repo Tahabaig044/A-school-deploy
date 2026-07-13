@@ -5,17 +5,9 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { CheckCircle, Copy, Mail } from "lucide-react"
+import { CheckCircle, Copy, Mail, UserPlus, Search } from "lucide-react"
 import { createStudent } from "@/actions/student.actions"
-import { enrollStudent } from "@/actions/parent.actions"
 
 type ClassItem = { id: string; name: string; sections: { id: string; name: string }[] }
 type SessionItem = { id: string; name: string }
@@ -32,6 +24,8 @@ export function StudentForm({
   const [selectedClassId, setSelectedClassId] = useState("")
   const [sections, setSections] = useState<{ id: string; name: string }[]>([])
   const [copied, setCopied] = useState(false)
+  const [parentAction, setParentAction] = useState("skip")
+  const [relType, setRelType] = useState("FATHER")
 
   useEffect(() => {
     const cls = classes.find((c) => c.id === selectedClassId)
@@ -62,22 +56,11 @@ export function StudentForm({
           <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
             <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
             <code className="text-sm break-all flex-1">{state.invitationLink}</code>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyLink}
-              className="shrink-0"
-            >
+            <Button variant="outline" size="sm" onClick={handleCopyLink} className="shrink-0">
               {copied ? (
-                <>
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Copied!
-                </>
+                <><CheckCircle className="h-4 w-4 mr-1" />Copied!</>
               ) : (
-                <>
-                  <Copy className="h-4 w-4 mr-1" />
-                  Copy Link
-                </>
+                <><Copy className="h-4 w-4 mr-1" />Copy Link</>
               )}
             </Button>
           </div>
@@ -117,12 +100,7 @@ export function StudentForm({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="gender">Gender</Label>
-              <select
-                id="gender"
-                name="gender"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                defaultValue="MALE"
-              >
+              <select id="gender" name="gender" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" defaultValue="MALE">
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
                 <option value="OTHER">Other</option>
@@ -184,49 +162,35 @@ export function StudentForm({
             <h3 className="mb-4 text-lg font-medium">Enrollment</h3>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div className="grid gap-2">
-                <Label htmlFor="classId">Class</Label>
+                <Label htmlFor="classId">Class *</Label>
                 <select
-                  id="classId"
-                  name="classId"
+                  id="classId" name="classId"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={selectedClassId}
                   onChange={(e) => setSelectedClassId(e.target.value)}
+                  required
                 >
                   <option value="">Select class</option>
                   {classes.map((cls) => (
-                    <option key={cls.id} value={cls.id}>
-                      {cls.name}
-                    </option>
+                    <option key={cls.id} value={cls.id}>{cls.name}</option>
                   ))}
                 </select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="sectionId">Section</Label>
-                <select
-                  id="sectionId"
-                  name="sectionId"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
+                <select id="sectionId" name="sectionId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                   <option value="">Select section</option>
                   {sections.map((sec) => (
-                    <option key={sec.id} value={sec.id}>
-                      {sec.name}
-                    </option>
+                    <option key={sec.id} value={sec.id}>{sec.name}</option>
                   ))}
                 </select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="academicSessionId">Academic Session</Label>
-                <select
-                  id="academicSessionId"
-                  name="academicSessionId"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
+                <Label htmlFor="academicSessionId">Academic Session *</Label>
+                <select id="academicSessionId" name="academicSessionId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
                   <option value="">Select session</option>
                   {sessions.map((ses) => (
-                    <option key={ses.id} value={ses.id}>
-                      {ses.name}
-                    </option>
+                    <option key={ses.id} value={ses.id}>{ses.name}</option>
                   ))}
                 </select>
               </div>
@@ -234,6 +198,74 @@ export function StudentForm({
                 <Label htmlFor="rollNumber">Roll Number</Label>
                 <Input id="rollNumber" name="rollNumber" />
               </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-6">
+            <h3 className="mb-4 text-lg font-medium">Parent / Guardian</h3>
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-4">
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="parentAction" value="skip" checked={parentAction === "skip"} onChange={(e) => setParentAction(e.target.value)} />
+                  <span className="text-sm">Skip (add later)</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="parentAction" value="existing" checked={parentAction === "existing"} onChange={(e) => setParentAction(e.target.value)} />
+                  <span className="text-sm">Link existing parent</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="parentAction" value="new" checked={parentAction === "new"} onChange={(e) => setParentAction(e.target.value)} />
+                  <span className="text-sm">Create new parent</span>
+                </label>
+              </div>
+
+              {parentAction === "existing" && (
+                <div className="grid gap-4 md:grid-cols-2 border rounded-lg p-4 bg-muted/20">
+                  <div className="grid gap-2 md:col-span-2">
+                    <Label htmlFor="parentProfileId">Parent Profile ID (email)</Label>
+                    <div className="flex gap-2">
+                      <Input id="parentProfileId" name="parentProfileId" placeholder="Enter parent's profile ID or email" className="flex-1" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Enter the parent&apos;s profile ID. The system will look up their email to find the linked parent record.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {parentAction === "new" && (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 border rounded-lg p-4 bg-muted/20">
+                  <div className="grid gap-2">
+                    <Label htmlFor="parentFirstName">First Name *</Label>
+                    <Input id="parentFirstName" name="parentFirstName" required={parentAction === "new"} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="parentLastName">Last Name</Label>
+                    <Input id="parentLastName" name="parentLastName" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="parentRelationship">Relationship</Label>
+                    <select id="parentRelationship" name="parentRelationship" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={relType} onChange={(e) => setRelType(e.target.value)}>
+                      <option value="FATHER">Father</option>
+                      <option value="MOTHER">Mother</option>
+                      <option value="GUARDIAN">Guardian</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="parentPhone">Phone</Label>
+                    <Input id="parentPhone" name="parentPhone" type="tel" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="parentEmail">Email</Label>
+                    <Input id="parentEmail" name="parentEmail" type="email" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="parentOccupation">Occupation</Label>
+                    <Input id="parentOccupation" name="parentOccupation" />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -245,11 +277,7 @@ export function StudentForm({
             <Button type="submit" disabled={pending}>
               {pending ? "Saving..." : "Save Student"}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-            >
+            <Button type="button" variant="outline" onClick={() => router.back()}>
               Cancel
             </Button>
           </div>

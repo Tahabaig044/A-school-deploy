@@ -61,7 +61,7 @@ async function TeacherAssignmentsContent() {
                     </Badge>
                   </div>
                   <CardDescription>
-                    {hw.class.name}{hw.section ? ` - ${hw.section.name}` : ""} | {hw.subject.name}
+                    {hw.class.name}{hw.section ? ` - ${hw.section.name}` : ""} | {hw.subject?.name ?? "General"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">

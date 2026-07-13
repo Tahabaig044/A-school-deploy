@@ -69,6 +69,8 @@ export async function createHomework(
   })
 
   revalidatePath("/dashboard/homework")
+  revalidatePath("/portal/student/homework")
+  revalidatePath("/portal/parent/homework")
   return { success: true, error: undefined }
 }
 
@@ -102,6 +104,8 @@ export async function updateHomework(
   })
 
   revalidatePath("/dashboard/homework")
+  revalidatePath("/portal/student/homework")
+  revalidatePath("/portal/parent/homework")
   return { success: true, error: undefined }
 }
 
@@ -116,6 +120,8 @@ export async function deleteHomework(homeworkId: string) {
 
   await prisma.homework.delete({ where: { id: homeworkId } })
   revalidatePath("/dashboard/homework")
+  revalidatePath("/portal/student/homework")
+  revalidatePath("/portal/parent/homework")
   return { success: true }
 }
 
@@ -182,11 +188,21 @@ export async function submitHomework(
     return { error: "Submission deadline has passed.", success: false }
   }
 
-  await prisma.homeworkSubmission.upsert({
-    where: { homeworkId_studentId: { homeworkId, studentId: profile.id } },
-    update: { content, filePath, status: "SUBMITTED" },
-    create: { homeworkId, studentId: profile.id, content, filePath },
+  const existing = await prisma.homeworkSubmission.findFirst({
+    where: { homeworkId, studentId: profile.id },
+    orderBy: { submittedAt: "desc" },
   })
+
+  if (existing) {
+    await prisma.homeworkSubmission.update({
+      where: { id: existing.id },
+      data: { content, filePath, status: "SUBMITTED", submittedAt: new Date() },
+    })
+  } else {
+    await prisma.homeworkSubmission.create({
+      data: { homeworkId, studentId: profile.id, content, filePath, status: "SUBMITTED" },
+    })
+  }
 
   revalidatePath("/dashboard/homework/submissions")
   return { success: true, error: undefined }
@@ -223,6 +239,8 @@ export async function gradeHomework(
   })
 
   revalidatePath("/dashboard/homework/check")
+  revalidatePath("/portal/student/homework")
+  revalidatePath("/portal/parent/homework")
   return { success: true, error: undefined }
 }
 

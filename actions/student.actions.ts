@@ -120,6 +120,16 @@ export async function createStudent(
   const academicSessionId = formData.get("academicSessionId") as string
   const rollNumber = formData.get("rollNumber") as string
 
+  // Parent data
+  const parentAction = formData.get("parentAction") as string || "skip"
+  const parentProfileId = formData.get("parentProfileId") as string
+  const parentFirstName = formData.get("parentFirstName") as string
+  const parentLastName = formData.get("parentLastName") as string
+  const parentRelationship = formData.get("parentRelationship") as string || "FATHER"
+  const parentPhone = formData.get("parentPhone") as string
+  const parentEmail = formData.get("parentEmail") as string
+  const parentOccupation = formData.get("parentOccupation") as string
+
   const parsed = studentSchema.safeParse({
     firstName, lastName, dateOfBirth, gender, bloodGroup, religion,
     nationality, phone, email, address, city, state, postalCode,
@@ -127,6 +137,14 @@ export async function createStudent(
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
+  }
+
+  // Validate parent data
+  if (parentAction === "new" && !parentFirstName) {
+    return { error: "Parent first name is required.", success: false }
+  }
+  if (parentAction === "existing" && !parentProfileId) {
+    return { error: "Please select a parent to link.", success: false }
   }
 
   // Normalize empty strings to null for optional fields
@@ -147,10 +165,21 @@ export async function createStudent(
     }
   }
 
-  // Generate admission number
+  // --- Pre-checks & generation ---
+
+  // Check duplicate admission number (early, user-friendly)
+  if (admissionNo) {
+    const existingByAdmissionNo = await prisma.student.findUnique({
+      where: { schoolId_admissionNo: { schoolId, admissionNo } },
+      select: { id: true },
+    })
+    if (existingByAdmissionNo) {
+      return { error: "A student with this admission number already exists.", success: false }
+    }
+  }
+
   const generatedAdmissionNo = admissionNo || await generateAdmissionNumber(schoolId)
 
-  // Generate roll number if not provided
   const generatedRollNumber = rollNumber || (cleanClassId && cleanAcademicSessionId
     ? await generateRollNumber(cleanClassId, cleanAcademicSessionId)
     : null)
@@ -166,8 +195,33 @@ export async function createStudent(
     expiresAt = new Date(Date.now() + INVITATION_EXPIRY_HOURS * 60 * 60 * 1000)
   }
 
+  // Create Supabase Auth User FIRST (outside transaction)
+  // If this fails, nothing is in the DB yet, safe to return
+  let authUserId: string | null = null
+  if (email) {
+    const serviceClient = await createServiceClient()
+    const { data: authData, error: authError } = await serviceClient.auth.admin.createUser({
+      email,
+      password: generateToken(),
+      email_confirm: true,
+      user_metadata: {
+        first_name: firstName,
+        last_name: lastName,
+        role: "STUDENT",
+      },
+    })
+
+    if (authError || !authData?.user) {
+      console.error("[createStudent] Supabase auth error:", JSON.stringify(authError, null, 2))
+      const msg = authError?.message || authError?.code || "Unknown auth error"
+      return { error: `Auth failed: ${msg}`, success: false }
+    }
+
+    authUserId = authData.user.id
+  }
+
   try {
-    // Create student and enrollment in transaction
+    // All DB writes in a single atomic transaction
     const student = await prisma.$transaction(async (tx) => {
       // Create student record
       const newStudent = await tx.student.create({
@@ -206,40 +260,109 @@ export async function createStudent(
         })
       }
 
-      return newStudent
-    })
-
-    // Create auth user and profile for portal access (if email provided)
-    if (email && rawToken && hashedToken && expiresAt) {
-      const serviceClient = await createServiceClient()
-      const { data: authData, error: authError } = await serviceClient.auth.admin.createUser({
-        email,
-        password: generateToken(), // Random unusable password
-        email_confirm: true,
-        user_metadata: {
-          first_name: firstName,
-          last_name: lastName,
+      // Always create a Profile for the student
+      // If email + auth user exists: profile is "INVITED" with invitation token
+      // Otherwise: profile is "ACTIVE" without portal access
+      const profileId = authUserId || randomUUID()
+      await tx.profile.create({
+        data: {
+          id: profileId,
+          email: email || null,
+          firstName,
+          lastName,
           role: "STUDENT",
+          phone: phone || null,
+          schoolId,
+          branchId,
+          status: authUserId ? "INVITED" : "ACTIVE",
+          ...(authUserId && hashedToken && expiresAt
+            ? {
+                invitationToken: hashedToken,
+                invitationExpiresAt: expiresAt,
+                invitedById: profile.id,
+              }
+            : {}),
         },
       })
 
-      if (!authError && authData?.user) {
-        await prisma.profile.create({
+      // Link existing parent
+      if (parentAction === "existing" && parentProfileId) {
+        const parentProfile = await tx.profile.findUnique({
+          where: { id: parentProfileId },
+          select: { email: true, firstName: true, lastName: true },
+        })
+        if (parentProfile?.email) {
+          const existingParent = await tx.parent.findFirst({
+            where: { email: parentProfile.email, schoolId },
+          })
+          if (existingParent) {
+            await tx.studentParent.create({
+              data: { studentId: newStudent.id, parentId: existingParent.id },
+            })
+          }
+        }
+      }
+
+      // Create new parent
+      if (parentAction === "new") {
+        const newParent = await tx.parent.create({
           data: {
-            id: authData.user.id,
-            email,
-            firstName,
-            lastName,
-            role: "STUDENT",
-            phone: phone || null,
             schoolId,
-            branchId,
-            status: "INVITED",
-            invitationToken: hashedToken,
-            invitationExpiresAt: expiresAt,
-            invitedById: profile.id,
+            firstName: parentFirstName,
+            lastName: parentLastName || "",
+            relationship: parentRelationship as any,
+            phone: parentPhone || null,
+            email: parentEmail || null,
+            occupation: parentOccupation || null,
           },
         })
+        await tx.studentParent.create({
+          data: { studentId: newStudent.id, parentId: newParent.id },
+        })
+      }
+
+      return newStudent
+    })
+
+    // Create auth user + profile for new parent (outside transaction — best-effort)
+    if (parentAction === "new" && parentEmail) {
+      const existingProfile = await prisma.profile.findUnique({
+        where: { email: parentEmail },
+        select: { id: true },
+      })
+      if (!existingProfile) {
+        const pRawToken = generateToken()
+        const pHashedToken = hashToken(pRawToken)
+        const pExpiresAt = new Date(Date.now() + INVITATION_EXPIRY_HOURS * 60 * 60 * 1000)
+        const serviceClient = await createServiceClient()
+        const { data: authData, error: authError } = await serviceClient.auth.admin.createUser({
+          email: parentEmail,
+          password: generateToken(),
+          email_confirm: true,
+          user_metadata: {
+            first_name: parentFirstName,
+            last_name: parentLastName || "",
+            role: "PARENT",
+          },
+        })
+        if (!authError && authData?.user) {
+          await prisma.profile.create({
+            data: {
+              id: authData.user.id,
+              email: parentEmail,
+              firstName: parentFirstName,
+              lastName: parentLastName || "",
+              role: "PARENT",
+              phone: parentPhone || null,
+              schoolId,
+              branchId,
+              status: "INVITED",
+              invitationToken: pHashedToken,
+              invitationExpiresAt: pExpiresAt,
+              invitedById: profile.id,
+            },
+          })
+        }
       }
     }
 
@@ -262,8 +385,16 @@ export async function createStudent(
       : undefined
 
     return { success: true, invitationLink }
-  } catch (e) {
-    return { error: "Failed to create student. Please try again.", success: false }
+  } catch (e: any) {
+    console.error("[createStudent] Transaction failed:", e?.message || e)
+    // Cleanup: delete Supabase auth user if one was created (transaction already rolled back)
+    if (authUserId) {
+      const serviceClient = await createServiceClient()
+      await serviceClient.auth.admin.deleteUser(authUserId).catch((cleanupErr) => {
+        console.error("[createStudent] Failed to cleanup auth user:", cleanupErr)
+      })
+    }
+    return { error: `Failed to create student: ${e?.message || "Please try again."}`, success: false }
   }
 }
 

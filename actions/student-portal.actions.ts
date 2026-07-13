@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { requireAuth } from "@/lib/auth"
+import { z } from "zod"
 
 async function getStudentRecord() {
   const user = await requireAuth()
@@ -98,7 +99,7 @@ export async function getStudentHomework() {
   const { user, student, enrollment } = await getStudentRecord()
   if (!user || !student || !enrollment) return []
 
-  return prisma.homework.findMany({
+  const allHomework = await prisma.homework.findMany({
     where: {
       classId: enrollment.classId,
       academicSessionId: enrollment.academicSessionId,
@@ -106,10 +107,144 @@ export async function getStudentHomework() {
     include: {
       subject: true,
       teacher: { select: { firstName: true, lastName: true } },
-      submissions: { where: { studentId: student.id } },
+      submissions: {
+        where: { studentId: student.id },
+        orderBy: { submittedAt: "desc" },
+        take: 1,
+      },
     },
     orderBy: { dueDate: "desc" },
   })
+
+  return allHomework.map((hw) => {
+    const latestSub = hw.submissions[0] || null
+    const now = new Date()
+    const dueDate = new Date(hw.dueDate)
+    return {
+      ...hw,
+      latestSubmission: latestSub,
+      submissionStatus: latestSub
+        ? latestSub.status === "GRADED"
+          ? "GRADED"
+          : latestSub.isLate
+            ? "LATE"
+            : "SUBMITTED"
+        : "NOT_SUBMITTED",
+      isOverdue: !latestSub && dueDate < now,
+    }
+  })
+}
+
+const submitSchema = z.object({
+  homeworkId: z.string().uuid(),
+  content: z.string().optional(),
+})
+
+export async function submitHomework(
+  _prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+) {
+  const { user, student, enrollment } = await getStudentRecord()
+  if (!user || !student || !enrollment) return { error: "Not authenticated.", success: false }
+
+  const homeworkId = formData.get("homeworkId") as string
+  const content = (formData.get("content") as string) || undefined
+
+  const parsed = submitSchema.safeParse({ homeworkId, content })
+  if (!parsed.success) return { error: parsed.error.issues[0].message, success: false }
+
+  const homework = await prisma.homework.findFirst({
+    where: { id: homeworkId, classId: enrollment.classId, academicSessionId: enrollment.academicSessionId },
+  })
+  if (!homework) return { error: "Homework not found.", success: false }
+
+  const dueDate = new Date(homework.dueDate)
+  const now = new Date()
+  const isLate = now > dueDate
+
+  const attachmentsJson = formData.get("attachments") as string
+  let attachments: { url: string; fileName: string; fileType: string; fileSize: number }[] = []
+  if (attachmentsJson) {
+    try { attachments = JSON.parse(attachmentsJson) } catch { }
+  }
+
+  const submission = await prisma.homeworkSubmission.create({
+    data: {
+      homeworkId,
+      studentId: student.id,
+      content,
+      status: "SUBMITTED",
+      isLate,
+      submittedAt: now,
+    },
+  })
+
+  if (attachments.length > 0) {
+    await prisma.submissionAttachment.createMany({
+      data: attachments.map((a) => ({
+        submissionId: submission.id,
+        fileName: a.fileName,
+        fileType: a.fileType,
+        fileSize: a.fileSize,
+        filePath: a.url,
+      })),
+    })
+  }
+
+  revalidatePath("/portal/student/homework")
+  return { success: true }
+}
+
+export async function getHomeworkDetail(homeworkId: string) {
+  const { user, student, enrollment } = await getStudentRecord()
+  if (!user || !student || !enrollment) return null
+
+  const homework = await prisma.homework.findFirst({
+    where: { id: homeworkId, classId: enrollment.classId, academicSessionId: enrollment.academicSessionId },
+    include: {
+      subject: true,
+      teacher: { select: { firstName: true, lastName: true } },
+      class: { select: { name: true } },
+      section: { select: { name: true } },
+    },
+  })
+  if (!homework) return null
+
+  const submissions = await prisma.homeworkSubmission.findMany({
+    where: { homeworkId, studentId: student.id },
+    include: { attachments: true },
+    orderBy: { submittedAt: "desc" },
+  })
+
+  const latestSubmission = submissions[0] || null
+  const now = new Date()
+  const dueDate = new Date(homework.dueDate)
+
+  return {
+    ...homework,
+    latestSubmission,
+    submissions,
+    submissionStatus: latestSubmission
+      ? latestSubmission.status === "GRADED"
+        ? "GRADED"
+        : latestSubmission.isLate
+          ? "LATE"
+          : "SUBMITTED"
+      : "NOT_SUBMITTED",
+    canSubmit: !latestSubmission || latestSubmission.status === "RETURNED",
+    isPastDue: !latestSubmission && now > dueDate,
+    statusHistory: submissions.map((s) => ({
+      id: s.id,
+      status: s.status,
+      content: s.content,
+      marksObtained: s.marksObtained,
+      feedback: s.feedback,
+      returnReason: s.returnReason,
+      submittedAt: s.submittedAt,
+      isLate: s.isLate,
+      attachments: s.attachments,
+    })),
+  }
 }
 
 export async function getStudentTimetable() {

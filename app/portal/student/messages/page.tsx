@@ -1,106 +1,114 @@
-import { getStudentMessages } from "@/actions/student-portal.actions";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Mail, MailOpen, User } from "lucide-react";
+import { redirect } from "next/navigation"
+import { headers } from "next/headers"
+import { setRequestContext, clearRequestContext } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { MessageList } from "@/app/(dashboard)/dashboard/messages/message-list"
 
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(date));
-}
+const PAGE_SIZE = 20
 
-function getRoleBadgeVariant(
-  role: string
-): "default" | "secondary" | "outline" | "success" | "warning" | "info" {
-  switch (role) {
-    case "TEACHER":
-      return "info";
-    case "SCHOOL_ADMIN":
-    case "BRANCH_ADMIN":
-      return "warning";
-    default:
-      return "secondary";
+export default async function StudentMessagesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; tab?: string; search?: string }>
+}) {
+  const headerStore = await headers()
+  const userId = headerStore.get("X-User-Id")
+  const userRole = headerStore.get("X-User-Role")
+  const userEmail = headerStore.get("X-User-Email")
+
+  if (!userId || !userRole || !userEmail) redirect("/login")
+  if (userRole !== "STUDENT") redirect("/dashboard")
+
+  const params = await searchParams
+  const page = Math.max(1, Number(params.page) || 1)
+  const tab = params.tab || "inbox"
+  const search = params.search || ""
+  const skip = (page - 1) * PAGE_SIZE
+
+  const profile = await prisma.profile.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true, schoolId: true, branchId: true, firstName: true, lastName: true, email: true, phone: true },
+  })
+
+  if (!profile) redirect("/login")
+
+  setRequestContext({
+    user: { id: userId, email: userEmail },
+    profile,
+  })
+
+  try {
+    const searchFilter = search ? {
+      OR: [
+        { subject: { contains: search, mode: "insensitive" as const } },
+        { content: { contains: search, mode: "insensitive" as const } },
+      ],
+    } : {}
+
+    const [inbox, sent, drafts, archived, starred, unreadCount, inboxTotal, sentTotal] = await Promise.all([
+      prisma.message.findMany({
+        where: { receiverId: userId, isDeleted: false, isDraft: false, ...searchFilter },
+        include: { sender: { select: { id: true, firstName: true, lastName: true, role: true } } },
+        orderBy: { createdAt: "desc" },
+        skip: tab === "inbox" ? skip : 0,
+        take: tab === "inbox" ? PAGE_SIZE : undefined,
+      }),
+      prisma.message.findMany({
+        where: { senderId: userId, isDeleted: false, isDraft: false, ...searchFilter },
+        include: { receiver: { select: { id: true, firstName: true, lastName: true, role: true } } },
+        orderBy: { createdAt: "desc" },
+        skip: tab === "sent" ? skip : 0,
+        take: tab === "sent" ? PAGE_SIZE : undefined,
+      }),
+      prisma.message.findMany({
+        where: { senderId: userId, isDraft: true },
+        include: { receiver: { select: { id: true, firstName: true, lastName: true, role: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.message.findMany({
+        where: { OR: [{ senderId: userId }, { receiverId: userId }], isDeleted: true },
+        include: { sender: { select: { id: true, firstName: true, lastName: true, role: true } }, receiver: { select: { id: true, firstName: true, lastName: true, role: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.message.findMany({
+        where: { OR: [{ senderId: userId }, { receiverId: userId }], isStarred: true, isDeleted: false },
+        include: { sender: { select: { id: true, firstName: true, lastName: true, role: true } }, receiver: { select: { id: true, firstName: true, lastName: true, role: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.message.count({ where: { receiverId: userId, isRead: false, isDeleted: false, isDraft: false } }),
+      prisma.message.count({ where: { receiverId: userId, isDeleted: false, isDraft: false } }),
+      prisma.message.count({ where: { senderId: userId, isDeleted: false, isDraft: false } }),
+    ])
+
+    const tabCounts = {
+      inbox: inboxTotal,
+      sent: sentTotal,
+      drafts: await prisma.message.count({ where: { senderId: userId, isDraft: true } }),
+      archived: await prisma.message.count({ where: { OR: [{ senderId: userId }, { receiverId: userId }], isDeleted: true } }),
+      starred: await prisma.message.count({ where: { OR: [{ senderId: userId }, { receiverId: userId }], isStarred: true, isDeleted: false } }),
+    }
+
+    const total = tabCounts[tab as keyof typeof tabCounts] || 0
+    const totalPages = Math.ceil(total / PAGE_SIZE)
+
+    return (
+      <MessageList
+        inbox={JSON.parse(JSON.stringify(inbox))}
+        sent={JSON.parse(JSON.stringify(sent))}
+        drafts={JSON.parse(JSON.stringify(drafts))}
+        archived={JSON.parse(JSON.stringify(archived))}
+        starred={JSON.parse(JSON.stringify(starred))}
+        unreadCount={unreadCount}
+        profile={JSON.parse(JSON.stringify(profile))}
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        activeTab={tab}
+        tabCounts={tabCounts}
+        search={search}
+      />
+    )
+  } finally {
+    clearRequestContext()
   }
-}
-
-export default async function StudentMessagesPage() {
-  const messages = await getStudentMessages();
-
-  const unreadCount = messages.filter((m) => !m.isRead).length;
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <MessageSquare className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
-        </div>
-        {unreadCount > 0 && <Badge>{unreadCount} unread</Badge>}
-      </div>
-
-      {messages.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-            <Mail className="h-12 w-12 mb-4 opacity-50" />
-            <p className="text-lg font-medium">No messages yet</p>
-            <p className="text-sm">Messages from teachers and admin will appear here.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {messages.map((message) => (
-            <Card
-              key={message.id}
-              className={message.isRead ? "" : "border-l-4 border-l-primary bg-primary/5"}
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {message.isRead ? (
-                      <MailOpen className="h-5 w-5 text-muted-foreground shrink-0" />
-                    ) : (
-                      <Mail className="h-5 w-5 text-primary shrink-0" />
-                    )}
-                    <CardTitle
-                      className={
-                        message.isRead
-                          ? "text-base font-medium"
-                          : "text-base font-semibold"
-                      }
-                    >
-                      {message.subject}
-                    </CardTitle>
-                  </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formatDate(message.createdAt)}
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                  <User className="h-4 w-4" />
-                  <span>
-                    {message.sender.firstName} {message.sender.lastName}
-                  </span>
-                  <Badge variant={getRoleBadgeVariant(message.sender.role)}>
-                    {message.sender.role.replace("_", " ")}
-                  </Badge>
-                </div>
-                <p className="text-sm line-clamp-2 text-muted-foreground">
-                  {message.content}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }

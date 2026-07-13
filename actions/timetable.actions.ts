@@ -16,16 +16,23 @@ export async function createTimetableSlot(
 
   const classId = formData.get("classId") as string
   const sectionId = (formData.get("sectionId") as string) || undefined
-  const subjectId = formData.get("subjectId") as string
-  const teacherId = formData.get("teacherId") as string
   const dayOfWeek = formData.get("dayOfWeek") as string
   const startTime = formData.get("startTime") as string
   const endTime = formData.get("endTime") as string
   const room = (formData.get("room") as string) || undefined
   const academicSessionId = formData.get("academicSessionId") as string
+  const isFree = formData.get("isFree") === "true"
+  const freePeriodReason = (formData.get("freePeriodReason") as string) || undefined
+
+  const subjectId = isFree ? null : (formData.get("subjectId") as string)
+  const teacherId = isFree ? null : (formData.get("teacherId") as string)
 
   if (startTime >= endTime) {
     return { error: "End time must be after start time.", success: false }
+  }
+
+  if (!isFree && (!subjectId || !teacherId)) {
+    return { error: "Subject and teacher are required for teaching periods.", success: false }
   }
 
   const cls = await prisma.class.findUnique({
@@ -34,14 +41,21 @@ export async function createTimetableSlot(
   })
   if (!cls) return { error: "Class not found.", success: false }
 
-  const teacherConflictPromise = prisma.timetable.findFirst({
-    where: {
-      teacherId,
-      dayOfWeek: dayOfWeek as any,
-      academicSessionId,
-      id: { not: undefined },
-    },
-  })
+  const conflictChecks: Promise<any>[] = []
+
+  if (!isFree) {
+    conflictChecks.push(
+      prisma.timetable.findFirst({
+        where: {
+          teacherId: teacherId!,
+          dayOfWeek: dayOfWeek as any,
+          academicSessionId,
+        },
+      })
+    )
+  } else {
+    conflictChecks.push(Promise.resolve(null))
+  }
 
   const classWhere: any = {
     classId,
@@ -54,25 +68,23 @@ export async function createTimetableSlot(
       { sectionId: null },
     ]
   }
-  const classConflictPromise = prisma.timetable.findFirst({ where: classWhere })
+  conflictChecks.push(prisma.timetable.findFirst({ where: classWhere }))
 
-  const roomConflictPromise = room
-    ? prisma.timetable.findFirst({
-        where: {
-          room,
-          dayOfWeek: dayOfWeek as any,
-          academicSessionId,
-        },
-      })
-    : Promise.resolve(null)
+  conflictChecks.push(
+    room
+      ? prisma.timetable.findFirst({
+          where: {
+            room,
+            dayOfWeek: dayOfWeek as any,
+            academicSessionId,
+          },
+        })
+      : Promise.resolve(null)
+  )
 
-  const [teacherConflict, classConflict, roomConflict] = await Promise.all([
-    teacherConflictPromise,
-    classConflictPromise,
-    roomConflictPromise,
-  ])
+  const [teacherConflict, classConflict, roomConflict] = await Promise.all(conflictChecks)
 
-  if (teacherConflict && timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, startTime, endTime)) {
+  if (!isFree && teacherConflict && timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, startTime, endTime)) {
     return { error: `Teacher already has a class at ${teacherConflict.startTime}-${teacherConflict.endTime}.`, success: false }
   }
 
@@ -84,18 +96,31 @@ export async function createTimetableSlot(
     return { error: `Room "${room}" is already booked at ${roomConflict.startTime}-${roomConflict.endTime}.`, success: false }
   }
 
+  if (!isFree) {
+    const overrideWorkload = formData.get("overrideWorkload") === "true"
+    if (!overrideWorkload) {
+      const { checkWorkloadBeforeAssign } = await import("./workload.actions")
+      const workloadCheck = await checkWorkloadBeforeAssign(teacherId!, dayOfWeek, academicSessionId)
+      if (!workloadCheck.allowed) {
+        return { error: `${workloadCheck.reason} Check "Override workload limits" to force assign.`, success: false }
+      }
+    }
+  }
+
   await prisma.timetable.create({
     data: {
       school: { connect: { id: cls.schoolId } },
       branch: { connect: { id: cls.branchId } },
       class: { connect: { id: classId } },
       section: sectionId ? { connect: { id: sectionId } } : undefined,
-      subject: { connect: { id: subjectId } },
-      teacher: { connect: { id: teacherId } },
+      ...(subjectId ? { subject: { connect: { id: subjectId } } } : {}),
+      ...(teacherId ? { teacher: { connect: { id: teacherId } } } : {}),
       dayOfWeek: dayOfWeek as any,
       startTime,
       endTime,
       room: room || null,
+      isFree,
+      freePeriodReason: freePeriodReason || null,
       academicSession: { connect: { id: academicSessionId } },
     },
   })
@@ -128,8 +153,10 @@ export async function updateTimetableSlot(
   const slot = await prisma.timetable.findUnique({ where: { id: slotId } })
   if (!slot) return { error: "Timetable slot not found.", success: false }
 
-  const subjectId = formData.get("subjectId") as string
-  const teacherId = formData.get("teacherId") as string
+  const isFree = formData.get("isFree") === "true"
+  const freePeriodReason = (formData.get("freePeriodReason") as string) || undefined
+  const subjectId = isFree ? null : (formData.get("subjectId") as string)
+  const teacherId = isFree ? null : (formData.get("teacherId") as string)
   const dayOfWeek = formData.get("dayOfWeek") as string
   const startTime = formData.get("startTime") as string
   const endTime = formData.get("endTime") as string
@@ -139,14 +166,26 @@ export async function updateTimetableSlot(
     return { error: "End time must be after start time.", success: false }
   }
 
-  const teacherConflictPromise = prisma.timetable.findFirst({
-    where: {
-      id: { not: slotId },
-      teacherId,
-      dayOfWeek: dayOfWeek as any,
-      academicSessionId: slot.academicSessionId,
-    },
-  })
+  if (!isFree && (!subjectId || !teacherId)) {
+    return { error: "Subject and teacher are required for teaching periods.", success: false }
+  }
+
+  const conflictChecks: Promise<any>[] = []
+
+  if (!isFree) {
+    conflictChecks.push(
+      prisma.timetable.findFirst({
+        where: {
+          id: { not: slotId },
+          teacherId: teacherId!,
+          dayOfWeek: dayOfWeek as any,
+          academicSessionId: slot.academicSessionId,
+        },
+      })
+    )
+  } else {
+    conflictChecks.push(Promise.resolve(null))
+  }
 
   const classWhere: any = {
     id: { not: slotId },
@@ -160,26 +199,24 @@ export async function updateTimetableSlot(
       { sectionId: null },
     ]
   }
-  const classConflictPromise = prisma.timetable.findFirst({ where: classWhere })
+  conflictChecks.push(prisma.timetable.findFirst({ where: classWhere }))
 
-  const roomConflictPromise = room
-    ? prisma.timetable.findFirst({
-        where: {
-          id: { not: slotId },
-          room,
-          dayOfWeek: dayOfWeek as any,
-          academicSessionId: slot.academicSessionId,
-        },
-      })
-    : Promise.resolve(null)
+  conflictChecks.push(
+    room
+      ? prisma.timetable.findFirst({
+          where: {
+            id: { not: slotId },
+            room,
+            dayOfWeek: dayOfWeek as any,
+            academicSessionId: slot.academicSessionId,
+          },
+        })
+      : Promise.resolve(null)
+  )
 
-  const [teacherConflict, classConflict, roomConflict] = await Promise.all([
-    teacherConflictPromise,
-    classConflictPromise,
-    roomConflictPromise,
-  ])
+  const [teacherConflict, classConflict, roomConflict] = await Promise.all(conflictChecks)
 
-  if (teacherConflict && timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, startTime, endTime)) {
+  if (!isFree && teacherConflict && timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, startTime, endTime)) {
     return { error: `Teacher already has a class at ${teacherConflict.startTime}-${teacherConflict.endTime}.`, success: false }
   }
 
@@ -194,12 +231,14 @@ export async function updateTimetableSlot(
   await prisma.timetable.update({
     where: { id: slotId },
     data: {
-      subject: { connect: { id: subjectId } },
-      teacher: { connect: { id: teacherId } },
+      ...(subjectId ? { subject: { connect: { id: subjectId } } } : { subject: { disconnect: true } }),
+      ...(teacherId ? { teacher: { connect: { id: teacherId } } } : { teacher: { disconnect: true } }),
       dayOfWeek: dayOfWeek as any,
       startTime,
       endTime,
       room: room || null,
+      isFree,
+      freePeriodReason: freePeriodReason || null,
     },
   })
 
@@ -231,10 +270,10 @@ export async function getAllConflicts(academicSessionId: string) {
       if (a.dayOfWeek !== b.dayOfWeek) continue
       if (!timeOverlaps(a.startTime, a.endTime, b.startTime, b.endTime)) continue
 
-      if (a.teacherId === b.teacherId) {
+      if (!a.isFree && !b.isFree && a.teacherId && b.teacherId && a.teacherId === b.teacherId) {
         conflicts.push({
           type: "TEACHER",
-          message: `Teacher ${a.teacher.firstName} ${a.teacher.lastName} is double-booked`,
+          message: `Teacher ${a.teacher?.firstName} ${a.teacher?.lastName} is double-booked`,
           slotA: a,
           slotB: b,
         })
@@ -302,4 +341,49 @@ export async function getTimetableForClass(classId: string, sectionId?: string, 
     },
     orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
   })
+}
+
+export async function assignSubstitute(
+  slotId: string,
+  substituteTeacherId: string,
+  subjectId: string
+) {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const slot = await prisma.timetable.findUnique({
+    where: { id: slotId },
+    select: { schoolId: true, isFree: true, dayOfWeek: true, academicSessionId: true, startTime: true, endTime: true },
+  })
+  if (!slot) return { error: "Timetable slot not found." }
+
+  if (profile.role !== "SUPER_ADMIN" && slot.schoolId !== profile.schoolId) return { error: "Unauthorized." }
+
+  if (!slot.isFree) return { error: "Only free periods can have substitutes assigned." }
+
+  const teacherConflict = await prisma.timetable.findFirst({
+    where: {
+      id: { not: slotId },
+      teacherId: substituteTeacherId,
+      isFree: false,
+      dayOfWeek: slot.dayOfWeek as any,
+      academicSessionId: slot.academicSessionId,
+    },
+  })
+
+  if (teacherConflict && timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, slot.startTime, slot.endTime)) {
+    return { error: `Substitute teacher already has a class at ${teacherConflict.startTime}-${teacherConflict.endTime}.` }
+  }
+
+  await prisma.timetable.update({
+    where: { id: slotId },
+    data: {
+      teacher: { connect: { id: substituteTeacherId } },
+      subject: { connect: { id: subjectId } },
+      isFree: false,
+      freePeriodReason: null,
+    },
+  })
+
+  revalidatePath("/dashboard/timetable")
+  return { success: true }
 }

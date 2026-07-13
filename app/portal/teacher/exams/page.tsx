@@ -4,9 +4,13 @@ import { setRequestContext, clearRequestContext } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ClipboardList } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { ClipboardList, PenLine, ChevronLeft, ChevronRight } from "lucide-react"
 
-async function TeacherExamsContent() {
+const ITEMS_PER_PAGE = 12
+
+async function TeacherExamsContent({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const headerStore = await headers()
   const userId = headerStore.get("X-User-Id")
   const userRole = headerStore.get("X-User-Role")
@@ -21,27 +25,39 @@ async function TeacherExamsContent() {
   })
 
   try {
+    const { page: pageStr } = await searchParams
+    const currentPage = Math.max(1, parseInt(pageStr || "1"))
+
     const teacher = await prisma.teacher.findFirst({ where: { profileId: userId } })
     if (!teacher) return <div className="text-center py-8 text-muted-foreground">Teacher record not found.</div>
 
-    const exams = await prisma.exam.findMany({
-      where: {
-        class: {
-          sections: {
-            some: {
-              timetableSlots: { some: { teacherId: teacher.id } },
-            },
+    const where = {
+      class: {
+        sections: {
+          some: {
+            timetableSlots: { some: { teacherId: teacher.id } },
           },
         },
       },
-      include: {
-        class: true,
-        subject: true,
-        examType: true,
-        _count: { select: { results: true } },
-      },
-      orderBy: { examDate: "desc" },
-    })
+    }
+
+    const [exams, total] = await Promise.all([
+      prisma.exam.findMany({
+        where,
+        include: {
+          class: true,
+          subject: true,
+          examType: true,
+          _count: { select: { results: true } },
+        },
+        orderBy: { examDate: "desc" },
+        skip: (currentPage - 1) * ITEMS_PER_PAGE,
+        take: ITEMS_PER_PAGE,
+      }),
+      prisma.exam.count({ where }),
+    ])
+
+    const totalPages = Math.ceil(total / ITEMS_PER_PAGE)
 
     return (
       <div className="space-y-6">
@@ -58,36 +74,73 @@ async function TeacherExamsContent() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {exams.map((exam) => (
-              <Card key={exam.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-base">{exam.name}</CardTitle>
-                    <Badge variant={exam.isPublished ? "default" : "secondary"}>
-                      {exam.isPublished ? "Published" : "Draft"}
-                    </Badge>
-                  </div>
-                  <CardDescription>
-                    {exam.class.name} | {exam.subject.name} | {exam.examType.name}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {exam.examDate && (
+          <>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {exams.map((exam) => (
+                <Card key={exam.id}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-base">{exam.name}</CardTitle>
+                      <Badge variant={exam.isPublished ? "default" : "secondary"}>
+                        {exam.isPublished ? "Published" : "Draft"}
+                      </Badge>
+                    </div>
+                    <CardDescription>
+                      {exam.class.name} | {exam.subject.name} | {exam.examType.name}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {exam.examDate && (
+                      <p className="text-sm text-muted-foreground">
+                        Date: {new Date(exam.examDate).toLocaleDateString()}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground">
-                      Date: {new Date(exam.examDate).toLocaleDateString()}
+                      Total: {exam.totalMarks} | Passing: {exam.passingMarks}
                     </p>
-                  )}
-                  <p className="text-sm text-muted-foreground">
-                    Total: {exam.totalMarks} | Passing: {exam.passingMarks}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Results: {exam._count.results}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    <p className="text-sm text-muted-foreground">
+                      Results: {exam._count.results}
+                    </p>
+                    <Button variant="outline" size="sm" asChild className="w-full mt-2">
+                      <Link href={`/portal/teacher/exams/${exam.id}/marks`}>
+                        <PenLine className="h-3 w-3 mr-1" />
+                        Enter Marks
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2">
+                {currentPage > 1 ? (
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/portal/teacher/exams?page=${currentPage - 1}`}>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="sm" disabled>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                )}
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </span>
+                {currentPage < totalPages ? (
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/portal/teacher/exams?page=${currentPage + 1}`}>
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="sm" disabled>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     )
@@ -96,6 +149,10 @@ async function TeacherExamsContent() {
   }
 }
 
-export default function TeacherExamsPage() {
-  return <TeacherExamsContent />
+export default async function TeacherExamsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  return <TeacherExamsContent searchParams={searchParams} />
 }

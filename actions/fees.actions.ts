@@ -313,6 +313,9 @@ export async function recordPayment(
     })
 
     revalidatePath("/dashboard/fees/invoices")
+    revalidatePath("/portal/student")
+    revalidatePath("/portal/parent")
+    revalidatePath("/portal/parent/fees")
     return { success: true, error: undefined }
   } catch (e) {
     return { error: "Failed to record payment. Please try again.", success: false }

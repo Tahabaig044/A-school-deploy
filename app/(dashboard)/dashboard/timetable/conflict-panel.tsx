@@ -57,15 +57,17 @@ export function ConflictPanel({ academicSessionId }: { academicSessionId: string
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-muted-foreground">
                       <div>
-                        <p className="font-medium text-foreground">{c.slotA.subject.name}</p>
+                        <p className="font-medium text-foreground">{c.slotA.isFree ? "Free Period" : c.slotA.subject?.name}</p>
                         <p>{DAY_LABELS[c.slotA.dayOfWeek]} {c.slotA.startTime}-{c.slotA.endTime}</p>
                         <p>{c.slotA.class.name}{c.slotA.section ? `-${c.slotA.section.name}` : ""}</p>
+                        {c.slotA.isFree && c.slotA.freePeriodReason && <p className="text-xs text-muted-foreground">{c.slotA.freePeriodReason}</p>}
                         {c.slotA.room && <p>Room: {c.slotA.room}</p>}
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">{c.slotB.subject.name}</p>
+                        <p className="font-medium text-foreground">{c.slotB.isFree ? "Free Period" : c.slotB.subject?.name}</p>
                         <p>{DAY_LABELS[c.slotB.dayOfWeek]} {c.slotB.startTime}-{c.slotB.endTime}</p>
                         <p>{c.slotB.class.name}{c.slotB.section ? `-${c.slotB.section.name}` : ""}</p>
+                        {c.slotB.isFree && c.slotB.freePeriodReason && <p className="text-xs text-muted-foreground">{c.slotB.freePeriodReason}</p>}
                         {c.slotB.room && <p>Room: {c.slotB.room}</p>}
                       </div>
                     </div>

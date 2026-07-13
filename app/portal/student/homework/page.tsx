@@ -1,7 +1,16 @@
 import { getStudentHomework } from "@/actions/student-portal.actions"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CalendarClock, CheckCircle, Clock, AlertCircle, BookOpen } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { CalendarClock, CheckCircle, Clock, AlertCircle, BookOpen, ArrowRight, RotateCcw } from "lucide-react"
+import Link from "next/link"
+
+const statusStyles: Record<string, string> = {
+  NOT_SUBMITTED: "bg-gray-100 text-gray-800",
+  SUBMITTED: "bg-blue-100 text-blue-800",
+  LATE: "bg-orange-100 text-orange-800",
+  GRADED: "bg-green-100 text-green-800",
+}
 
 export default async function StudentHomeworkPage() {
   const homework = await getStudentHomework()
@@ -23,89 +32,73 @@ export default async function StudentHomeworkPage() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {homework.map((hw) => {
-            const submission = hw.submissions[0]
-            const isOverdue = new Date(hw.dueDate) < new Date() && !submission
-            const isGraded = submission?.status === "GRADED"
-            const isSubmitted = submission?.status === "SUBMITTED" || isGraded
+          {homework.map((hw: any) => {
+            const sub = hw.latestSubmission
+            const status = hw.submissionStatus
 
             return (
-              <Card
-                key={hw.id}
-                className={isOverdue ? "border-red-300 bg-red-50/50" : ""}
-              >
-                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg">{hw.title}</CardTitle>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <BookOpen className="h-3.5 w-3.5" />
-                      <span>{hw.subject.name}</span>
-                      <span className="text-muted-foreground/50">•</span>
-                      <span>
-                        {hw.teacher.firstName} {hw.teacher.lastName}
+              <Link key={hw.id} href={`/portal/student/homework/${hw.id}`}>
+                <Card
+                  className={`transition-colors hover:bg-accent cursor-pointer ${status === "NOT_SUBMITTED" && hw.isOverdue ? "border-red-300 bg-red-50/50" : ""}`}
+                >
+                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                    <div className="space-y-1">
+                      <CardTitle className="text-lg">{hw.title}</CardTitle>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <BookOpen className="h-3.5 w-3.5" />
+                        <span>{hw.subject?.name ?? "General"}</span>
+                        <span className="text-muted-foreground/50">•</span>
+                        <span>
+                          {hw.teacher?.firstName ?? "Unknown"} {hw.teacher?.lastName ?? ""}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {sub?.marksObtained != null && (
+                        <Badge variant="success" className="text-sm">
+                          {sub.marksObtained}/{hw.totalMarks || "—"}
+                        </Badge>
+                      )}
+                      <Badge className={statusStyles[status] || "bg-gray-100"}>
+                        {status === "GRADED" ? <CheckCircle className="mr-1 h-3 w-3" /> :
+                          status === "SUBMITTED" ? <Clock className="mr-1 h-3 w-3" /> :
+                          status === "LATE" ? <AlertCircle className="mr-1 h-3 w-3" /> :
+                          status === "RETURNED" ? <RotateCcw className="mr-1 h-3 w-3" /> : null}
+                        {status === "GRADED" ? "Graded" :
+                          status === "SUBMITTED" ? "Submitted" :
+                          status === "LATE" ? "Late" :
+                          status === "RETURNED" ? "Returned" :
+                          hw.isOverdue ? "Overdue" : "Pending"}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <CalendarClock className="h-3.5 w-3.5" />
+                        <span>
+                          Due:{" "}
+                          {new Date(hw.dueDate).toLocaleDateString("en-US", {
+                            weekday: "short",
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <span className="flex items-center gap-1 text-primary">
+                        View Details <ArrowRight className="h-3 w-3" />
                       </span>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {isGraded && submission.marksObtained != null && (
-                      <Badge variant="success">
-                        {submission.marksObtained}/{hw.totalMarks}
-                      </Badge>
+                    {sub?.feedback && (
+                      <div className="mt-2 rounded-md bg-emerald-50 p-2 text-sm">
+                        <span className="font-medium text-emerald-700">Feedback: </span>
+                        <span className="text-emerald-600">{sub.feedback}</span>
+                      </div>
                     )}
-                    {isGraded ? (
-                      <Badge variant="success">
-                        <CheckCircle className="mr-1 h-3 w-3" />
-                        Graded
-                      </Badge>
-                    ) : isSubmitted ? (
-                      <Badge variant="info">
-                        <Clock className="mr-1 h-3 w-3" />
-                        Submitted
-                      </Badge>
-                    ) : isOverdue ? (
-                      <Badge variant="destructive">
-                        <AlertCircle className="mr-1 h-3 w-3" />
-                        Overdue
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">
-                        <CalendarClock className="mr-1 h-3 w-3" />
-                        Pending
-                      </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {hw.description && (
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {hw.description}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <CalendarClock className="h-3.5 w-3.5" />
-                      <span>
-                        Due:{" "}
-                        {new Date(hw.dueDate).toLocaleDateString("en-US", {
-                          weekday: "short",
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </div>
-                    <span className="text-muted-foreground">
-                      Total Marks: {hw.totalMarks}
-                    </span>
-                  </div>
-                  {isGraded && submission.feedback && (
-                    <div className="mt-3 rounded-md bg-emerald-50 p-3 text-sm">
-                      <span className="font-medium text-emerald-700">Feedback: </span>
-                      <span className="text-emerald-600">{submission.feedback}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             )
           })}
         </div>

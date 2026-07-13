@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { deleteTimetableSlot } from "@/actions/timetable.actions"
 import { TimetablePrintButton } from "./timetable-print"
@@ -29,9 +30,11 @@ type SlotItem = {
   room: string | null
   class: { id: string; name: string }
   section: { name: string } | null
-  subject: { name: string; code: string }
-  teacher: { firstName: string; lastName: string }
+  subject: { name: string; code: string } | null
+  teacher: { firstName: string; lastName: string } | null
   academicSession: { name: string }
+  isFree: boolean
+  freePeriodReason: string | null
 }
 
 export function TimetableGrid({
@@ -132,10 +135,17 @@ export function TimetableGrid({
                     <TableCell colSpan={6} className="p-0">
                       <div className="divide-y">
                         {daySlots.map((slot) => (
-                          <div key={slot.id} className="flex flex-wrap items-center gap-2 px-4 py-2 text-sm md:gap-4">
+                          <div key={slot.id} className={`flex flex-wrap items-center gap-2 px-4 py-2 text-sm md:gap-4 ${slot.isFree ? "bg-muted/30" : ""}`}>
                             <span className="hidden md:inline md:w-24 font-medium">{slot.startTime} - {slot.endTime}</span>
-                            <span className="md:w-32">{slot.subject.name}</span>
-                            <span className="hidden lg:inline lg:w-36">{slot.teacher.firstName} {slot.teacher.lastName}</span>
+                            {slot.isFree ? (
+                              <span className="md:w-32 flex items-center gap-1">
+                                <Badge variant="secondary" className="text-xs">Free</Badge>
+                                {slot.freePeriodReason && <span className="text-muted-foreground text-xs">{slot.freePeriodReason}</span>}
+                              </span>
+                            ) : (
+                              <span className="md:w-32">{slot.subject?.name}</span>
+                            )}
+                            <span className="hidden lg:inline lg:w-36">{slot.isFree ? "-" : `${slot.teacher?.firstName} ${slot.teacher?.lastName}`}</span>
                             <span className="hidden lg:inline lg:w-20">{slot.room || "-"}</span>
                             <span className="hidden md:inline md:w-16">{slot.section?.name || "All"}</span>
                             <form action={deleteTimetableSlot.bind(null, slot.id)}>

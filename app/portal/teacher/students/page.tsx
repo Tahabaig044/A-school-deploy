@@ -4,6 +4,7 @@ import { setRequestContext, clearRequestContext } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import Link from "next/link"
 import { Users } from "lucide-react"
 
 async function TeacherStudentsContent() {
@@ -24,15 +25,43 @@ async function TeacherStudentsContent() {
     const teacher = await prisma.teacher.findFirst({ where: { profileId: userId } })
     if (!teacher) return <div className="text-center py-8 text-muted-foreground">Teacher record not found.</div>
 
+    const activeSession = await prisma.academicSession.findFirst({
+      where: { schoolId: teacher.schoolId, isCurrent: true },
+      select: { id: true },
+    })
+    if (!activeSession) {
+      return <div className="text-center py-8 text-muted-foreground">No active academic session found.</div>
+    }
+
+    // Get classIds from TeacherAssignment for the current session
+    const assignments = await prisma.teacherAssignment.findMany({
+      where: { teacherId: teacher.id, academicSessionId: activeSession.id },
+      select: { classId: true, sectionId: true },
+    })
+    const classIds = [...new Set(assignments.map((a) => a.classId))]
+
+    if (classIds.length === 0) {
+      return (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">My Students</h2>
+            <p className="text-muted-foreground">Students in your classes</p>
+          </div>
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Users className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-lg font-medium">No students found</p>
+              <p className="text-sm text-muted-foreground">You have no class assignments for the current session.</p>
+            </CardContent>
+          </Card>
+        </div>
+      )
+    }
+
     const enrollments = await prisma.studentEnrollment.findMany({
       where: {
-        class: {
-          sections: {
-            some: {
-              timetableSlots: { some: { teacherId: teacher.id } },
-            },
-          },
-        },
+        classId: { in: classIds },
+        academicSessionId: activeSession.id,
         status: "ACTIVE",
       },
       include: {
@@ -40,23 +69,25 @@ async function TeacherStudentsContent() {
         class: true,
         section: true,
       },
-      orderBy: { student: { firstName: "asc" } },
+      orderBy: [{ class: { name: "asc" } }, { section: { name: "asc" } }, { student: { firstName: "asc" } }],
     })
 
-    const uniqueStudents = enrollments.reduce((acc, e) => {
-      if (!acc.find((s) => s.studentId === e.studentId)) {
-        acc.push(e)
-      }
-      return acc
-    }, [] as typeof enrollments)
+    // Deduplicate students (same student might appear for multiple subjects)
+    const seen = new Set<string>()
+    const uniqueEnrollments = enrollments.filter((e) => {
+      const key = e.studentId
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">My Students</h2>
-          <p className="text-muted-foreground">Students in your classes</p>
+          <h2 className="text-3xl font-bold tracking-tight">My Students ({uniqueEnrollments.length})</h2>
+          <p className="text-muted-foreground">Students in your assigned classes</p>
         </div>
-        {uniqueStudents.length === 0 ? (
+        {uniqueEnrollments.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Users className="h-12 w-12 text-muted-foreground mb-4" />
@@ -67,28 +98,36 @@ async function TeacherStudentsContent() {
         ) : (
           <Card>
             <CardContent className="p-0">
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Class</TableHead>
                     <TableHead>Section</TableHead>
+                    <TableHead>Roll No</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {uniqueStudents.map((e) => (
+                  {uniqueEnrollments.map((e) => (
                     <TableRow key={e.studentId}>
-                      <TableCell className="font-medium">{e.student.firstName} {e.student.lastName}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link href={`/portal/teacher/students/${e.studentId}`} className="hover:underline">
+                          {e.student.firstName} {e.student.lastName}
+                        </Link>
+                      </TableCell>
                       <TableCell>{e.class.name}</TableCell>
                       <TableCell>{e.section?.name || "-"}</TableCell>
+                      <TableCell>{e.rollNumber || "-"}</TableCell>
                       <TableCell>{e.student.email || "-"}</TableCell>
                       <TableCell>{e.student.phone || "-"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         )}

@@ -216,6 +216,33 @@ export async function getChildHomework(studentId: string) {
   })
 }
 
+export async function getChildTimetable(studentId: string) {
+  const ctx = await getParentAuthContext()
+  if (!ctx) return []
+
+  const isParent = await verifyParentChild(ctx.user.email!, studentId)
+  if (!isParent) return []
+
+  const enrollment = await prisma.studentEnrollment.findFirst({
+    where: { studentId, status: "ACTIVE" },
+    select: { classId: true, sectionId: true, academicSessionId: true },
+  })
+  if (!enrollment) return []
+
+  return prisma.timetable.findMany({
+    where: {
+      classId: enrollment.classId,
+      sectionId: enrollment.sectionId || undefined,
+      academicSessionId: enrollment.academicSessionId,
+    },
+    include: {
+      subject: true,
+      teacher: { select: { firstName: true, lastName: true } },
+    },
+    orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
+  })
+}
+
 export async function getParentAnnouncements() {
   const ctx = await getParentAuthContext()
   if (!ctx) return []
