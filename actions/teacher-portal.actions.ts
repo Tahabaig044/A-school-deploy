@@ -105,6 +105,9 @@ export async function getTeacherTimetable() {
       class: true,
       section: true,
       subject: true,
+      teacher: {
+        include: { profile: { select: { firstName: true, lastName: true } } },
+      },
     },
     orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
   })
