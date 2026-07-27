@@ -159,7 +159,7 @@ export function TimetableViewer({
                   return (
                     <div
                       key={slot.id}
-                      className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                      className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 rounded-lg border transition-colors ${
                         isCurrent
                           ? "border-primary bg-primary/10 ring-1 ring-primary"
                           : isNext
@@ -169,16 +169,16 @@ export function TimetableViewer({
                               : "hover:bg-accent/50"
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="text-center min-w-[55px] shrink-0">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="text-center min-w-[50px] sm:min-w-[55px] shrink-0">
                           <div className="text-sm font-bold">{slot.startTime}</div>
                           <div className="text-xs text-muted-foreground">{slot.endTime}</div>
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           {slot.isFree ? (
                             <div className="flex flex-wrap items-center gap-1.5">
                               <Badge variant="outline" className="text-xs text-muted-foreground">Free Period</Badge>
-                              {slot.freePeriodReason && <span className="text-xs text-muted-foreground">{slot.freePeriodReason}</span>}
+                              {slot.freePeriodReason && <span className="text-xs text-muted-foreground truncate">{slot.freePeriodReason}</span>}
                             </div>
                           ) : (
                             <>
@@ -187,11 +187,11 @@ export function TimetableViewer({
                                 {isCurrent && <Badge className="text-[10px] h-4 px-1.5">Current</Badge>}
                                 {isNext && !isCurrent && <Badge variant="secondary" className="text-[10px] h-4 px-1.5">Next</Badge>}
                               </div>
-                              <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1.5">
+                              <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
                                 <span className="truncate">{slot.class.name}{slot.section ? ` - ${slot.section.name}` : ""}</span>
                                 {slot.room && (
                                   <span className="flex items-center gap-0.5">
-                                    <MapPin className="h-3 w-3" />{slot.room}
+                                    <MapPin className="h-3 w-3 shrink-0" />{slot.room}
                                   </span>
                                 )}
                               </div>
@@ -199,8 +199,9 @@ export function TimetableViewer({
                           )}
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" className="shrink-0 print:hidden" onClick={() => setDetailSlot(slot)}>
-                        <Eye className="h-4 w-4" />
+                      <Button variant="ghost" size="sm" className="shrink-0 self-end sm:self-auto print:hidden" onClick={() => setDetailSlot(slot)}>
+                        <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" />
+                        <span className="inline sm:hidden">Details</span>
                       </Button>
                     </div>
                   )
@@ -210,7 +211,7 @@ export function TimetableViewer({
           )}
 
           {/* Weekly Grid */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 print:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 print:grid-cols-3">
             {DAYS_ORDER.map((day) => {
               const slots = grouped[day]
               if (slots.length === 0) return null
@@ -300,7 +301,7 @@ export function TimetableViewer({
           </DialogHeader>
           {detailSlot && (
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Day</p>
                   <p className="text-sm font-medium">{DAY_LABELS[detailSlot.dayOfWeek]}</p>
@@ -323,7 +324,7 @@ export function TimetableViewer({
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Class</p>
                       <p className="text-sm font-medium">{detailSlot.class.name}</p>
@@ -333,7 +334,7 @@ export function TimetableViewer({
                       <p className="text-sm font-medium">{detailSlot.section?.name || "N/A"}</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Subject</p>
                       <p className="text-sm font-medium">{detailSlot.subject?.name}</p>
