@@ -119,7 +119,7 @@ export default async function PortalLayout({
                   <Clock className="h-4 w-4 text-primary shrink-0" />
                   <h3 className="text-sm font-semibold">Today&apos;s Schedule</h3>
                 </div>
-                <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 md:-mx-0 px-4 md:px-0 snap-x snap-mandatory scrollbar-thin">
+                <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 -mx-4 md:-mx-0 px-4 md:px-0 snap-x snap-mandatory scrollbar-thin">
                   {todaySlots.map((slot) => (
                     <Card key={slot.id} className={`shrink-0 w-[180px] md:min-w-[200px] snap-start ${slot.isFree ? "border-dashed bg-muted/30" : ""}`}>
                       <CardContent className="p-3 space-y-1.5">
