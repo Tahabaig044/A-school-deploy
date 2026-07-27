@@ -88,7 +88,7 @@ async function TeacherPortalContent() {
           </Button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Link href="/portal/teacher/classes">
             <Card className="transition-colors hover:bg-accent">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -144,7 +144,7 @@ async function TeacherPortalContent() {
           </Link>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Link href="/portal/teacher/messages">
             <Card className="transition-colors hover:bg-accent">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -202,7 +202,7 @@ async function TeacherPortalContent() {
           </Link>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -220,9 +220,9 @@ async function TeacherPortalContent() {
               ) : (
                 <div className="space-y-2">
                   {todaySlots.map((slot) => (
-                    <div key={slot.id} className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg border hover:bg-accent/50 ${slot.isFree ? "bg-muted/30 border-dashed" : ""}`}>
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="text-center min-w-[55px] shrink-0">
+                    <div key={slot.id} className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 rounded-lg border hover:bg-accent/50 ${slot.isFree ? "bg-muted/30 border-dashed" : ""}`}>
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="text-center min-w-[50px] sm:min-w-[55px] shrink-0">
                           <div className="text-sm font-bold">{slot.startTime}</div>
                           <div className="text-xs text-muted-foreground">{slot.endTime}</div>
                         </div>
@@ -243,7 +243,7 @@ async function TeacherPortalContent() {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                      <div className="flex items-center gap-1 sm:gap-2 shrink-0 self-end sm:self-auto">
                         {slot.isFree ? (
                           <Badge variant="secondary" className="text-xs">No Attendance</Badge>
                         ) : (slot as any).attendanceDone ? (
