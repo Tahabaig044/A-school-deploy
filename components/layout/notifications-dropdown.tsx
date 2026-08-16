@@ -12,21 +12,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { getUnreadNotificationCount, getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/actions/notification.actions"
+import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/actions/notification.actions"
 import { useToast } from "@/hooks/use-toast"
 
-export function NotificationsDropdown() {
-  const [count, setCount] = useState(0)
+export function NotificationsDropdown({ initialCount = 0 }: { initialCount?: number }) {
+  const [count, setCount] = useState(initialCount)
   const [notifications, setNotifications] = useState<any[]>([])
   const [open, setOpen] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
+  // Sync when the RSC layout refreshes with a new server-computed count.
   useEffect(() => {
-    getUnreadNotificationCount()
-      .then((c) => setCount(c))
-      .catch(() => setCount(0))
-  }, [])
+    setCount(initialCount)
+  }, [initialCount])
 
   useEffect(() => {
     if (open) {

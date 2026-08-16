@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
 import type { Role } from "@/lib/constants"
@@ -13,38 +14,20 @@ interface AuthContext {
     lastName: string | null
     email: string | null
     phone: string | null
+    isActive: boolean
+    status: string
   }
 }
 
-let currentRequestContext: AuthContext | null = null
-
-export function setRequestContext(ctx: AuthContext) {
-  currentRequestContext = ctx
-}
-
-export function getRequestContext(): AuthContext | null {
-  return currentRequestContext
-}
-
-export function clearRequestContext() {
-  currentRequestContext = null
-}
-
-export async function getCurrentUser() {
-  const cached = getRequestContext()
-  if (cached) return cached.user
-
+export const getCurrentUser = cache(async () => {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   return user
-}
+})
 
-export async function getCurrentProfile() {
-  const cached = getRequestContext()
-  if (cached) return cached.profile
-
+export const getCurrentProfile = cache(async (): Promise<AuthContext["profile"] | null> => {
   const user = await getCurrentUser()
   if (!user) return null
 
@@ -59,40 +42,26 @@ export async function getCurrentProfile() {
       lastName: true,
       email: true,
       phone: true,
+      isActive: true,
+      status: true,
     },
   })
 
   return profile
-}
+})
 
-export async function requireAuth() {
+export async function requireAuth(): Promise<AuthContext["user"]> {
   const user = await getCurrentUser()
   if (!user) throw new Error("Unauthorized")
   return user
 }
 
-export async function requireRole(...roles: string[]) {
-  const cached = getRequestContext()
-  if (cached) {
-    if (!roles.includes(cached.profile.role)) throw new Error("Forbidden")
-    return cached
-  }
-
+export async function requireRole(
+  ...roles: string[]
+): Promise<AuthContext> {
   const user = await requireAuth()
 
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-    select: {
-      id: true,
-      role: true,
-      schoolId: true,
-      branchId: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-    },
-  })
+  const profile = await getCurrentProfile()
 
   if (!profile || !roles.includes(profile.role)) {
     throw new Error("Forbidden")

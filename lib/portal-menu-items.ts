@@ -18,6 +18,7 @@ import {
   Megaphone,
   Settings,
   Calendar,
+  IdCard,
   type LucideIcon,
 } from "lucide-react"
 import type { Role } from "@/lib/constants"
@@ -95,6 +96,12 @@ export const portalMenuItems: PortalMenuItem[] = [
     title: "Profile",
     href: "/portal/student/profile",
     icon: User,
+    roles: ["STUDENT"],
+  },
+  {
+    title: "My ID Card",
+    href: "/id-card/my",
+    icon: IdCard,
     roles: ["STUDENT"],
   },
 
@@ -181,6 +188,12 @@ export const portalMenuItems: PortalMenuItem[] = [
     title: "Profile",
     href: "/portal/parent/profile",
     icon: User,
+    roles: ["PARENT"],
+  },
+  {
+    title: "My ID Card",
+    href: "/id-card/my",
+    icon: IdCard,
     roles: ["PARENT"],
   },
 
@@ -285,6 +298,12 @@ export const portalMenuItems: PortalMenuItem[] = [
     title: "Settings",
     href: "/portal/teacher/settings",
     icon: Settings,
+    roles: ["TEACHER"],
+  },
+  {
+    title: "My ID Card",
+    href: "/id-card/my",
+    icon: IdCard,
     roles: ["TEACHER"],
   },
 ]

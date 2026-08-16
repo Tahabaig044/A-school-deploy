@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 import { randomUUID } from "crypto"
+import { requireRole } from "@/lib/auth"
 
 const ALLOWED_TYPES = [
   "application/pdf",
@@ -16,6 +17,16 @@ const ALLOWED_TYPES = [
 const MAX_SIZE = 10 * 1024 * 1024
 
 export async function POST(request: Request) {
+  try {
+    await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT")
+  } catch (err) {
+    const unauthorized = err instanceof Error && err.message === "Unauthorized"
+    return NextResponse.json(
+      { error: unauthorized ? "Unauthorized" : "Forbidden" },
+      { status: unauthorized ? 401 : 403 }
+    )
+  }
+
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File | null

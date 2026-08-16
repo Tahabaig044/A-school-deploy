@@ -1,15 +1,13 @@
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/sidebar"
 import { MobileSidebar } from "@/components/layout/mobile-sidebar"
 import { BranchSelector } from "@/components/layout/branch-selector"
 import { NotificationsDropdown } from "@/components/layout/notifications-dropdown"
 import { UserDropdown } from "@/components/layout/user-dropdown"
 import { getPermissionsForRole } from "@/lib/permissions"
-import type { Role } from "@/lib/constants"
-import { PORTAL_ROLES } from "@/lib/constants"
-import { setRequestContext, clearRequestContext } from "@/lib/auth"
+import { PORTAL_ROLES, type Role } from "@/lib/constants"
+import { getCurrentUser } from "@/lib/auth"
 import { validateDashboardAccess } from "@/lib/dashboard-validation"
 
 export default async function DashboardLayout({
@@ -17,14 +15,10 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const headerStore = await headers()
-  const userId = headerStore.get("X-User-Id")
-  const userRole = headerStore.get("X-User-Role") as Role | null
-  const userSchoolId = headerStore.get("X-User-SchoolId") || null
-  const userBranchId = headerStore.get("X-User-BranchId") || null
-  const userEmail = headerStore.get("X-User-Email") || null
+  const layoutStart = performance.now()
+  const user = await getCurrentUser()
 
-  if (!userId || !userRole || !userEmail) {
+  if (!user) {
     redirect("/login")
   }
 
@@ -43,31 +37,11 @@ export default async function DashboardLayout({
     )
   }
 
-  const profile = {
-    id: userId,
-    role: userRole,
-    schoolId: userSchoolId || null,
-    branchId: userBranchId || null,
-    firstName: null as string | null,
-    lastName: null as string | null,
-    email: userEmail,
-    phone: null as string | null,
-  }
-
-  const fullProfile = await prisma.profile.findUnique({
-    where: { id: userId },
-    select: { firstName: true, lastName: true, phone: true },
-  })
-
-  if (fullProfile) {
-    profile.firstName = fullProfile.firstName
-    profile.lastName = fullProfile.lastName
-    profile.phone = fullProfile.phone
-  }
+  const profile = validation.profile!
 
   // Portal roles should not access admin dashboard
-  if ((PORTAL_ROLES as readonly string[]).includes(userRole)) {
-    switch (userRole) {
+  if ((PORTAL_ROLES as readonly string[]).includes(profile.role)) {
+    switch (profile.role) {
       case "STUDENT":
         redirect("/portal/student")
       case "PARENT":
@@ -77,50 +51,48 @@ export default async function DashboardLayout({
     }
   }
 
-  setRequestContext({
-    user: { id: userId, email: userEmail },
-    profile,
-  })
+  const [branches, permissions, unreadNotificationCount] = await Promise.all([
+    profile.schoolId
+      ? prisma.branch.findMany({
+          where: { schoolId: profile.schoolId, isActive: true },
+          select: { id: true, name: true },
+          orderBy: { name: "asc" },
+        })
+      : Promise.resolve([]),
+    getPermissionsForRole(profile.role as Role),
+    prisma.notification.count({
+      where: { userId: profile.id, isRead: false },
+    }),
+  ])
 
-  try {
-    const [branches, permissions] = await Promise.all([
-      userSchoolId
-        ? prisma.branch.findMany({
-            where: { schoolId: userSchoolId, isActive: true },
-            select: { id: true, name: true },
-            orderBy: { name: "asc" },
-          })
-        : Promise.resolve([]),
-      getPermissionsForRole(userRole),
-    ])
-
-    return (
-      <div className="flex min-h-full">
-        <Sidebar permissions={permissions} />
-        <div className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-10 border-b bg-background">
-            <div className="flex h-16 items-center justify-between px-3">
-              <MobileSidebar permissions={permissions} />
-              <div className="flex items-center gap-4">
-                <BranchSelector branches={branches} />
-                <NotificationsDropdown />
-                <UserDropdown
-                  email={userEmail}
-                  name={
-                    profile.firstName && profile.lastName
-                      ? `${profile.firstName} ${profile.lastName}`
-                      : null
-                  }
-                  role={userRole}
-                />
-              </div>
-            </div>
-          </header>
-          <main className="flex-1 p-6">{children}</main>
-        </div>
-      </div>
-    )
-  } finally {
-    clearRequestContext()
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[PERF] dashboard layout total: ${(performance.now() - layoutStart).toFixed(0)}ms`)
   }
+
+  return (
+    <div className="flex min-h-full">
+      <Sidebar permissions={permissions} />
+      <div className="flex flex-1 flex-col">
+        <header className="sticky top-0 z-10 border-b bg-background">
+          <div className="flex h-16 items-center justify-between px-3">
+            <MobileSidebar permissions={permissions} />
+            <div className="flex items-center gap-4">
+              <BranchSelector branches={branches} />
+              <NotificationsDropdown initialCount={unreadNotificationCount} />
+              <UserDropdown
+                email={profile.email || user.email || ""}
+                name={
+                  profile.firstName && profile.lastName
+                    ? `${profile.firstName} ${profile.lastName}`
+                    : null
+                }
+                role={profile.role}
+              />
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+    </div>
+  )
 }

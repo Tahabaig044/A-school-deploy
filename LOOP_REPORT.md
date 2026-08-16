@@ -1,10 +1,120 @@
 # LOOP_REPORT.md - Priority 1 Core System Stabilization
 
-**Date:** 2026-07-06
-**Loops:** 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
-**Status:** Loop 12 Complete
+**Date:** 2026-08-14
+**Loops:** 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 (LOOP_007_PERFORMANCE)
+**Status:** Loop 15 Complete
 
 ---
+
+## Loop 15 — Performance & Instrumentation (Phase 3 Audit)
+
+### Summary
+Applied Phase 3 audit fixes: eliminated the post-hydration auth POST by passing the unread notification count from the RSC layouts to `NotificationsDropdown`, made notification mutations revalidate only the acting user's route, lowered the Prisma pool to `max: 5`, added the timetable conflict-join composite index (pushed to DB), branch-scoped the conflict self-join, and added `[PERF]` instrumentation (non-production).
+
+### Files Modified (9)
+| # | File | Change |
+|---|------|--------|
+| 1 | `components/layout/notifications-dropdown.tsx` | `initialCount` prop; removed mount `getUnreadNotificationCount` POST |
+| 2 | `app/(dashboard)/layout.tsx` | Unread count in Promise.all; passes `initialCount`; `[PERF]` total timing |
+| 3 | `app/portal/layout.tsx` | Unread count query; passes `initialCount` |
+| 4 | `actions/notification.actions.ts` | `revalidateUserRoute(role)` replaces 4-path revalidation |
+| 5 | `lib/prisma.ts` | Pool `max: 5`; `[PERF]` client-created log |
+| 6 | `.env` | Direct-host `DIRECT_URL` preserved (commented); reverted to pooler for connectivity |
+| 7 | `prisma/schema.prisma` | F18 `@@index([teacherId, academicSessionId, dayOfWeek, startTime])` on Timetable |
+| 8 | `actions/reports.actions.ts` | Conflict self-join branch-scoped; `[PERF]` dashboardStats timing |
+| 9 | `proxy.ts` | `[PERF]` middleware timing |
+
+### Key Fixes
+1. **F17 — no hydration auth POST** — badge count rendered server-side in layouts; removes +1 auth round trip + 2 DB queries per load.
+2. **F20 — scoped revalidation** — notification mutations refresh only the acting user's route.
+3. **F9 — pool `max: 5`** — lower per-instance connection footprint on Supabase.
+4. **F18 — conflict query** — covering composite index added + branch-scoped raw self-join (tenant-consistent with other stats).
+5. **F25 — instrumentation** — `[PERF]` logs (dev only) for middleware, dashboard layout, dashboardStats, prisma client creation.
+
+### Notes / Deviations
+- F8 (`DIRECT_URL` → direct host) not fully applied: direct host unreachable from this machine (IP not allowlisted in Supabase). Direct-host line preserved in `.env`; runtime unchanged on the session pooler.
+- F25 first-query timing dropped (Prisma 7 removed `$use`; `$extends` breaks the singleton client type). Client-creation timing used instead.
+- F19 (Suspense/unstable_cache) deferred per audit — "measure first" via F25 before caching.
+
+### Verification
+- `npx tsc --noEmit` -> 0 errors ✓
+- `npx prisma generate` -> success ✓
+- `npx prisma db push` -> database in sync ✓
+- `npm run build` -> passes ✓
+
+---
+
+## Loop 14 — Middleware & API Auth Hardening (Phase 2 Audit)
+
+### Summary
+Applied Phase 2 audit fixes (F3, F4, F5, F7, F14): removed the Prisma query from `proxy.ts` middleware (role now comes from session `user_metadata.role`), stopped leaking `X-User-*` identity headers to the browser, made public routes skip `getUser()`, deleted the last `X-User-*` header read in `app/portal/page.tsx`, and added explicit `requireRole` (plus per-IP rate limiting on QR) to the two API routes that previously relied on middleware alone.
+
+### Files Modified (5)
+| # | File | Change |
+|---|------|--------|
+| 1 | `proxy.ts` | Removed Prisma query + dynamic supabase client; public routes skip auth; role from session metadata; deleted X-User-* response headers; reuses `updateSession` |
+| 2 | `lib/supabase/middleware.ts` | `updateSession` returns `{ user, supabaseResponse }` |
+| 3 | `app/portal/page.tsx` | Uses `getCurrentProfile()` instead of `X-User-Role` header |
+| 4 | `app/api/qr/route.ts` | Added `requireRole` (admin/staff) + per-IP rate limiter (120 req/min) |
+| 5 | `app/api/upload/homework/route.ts` | Added `requireRole` (incl. STUDENT) with 401/403 handling |
+
+### Key Fixes
+1. **F3 — middleware no longer touches the DB** — Removed `prisma.profile.findUnique` from `proxy.ts`; role redirects now use `user.user_metadata.role` (set at signup/invite). Removes ~120ms DB round trip per protected request. Real authorization stays in DB-backed `requireRole()` in pages/actions.
+2. **F5 — no identity headers leak to the browser** — Deleted `X-User-Id/Role/SchoolId/BranchId/Email` response headers from `proxy.ts`.
+3. **F4 — public routes skip auth** — Login/register/forgot/reset/setup-password and `/` return `NextResponse.next()` without creating a Supabase client or calling `getUser()`.
+4. **F7 — last header read removed** — `app/portal/page.tsx` now calls `getCurrentProfile()`; grep confirms zero `X-User-*` reads remain.
+5. **F14 — API routes enforce their own auth** — `requireRole` added inside `/api/qr` (admin/staff) and `/api/upload/homework` (SUPER_ADMIN, SCHOOL_ADMIN, BRANCH_ADMIN, TEACHER, STUDENT, matching `submitHomework`); QR additionally rate-limited per IP (120/min fixed window, in-memory).
+
+### Notes / Deviations
+- F3 used `user_metadata.role` (not `app_metadata.role` as the audit suggested) because the app stores role in `user_metadata` at creation. Users without metadata role skip role-redirects and remain gated by DB-backed `requireRole()`.
+- F14 for `/api/upload/homework` includes STUDENT because the only caller is the student portal homework page; `requireRole("TEACHER")` alone would break student submission.
+
+### Verification
+- `npx tsc --noEmit` -> 0 errors ✓
+- `npm run build` -> passes ✓ (compiled, all routes built)
+
+---
+
+## Loop 13 — System Hardening & Build Repair (Phase 1 Audit)
+
+### Summary
+Eliminated the module-global request-context pattern by migrating auth/profile getters to React `cache()`, removed it from all portal pages and layouts. Scoped reports aggregates to tenant, validated the `selected_branch` cookie, deduped auth/profile calls, and repaired 36 pre-existing build-blocking TypeScript errors across the ID card / PDF / QR modules. `npm run build` passes again.
+
+### Files Modified (28)
+| # | File | Change |
+|---|------|--------|
+| 1 | `lib/auth.ts` | getCurrentUser/getCurrentProfile wrapped in React `cache()`; deleted setRequestContext/getRequestContext/clearRequestContext; kept requireAuth/requireRole; profile select includes isActive+status |
+| 2 | `lib/dashboard-validation.ts` | All 4 validators use cached getters |
+| 3 | `app/(dashboard)/layout.tsx` | Cached getters; Role import + role cast; removed context |
+| 4 | `app/portal/layout.tsx` | Cached getters; removed context + try/finally |
+| 5-16 | `app/portal/teacher/*`, `app/portal/student/*`, `app/portal/parent/*` (12 pages) | Removed headers, context, try/finally, duplicate profile queries |
+| 17 | `actions/reports.actions.ts` | F12: payment/feeInvoice aggregates + leaveRequest.count scoped by schoolId (+branchId) |
+| 18 | `actions/parent-portal.actions.ts` | F16: removed unused import; getParentAuthContext uses getCurrentProfile |
+| 19 | `app/(dashboard)/dashboard/page.tsx` | F13: selected_branch cookie validated (branch.id + schoolId + isActive) |
+| 20 | `actions/id-card-generator.actions.ts` | Removed department/designation (not in schema) |
+| 21 | `lib/pdf-utils.ts` | Removed jspdf-autotable import; deduped export; PdfOptions optional; avatarUrl->photoUrl; setFillColor args; rotate->angle; margin fix |
+| 22 | `app/api/qr/route.ts` | Buffer -> BodyInit (new Uint8Array) |
+| 23 | `app/(dashboard)/dashboard/students/id-card/[id]/page.tsx` | Removed invalid `profile` include (Student has no profile relation) |
+| 24 | `app/(dashboard)/dashboard/students/id-card/[id]/id-card-view.tsx` | Buffer -> BlobPart |
+| 25 | `app/(dashboard)/dashboard/students/id-cards/id-card-generator.tsx` | BlobPart + Select null-handling |
+| 26 | `app/(dashboard)/dashboard/attendance/qr-cards/qr-card-generator.tsx` | Select null-handling |
+| 27 | `app/(dashboard)/dashboard/attendance/scan/qr-scanner.tsx` | Select null-handling |
+| 28 | `loops/LOOP_005_SYSTEM_HARDENING.md` | New loop report |
+
+### Key Fixes
+1. **Request context removal** — Module-global `setRequestContext`/`getRequestContext`/`clearRequestContext` fully deleted; auth/profile now use React `cache()` which is safe per-request.
+2. **Tenant scoping (F12)** — Reports aggregates (`payment.aggregate`, `feeInvoice.aggregate`, `leaveRequest.count`) now filter via student/profile schoolId and branchId when set.
+3. **Branch cookie validation (F13)** — `selected_branch` is verified against `branch.findFirst({ id, schoolId, isActive })` before use; falls back to `profile.branchId`.
+4. **Auth dedup (F16)** — Dashboard validators and portal layouts call the cached getters once.
+5. **Build repair** — 36 pre-existing TypeScript errors fixed (schema/code mismatches, missing module import, Buffer/Blob types, duplicate exports). No modules added/removed; schema untouched.
+
+### Verification
+- `npx tsc --noEmit` -> 0 errors ✓
+- `npm run build` -> passes ✓ (TypeScript gate + 116 static pages + all routes)
+
+---
+
+## Loop 12 — Announcements Enhancement
 
 ## Loop 12 — Announcements Enhancement
 

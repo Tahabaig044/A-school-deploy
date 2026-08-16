@@ -25,6 +25,7 @@ import {
   Bell,
   Calendar,
   Briefcase,
+  IdCard,
   type LucideIcon,
 } from "lucide-react"
 import type { Permission } from "@/lib/permissions"
@@ -65,6 +66,12 @@ export const menuItems: MenuItem[] = [
     title: "Admissions",
     href: "/dashboard/admissions",
     icon: UserPlus2,
+    permission: "students.view",
+  },
+  {
+    title: "ID Cards",
+    href: "/dashboard/students/id-cards",
+    icon: IdCard,
     permission: "students.view",
   },
   {

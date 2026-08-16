@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useActionState } from "react"
+import { useState, useActionState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,9 +11,37 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 import { updateWorkloadDefaults, updateTeacherWorkloadLimits } from "@/actions/workload.actions"
-import { AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Users, BookOpen, CalendarDays, Settings, Gauge } from "lucide-react"
+import { AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Users, BookOpen, CalendarDays, Settings, Gauge, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 
 const DAY_ORDER = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]
+
+type SortField = "name" | "department" | "classes" | "daily" | "weekly" | "status"
+
+function SortHeader({ field, sortField, sortDir, toggleSort, children, className }: {
+  field: SortField
+  sortField: string
+  sortDir: "asc" | "desc"
+  toggleSort: (f: SortField) => void
+  children: React.ReactNode
+  className?: string
+}) {
+  const active = sortField === field
+  return (
+    <TableHead className={className}>
+      <button
+        onClick={() => toggleSort(field)}
+        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+      >
+        {children}
+        {active ? (
+          sortDir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-30" />
+        )}
+      </button>
+    </TableHead>
+  )
+}
 
 export function WorkloadDashboard({
   teachers,
@@ -39,6 +67,73 @@ export function WorkloadDashboard({
   const [settingsState, settingsAction, settingsPending] = useActionState(updateWorkloadDefaults, null)
   const [limitState, limitAction, limitPending] = useActionState(updateTeacherWorkloadLimits, null)
   const [editTeacher, setEditTeacher] = useState<any>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sortField, setSortField] = useState<SortField>("name")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
+  const [deptSearch, setDeptSearch] = useState("")
+  const [classSearch, setClassSearch] = useState("")
+
+  const toggleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"))
+    } else {
+      setSortField(field)
+      setSortDir("asc")
+    }
+  }
+
+  const filteredTeachers = useMemo(() => {
+    let filtered = teachers
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      filtered = teachers.filter((t: any) =>
+        `${t.firstName} ${t.lastName}`.toLowerCase().includes(q) ||
+        (t.department || "").toLowerCase().includes(q) ||
+        (t.employeeCode || "").toLowerCase().includes(q)
+      )
+    }
+    return [...filtered].sort((a: any, b: any) => {
+      let cmp = 0
+      switch (sortField) {
+        case "name":
+          cmp = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
+          break
+        case "department":
+          cmp = (a.department || "").localeCompare(b.department || "")
+          break
+        case "classes":
+          cmp = a.totalAssignments - b.totalAssignments
+          break
+        case "daily":
+          const maxA = Object.values(a.periodsByDay || {}).reduce((s: number, v: any) => Math.max(s, v), 0)
+          const maxB = Object.values(b.periodsByDay || {}).reduce((s: number, v: any) => Math.max(s, v), 0)
+          cmp = maxA - maxB
+          break
+        case "weekly":
+          cmp = a.totalPeriods - b.totalPeriods
+          break
+        case "status":
+          const statusOrder: any = { overloaded: 0, balanced: 1, underloaded: 2 }
+          const statusA: string = a.isOverloaded ? "overloaded" : a.isUnderloaded ? "underloaded" : "balanced"
+          const statusB: string = b.isOverloaded ? "overloaded" : b.isUnderloaded ? "underloaded" : "balanced"
+          cmp = statusOrder[statusA] - statusOrder[statusB]
+          break
+      }
+      return sortDir === "asc" ? cmp : -cmp
+    })
+  }, [teachers, searchQuery, sortField, sortDir])
+
+  const filteredDepartments = useMemo(() => {
+    if (!deptSearch.trim()) return departments
+    const q = deptSearch.toLowerCase()
+    return departments.filter((d: any) => d.department.toLowerCase().includes(q))
+  }, [departments, deptSearch])
+
+  const filteredClasses = useMemo(() => {
+    if (!classSearch.trim()) return classDistribution
+    const q = classSearch.toLowerCase()
+    return classDistribution.filter((c: any) => c.className.toLowerCase().includes(q))
+  }, [classDistribution, classSearch])
 
   return (
     <div className="space-y-6">
@@ -88,43 +183,58 @@ export function WorkloadDashboard({
         <TabsContent value="teachers" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Teacher Workload Overview</CardTitle>
-              <CardDescription>Periods per teacher calculated from timetable. Warnings shown for over/under loaded.</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Teacher Workload Overview</CardTitle>
+                  <CardDescription>Periods per teacher calculated from timetable. Click column headers to sort.</CardDescription>
+                </div>
+                <div className="relative w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search teachers..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Teacher</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Classes</TableHead>
-                    <TableHead className="text-center">Daily (max)</TableHead>
-                    <TableHead className="text-center">Weekly (max)</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
+                    <SortHeader field="name" sortField={sortField} sortDir={sortDir} toggleSort={toggleSort}>Teacher</SortHeader>
+                    <SortHeader field="department" sortField={sortField} sortDir={sortDir} toggleSort={toggleSort}>Department</SortHeader>
+                    <SortHeader field="classes" sortField={sortField} sortDir={sortDir} toggleSort={toggleSort} className="text-center">Classes</SortHeader>
+                    <SortHeader field="daily" sortField={sortField} sortDir={sortDir} toggleSort={toggleSort} className="text-center">Daily (max)</SortHeader>
+                    <SortHeader field="weekly" sortField={sortField} sortDir={sortDir} toggleSort={toggleSort} className="text-center">Weekly (max)</SortHeader>
+                    <SortHeader field="status" sortField={sortField} sortDir={sortDir} toggleSort={toggleSort} className="text-center">Status</SortHeader>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {teachers.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No teachers found.</TableCell></TableRow>
+                  {filteredTeachers.length === 0 ? (
+                    <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      {searchQuery ? "No teachers match your search." : "No teachers found."}
+                    </TableCell></TableRow>
                   ) : (
-                    teachers.map((t) => (
+                    filteredTeachers.map((t: any) => (
                       <TableRow key={t.teacherId} className={t.isOverloaded ? "bg-red-50/50" : t.isUnderloaded ? "bg-yellow-50/50" : ""}>
                         <TableCell className="font-medium">{t.firstName} {t.lastName}</TableCell>
-                        <TableCell className="text-muted-foreground">{t.department || "—"}</TableCell>
-                        <TableCell>{t.totalAssignments}</TableCell>
+                        <TableCell className="text-muted-foreground">{t.department || "\u2014"}</TableCell>
+                        <TableCell className="text-center">{t.totalAssignments}</TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-1">
                             <span className={t.overloadedDays.length > 0 ? "text-red-600 font-medium" : ""}>
                               {Object.values(t.periodsByDay as Record<string, number>).reduce((a: number, b: number) => Math.max(a, b), 0)}
                             </span>
-                            <span className="text-muted-foreground">/ {t.maxPeriodsPerDay || "—"}</span>
+                            <span className="text-muted-foreground">/ {t.maxPeriodsPerDay || "\u2014"}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-1">
                             <span className={t.isOverloaded ? "text-red-600 font-medium" : ""}>{t.totalPeriods}</span>
-                            <span className="text-muted-foreground">/ {t.maxPeriodsPerWeek || "—"}</span>
+                            <span className="text-muted-foreground">/ {t.maxPeriodsPerWeek || "\u2014"}</span>
                           </div>
                           {t.maxPeriodsPerWeek && (
                             <div className={`h-1.5 w-full rounded-full mt-1 ${t.isOverloaded ? "bg-red-200" : t.isUnderloaded ? "bg-yellow-200" : "bg-secondary"}`}>
@@ -153,7 +263,7 @@ export function WorkloadDashboard({
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
-                                <DialogTitle>Workload Limits — {t.firstName} {t.lastName}</DialogTitle>
+                                <DialogTitle>Workload Limits &mdash; {t.firstName} {t.lastName}</DialogTitle>
                                 <DialogDescription>Set custom limits for this teacher. Leave empty to use school defaults.</DialogDescription>
                               </DialogHeader>
                               <form action={limitAction} className="space-y-4">
@@ -191,8 +301,21 @@ export function WorkloadDashboard({
         <TabsContent value="departments" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Department Workload</CardTitle>
-              <CardDescription>Average workload per department</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Department Workload</CardTitle>
+                  <CardDescription>Average workload per department</CardDescription>
+                </div>
+                <div className="relative w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search departments..."
+                    value={deptSearch}
+                    onChange={(e) => setDeptSearch(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
@@ -207,10 +330,12 @@ export function WorkloadDashboard({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {departments.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No departments found.</TableCell></TableRow>
+                  {filteredDepartments.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      {deptSearch ? "No departments match your search." : "No departments found."}
+                    </TableCell></TableRow>
                   ) : (
-                    departments.map((dept) => (
+                    filteredDepartments.map((dept: any) => (
                       <TableRow key={dept.department}>
                         <TableCell className="font-medium">{dept.department}</TableCell>
                         <TableCell className="text-center">{dept.teacherCount}</TableCell>
@@ -238,8 +363,21 @@ export function WorkloadDashboard({
         <TabsContent value="classes" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Class Distribution</CardTitle>
-              <CardDescription>Periods assigned per class</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Class Distribution</CardTitle>
+                  <CardDescription>Periods assigned per class</CardDescription>
+                </div>
+                <div className="relative w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search classes..."
+                    value={classSearch}
+                    onChange={(e) => setClassSearch(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
@@ -251,10 +389,12 @@ export function WorkloadDashboard({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {classDistribution.length === 0 ? (
-                    <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-8">No classes found.</TableCell></TableRow>
+                  {filteredClasses.length === 0 ? (
+                    <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-8">
+                      {classSearch ? "No classes match your search." : "No classes found."}
+                    </TableCell></TableRow>
                   ) : (
-                    classDistribution.map((c) => (
+                    filteredClasses.map((c: any) => (
                       <TableRow key={c.className}>
                         <TableCell className="font-medium">{c.className}</TableCell>
                         <TableCell className="text-center">{c.totalPeriods}</TableCell>

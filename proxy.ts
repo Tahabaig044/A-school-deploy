@@ -1,5 +1,10 @@
-import { type NextRequest } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { updateSession } from "@/lib/supabase/middleware"
+
+function logPerf(label: string, ms: number) {
+  if (process.env.NODE_ENV === "production") return
+  console.log(`[PERF] ${label}: ${ms.toFixed(0)}ms`)
+}
 
 const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/setup-password"]
 
@@ -30,6 +35,19 @@ const roleRouteMap: Record<string, string[]> = {
   "/dashboard/events": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "STUDENT", "PARENT"],
   "/dashboard/calendar": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "STUDENT", "PARENT"],
   "/dashboard/settings": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"],
+  "/id-card": [
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+    "ACCOUNTANT",
+    "ADMISSION_OFFICER",
+    "LIBRARIAN",
+    "TRANSPORT_MANAGER",
+  ],
 }
 
 const portalAllowedRoles = ["STUDENT", "PARENT", "TEACHER"]
@@ -38,44 +56,22 @@ const teacherBlockedRoutes = ["/dashboard"]
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const start = performance.now()
 
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route)
   )
 
-  if (isPublicRoute || pathname === "/") {
-    return await updateSession(request)
+  // Mobile API routes authenticate via `Authorization: Bearer <Supabase JWT>`
+  // inside the route handlers (see lib/supabase/mobile-auth.ts), so they must
+  // NOT require a browser cookie session. Security headers still apply below.
+  const isMobileApiRoute = pathname.startsWith("/api/mobile/")
+
+  if (isPublicRoute || isMobileApiRoute || pathname === "/") {
+    return NextResponse.next({ request })
   }
 
-  const { createServerClient } = await import("@supabase/ssr")
-  const { NextResponse } = await import("next/server")
-
-  let supabaseResponse = NextResponse.next({ request })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { user, supabaseResponse } = await updateSession(request)
 
   if (!user) {
     const url = request.nextUrl.clone()
@@ -83,40 +79,40 @@ export async function proxy(request: NextRequest) {
     return Response.redirect(url)
   }
 
-  const { prisma } = await import("@/lib/prisma")
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-    select: { role: true, schoolId: true, branchId: true },
-  })
+  logPerf(`middleware ${pathname}`, performance.now() - start)
 
-  if (profile) {
-    // Block teachers from admin dashboard
-    if (profile.role === "TEACHER" && teacherBlockedRoutes.some((route) => pathname.startsWith(route))) {
-      const url = request.nextUrl.clone()
-      url.pathname = "/portal/teacher"
-      return Response.redirect(url)
-    }
+  // F3: role comes from the session's user metadata (set at signup/invite) —
+  // no Prisma query in middleware. This is defense-in-depth only; the real
+  // authorization is requireRole() in pages/actions (DB-backed).
+  const role = (user.user_metadata?.role as string | undefined) ?? ""
 
-    if (pathname.startsWith("/portal") && !portalAllowedRoles.includes(profile.role)) {
+  // Block teachers from admin dashboard
+  if (role === "TEACHER" && teacherBlockedRoutes.some((route) => pathname.startsWith(route))) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/portal/teacher"
+    return Response.redirect(url)
+  }
+
+  // Only apply role-based redirects when a role is present in session metadata;
+  // a missing metadata role is handled by the DB-backed requireRole() checks.
+  if (role) {
+    if (pathname.startsWith("/portal") && !portalAllowedRoles.includes(role)) {
       const url = request.nextUrl.clone()
       url.pathname = "/dashboard"
       return Response.redirect(url)
     }
 
     for (const [route, allowedRoles] of Object.entries(roleRouteMap)) {
-      if (pathname.startsWith(route) && !allowedRoles.includes(profile.role)) {
+      if (pathname.startsWith(route) && !allowedRoles.includes(role)) {
         const url = request.nextUrl.clone()
         url.pathname = "/dashboard"
         return Response.redirect(url)
       }
     }
-
-    supabaseResponse.headers.set("X-User-Id", user.id)
-    supabaseResponse.headers.set("X-User-Role", profile.role)
-    supabaseResponse.headers.set("X-User-SchoolId", profile.schoolId || "")
-    supabaseResponse.headers.set("X-User-BranchId", profile.branchId || "")
-    supabaseResponse.headers.set("X-User-Email", user.email || "")
   }
+
+  // F5: no X-User-* identity headers are placed on the response (they would
+  // leak to the browser). Server components read identity via getCurrentUser().
 
   supabaseResponse.headers.set("X-Frame-Options", "DENY")
   supabaseResponse.headers.set("X-Content-Type-Options", "nosniff")

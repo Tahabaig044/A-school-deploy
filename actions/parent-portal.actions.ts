@@ -2,14 +2,11 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { requireAuth, setRequestContext } from "@/lib/auth"
+import { getCurrentProfile, requireAuth } from "@/lib/auth"
 
 async function getParentAuthContext() {
   const user = await requireAuth()
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-    select: { id: true, role: true, schoolId: true, branchId: true, firstName: true, lastName: true, email: true, phone: true },
-  })
+  const profile = await getCurrentProfile()
   if (!profile || profile.role !== "PARENT") return null
   return { user, profile }
 }

@@ -4,6 +4,22 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 
+function revalidateUserRoute(role: string) {
+  switch (role) {
+    case "TEACHER":
+      revalidatePath("/portal/teacher")
+      break
+    case "STUDENT":
+      revalidatePath("/portal/student")
+      break
+    case "PARENT":
+      revalidatePath("/portal/parent")
+      break
+    default:
+      revalidatePath("/dashboard")
+  }
+}
+
 export async function createNotification(
   userId: string,
   title: string,
@@ -30,10 +46,7 @@ export async function markNotificationAsRead(notificationId: string) {
     data: { isRead: true, readAt: new Date() },
   })
 
-  revalidatePath("/dashboard")
-  revalidatePath("/portal/teacher")
-  revalidatePath("/portal/student")
-  revalidatePath("/portal/parent")
+  revalidateUserRoute(profile.role)
   return { success: true }
 }
 
@@ -45,10 +58,7 @@ export async function markAllNotificationsAsRead() {
     data: { isRead: true, readAt: new Date() },
   })
 
-  revalidatePath("/dashboard")
-  revalidatePath("/portal/teacher")
-  revalidatePath("/portal/student")
-  revalidatePath("/portal/parent")
+  revalidateUserRoute(profile.role)
   return { success: true }
 }
 
@@ -105,9 +115,6 @@ export async function deleteNotification(notificationId: string) {
     where: { id: notificationId, userId: profile.id },
   })
 
-  revalidatePath("/dashboard")
-  revalidatePath("/portal/teacher")
-  revalidatePath("/portal/student")
-  revalidatePath("/portal/parent")
+  revalidateUserRoute(profile.role)
   return { success: true }
 }

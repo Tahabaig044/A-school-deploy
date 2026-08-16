@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 import { EditStudentForm } from "./edit-student-form"
@@ -16,6 +16,11 @@ export default async function EditStudentPage({
   )
 
   const { id } = await params
+
+  // Check if this is an ID card edit request
+  if (id === "id-card") {
+    redirect("/dashboard/students/id-cards")
+  }
 
   const student = await prisma.student.findFirst({
     where: {

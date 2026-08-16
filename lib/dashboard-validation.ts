@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+import { getCurrentProfile, getCurrentUser } from "@/lib/auth"
 
 export type ValidationResult = {
   valid: boolean
@@ -14,6 +13,8 @@ export type ValidationResult = {
     lastName: string | null
     email: string | null
     phone: string | null
+    isActive: boolean
+    status: string
   }
   teacher?: { id: string; profileId: string | null }
   student?: { id: string; email: string | null }
@@ -25,20 +26,13 @@ export type ValidationResult = {
  * Validate teacher portal access
  */
 export async function validateTeacherPortal(): Promise<ValidationResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) {
     return { valid: false, error: "Not authenticated" }
   }
 
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-    select: {
-      id: true, role: true, schoolId: true, branchId: true,
-      firstName: true, lastName: true, email: true, phone: true, isActive: true, status: true,
-    },
-  })
+  const profile = await getCurrentProfile()
 
   if (!profile) {
     return { valid: false, error: "Profile not found" }
@@ -68,20 +62,13 @@ export async function validateTeacherPortal(): Promise<ValidationResult> {
  * Validate student portal access
  */
 export async function validateStudentPortal(): Promise<ValidationResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) {
     return { valid: false, error: "Not authenticated" }
   }
 
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-    select: {
-      id: true, role: true, schoolId: true, branchId: true,
-      firstName: true, lastName: true, email: true, phone: true, isActive: true, status: true,
-    },
-  })
+  const profile = await getCurrentProfile()
 
   if (!profile) {
     return { valid: false, error: "Profile not found" }
@@ -111,20 +98,13 @@ export async function validateStudentPortal(): Promise<ValidationResult> {
  * Validate parent portal access
  */
 export async function validateParentPortal(): Promise<ValidationResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) {
     return { valid: false, error: "Not authenticated" }
   }
 
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-    select: {
-      id: true, role: true, schoolId: true, branchId: true,
-      firstName: true, lastName: true, email: true, phone: true, isActive: true, status: true,
-    },
-  })
+  const profile = await getCurrentProfile()
 
   if (!profile) {
     return { valid: false, error: "Profile not found" }
@@ -154,20 +134,13 @@ export async function validateParentPortal(): Promise<ValidationResult> {
  * Validate admin dashboard access
  */
 export async function validateDashboardAccess(): Promise<ValidationResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) {
     return { valid: false, error: "Not authenticated" }
   }
 
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-    select: {
-      id: true, role: true, schoolId: true, branchId: true,
-      firstName: true, lastName: true, email: true, phone: true, isActive: true, status: true,
-    },
-  })
+  const profile = await getCurrentProfile()
 
   if (!profile) {
     return { valid: false, error: "Profile not found" }

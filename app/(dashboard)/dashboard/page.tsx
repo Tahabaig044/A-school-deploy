@@ -16,13 +16,24 @@ export default async function DashboardPage() {
   const cookieStore = await cookies()
   const selectedBranch = cookieStore.get("selected_branch")?.value
 
-  const [branch, statsResult] = await Promise.all([
-    selectedBranch
-      ? prisma.branch.findUnique({ where: { id: selectedBranch }, select: { name: true } })
-      : Promise.resolve(null),
+  let branch: { id: string; name: string } | null = null
+  if (selectedBranch) {
+    branch = await prisma.branch.findFirst({
+      where: {
+        id: selectedBranch,
+        ...(profile.schoolId ? { schoolId: profile.schoolId } : {}),
+        isActive: true,
+      },
+      select: { id: true, name: true },
+    })
+  }
+
+  const effectiveBranchId = branch?.id || profile.branchId || undefined
+
+  const [statsResult] = await Promise.all([
     getDashboardStats(
       profile.schoolId || undefined,
-      selectedBranch || profile.branchId || undefined
+      effectiveBranchId
     ).catch(() => ({
       totalStudents: 0,
       totalTeachers: 0,

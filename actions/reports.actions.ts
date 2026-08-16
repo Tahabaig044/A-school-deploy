@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/auth"
 
 export async function getDashboardStats(schoolId?: string, branchId?: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT")
+  const statsStart = performance.now()
 
   const effectiveSchoolId = schoolId || profile.schoolId
   const effectiveBranchId = branchId || profile.branchId
@@ -63,14 +64,22 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
     prisma.payment.aggregate({
       where: {
         paymentDate: { gte: firstDayOfMonth, lte: lastDayOfMonth },
-        ...(effectiveBranchId && { invoice: { student: { branchId: effectiveBranchId } } }),
+        invoice: {
+          student: {
+            ...(effectiveSchoolId ? { schoolId: effectiveSchoolId } : {}),
+            ...(effectiveBranchId ? { branchId: effectiveBranchId } : {}),
+          },
+        },
       },
       _sum: { amount: true },
     }),
     prisma.feeInvoice.aggregate({
       where: {
         status: { in: ["PENDING", "PARTIAL"] },
-        ...(effectiveBranchId && { student: { branchId: effectiveBranchId } }),
+        student: {
+          ...(effectiveSchoolId ? { schoolId: effectiveSchoolId } : {}),
+          ...(effectiveBranchId ? { branchId: effectiveBranchId } : {}),
+        },
       },
       _sum: { totalAmount: true, paidAmount: true },
     }),
@@ -83,7 +92,14 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
     prisma.leaveRequest.count({
       where: {
         status: "PENDING",
-        ...(effectiveBranchId ? { profile: { branchId: effectiveBranchId } } : effectiveSchoolId ? { profile: { schoolId: effectiveSchoolId } } : {}),
+        ...(effectiveSchoolId || effectiveBranchId
+          ? {
+              profile: {
+                ...(effectiveSchoolId ? { schoolId: effectiveSchoolId } : {}),
+                ...(effectiveBranchId ? { branchId: effectiveBranchId } : {}),
+              },
+            }
+          : {}),
       },
     }),
     prisma.exam.count({
@@ -98,7 +114,14 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
         status: "APPROVED",
         startDate: { lte: today },
         endDate: { gte: today },
-        ...(effectiveBranchId ? { profile: { branchId: effectiveBranchId } } : effectiveSchoolId ? { profile: { schoolId: effectiveSchoolId } } : {}),
+        ...(effectiveSchoolId || effectiveBranchId
+          ? {
+              profile: {
+                ...(effectiveSchoolId ? { schoolId: effectiveSchoolId } : {}),
+                ...(effectiveBranchId ? { branchId: effectiveBranchId } : {}),
+              },
+            }
+          : {}),
       },
     }),
     prisma.meeting.count({
@@ -125,11 +148,17 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
           AND t1.start_time < t2.end_time
           AND t2.start_time < t1.end_time
           AND t1.academic_session_id = t2.academic_session_id
-        ${effectiveSchoolId ? "WHERE t1.school_id = $1" : ""}
+        WHERE (t1.school_id = $1 OR $1 IS NULL)
+          AND (t1.branch_id = $2 OR $2 IS NULL)
       ) conflicts`,
-      ...(effectiveSchoolId ? [effectiveSchoolId] : [])
+      effectiveSchoolId ?? null,
+      effectiveBranchId ?? null
     ).then((r) => Number(r[0]?.count || 0)).catch(() => 0),
   ])
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[PERF] dashboardStats: ${(performance.now() - statsStart).toFixed(0)}ms`)
+  }
 
   const pendingFee = Number(pendingFeeAmount._sum.totalAmount || 0) - Number(pendingFeeAmount._sum.paidAmount || 0)
   const attendanceRate = totalStudentsCount > 0 ? Math.round((todayAttendance / totalStudentsCount) * 100) : 0

@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 import { StudentProfile } from "./student-profile"
@@ -18,6 +18,11 @@ export default async function StudentProfilePage({
   )
 
   const { id } = await params
+
+  // Check if this is an ID card view request
+  if (id === "id-card") {
+    redirect("/dashboard/students/id-cards")
+  }
 
   const student = await prisma.student.findFirst({
     where: {

@@ -1,15 +1,14 @@
 import { redirect } from "next/navigation"
-import { headers } from "next/headers"
+import { getCurrentProfile } from "@/lib/auth"
 
 export default async function PortalPage() {
-  const headerStore = await headers()
-  const userRole = headerStore.get("X-User-Role")
+  const profile = await getCurrentProfile()
 
-  if (!userRole) {
+  if (!profile) {
     redirect("/login")
   }
 
-  switch (userRole) {
+  switch (profile.role) {
     case "STUDENT":
       redirect("/portal/student")
     case "PARENT":
