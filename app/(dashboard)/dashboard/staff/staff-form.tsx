@@ -34,30 +34,26 @@ export function StaffForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
-            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-            <code className="text-sm break-all flex-1">{state.invitationLink}</code>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyLink}
-              className="shrink-0"
-            >
+          <div className="bg-muted flex items-center gap-2 rounded-md p-3">
+            <Mail className="text-muted-foreground h-4 w-4 shrink-0" />
+            <code className="flex-1 text-sm break-all">{state.invitationLink}</code>
+            <Button variant="outline" size="sm" onClick={handleCopyLink} className="shrink-0">
               {copied ? (
                 <>
-                  <CheckCircle className="h-4 w-4 mr-1" />
+                  <CheckCircle className="mr-1 h-4 w-4" />
                   Copied!
                 </>
               ) : (
                 <>
-                  <Copy className="h-4 w-4 mr-1" />
+                  <Copy className="mr-1 h-4 w-4" />
                   Copy Link
                 </>
               )}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            This link expires in 24 hours. The staff member will set their password and activate their account.
+          <p className="text-muted-foreground text-xs">
+            This link expires in 24 hours. The staff member will set their password and activate
+            their account.
           </p>
           <Button variant="outline" onClick={() => window.location.reload()}>
             Add Another Staff Member
@@ -76,8 +72,8 @@ export function StaffForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4 max-w-lg">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form action={formAction} className="grid max-w-lg gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="firstName">First Name *</Label>
               <Input id="firstName" name="firstName" required />
@@ -91,17 +87,22 @@ export function StaffForm() {
             <Label htmlFor="employeeCode">Employee Code *</Label>
             <Input id="employeeCode" name="employeeCode" required />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="department">Department *</Label>
-              <Input id="department" name="department" placeholder="e.g. Admin, Accounts, Transport" required />
+              <Input
+                id="department"
+                name="department"
+                placeholder="e.g. Admin, Accounts, Transport"
+                required
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="designation">Designation *</Label>
               <Input id="designation" name="designation" required />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="phone">Phone</Label>
               <Input id="phone" name="phone" type="tel" />
@@ -118,7 +119,7 @@ export function StaffForm() {
           <Button type="submit" disabled={pending}>
             {pending ? "Creating..." : "Create Staff"}
           </Button>
-          {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+          {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
         </form>
       </CardContent>
     </Card>

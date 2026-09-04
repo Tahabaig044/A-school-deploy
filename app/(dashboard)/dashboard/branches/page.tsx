@@ -6,16 +6,17 @@ import { BranchList } from "./branch-list"
 export default async function BranchesPage() {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
 
-  const branches = profile.role === "SUPER_ADMIN"
-    ? await prisma.branch.findMany({
-        include: { school: true },
-        orderBy: { createdAt: "desc" },
-      })
-    : await prisma.branch.findMany({
-        where: { schoolId: profile.schoolId! },
-        include: { school: true },
-        orderBy: { createdAt: "desc" },
-      })
+  const branches =
+    profile.role === "SUPER_ADMIN"
+      ? await prisma.branch.findMany({
+          include: { school: true },
+          orderBy: { createdAt: "desc" },
+        })
+      : await prisma.branch.findMany({
+          where: { schoolId: profile.schoolId! },
+          include: { school: true },
+          orderBy: { createdAt: "desc" },
+        })
 
   return (
     <div className="grid gap-6">

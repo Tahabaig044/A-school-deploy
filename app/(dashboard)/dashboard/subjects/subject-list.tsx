@@ -15,7 +15,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { updateSubject, deleteSubject, assignSubjectToClass, removeSubjectFromClass } from "@/actions/subject.actions"
+import {
+  updateSubject,
+  deleteSubject,
+  assignSubjectToClass,
+  removeSubjectFromClass,
+} from "@/actions/subject.actions"
 import { useToast } from "@/hooks/use-toast"
 import { Pencil, Trash2 } from "lucide-react"
 
@@ -58,16 +63,21 @@ export function SubjectList({ subjects }: { subjects: SubjectItem[] }) {
       toast({ title: "Subject deleted" })
       router.refresh()
     } catch (e) {
-      toast({ title: e instanceof Error ? e.message : "Failed to delete subject", variant: "destructive" })
+      toast({
+        title: e instanceof Error ? e.message : "Failed to delete subject",
+        variant: "destructive",
+      })
     }
   }
 
   if (subjects.length === 0) {
     return (
       <Card>
-        <CardHeader><CardTitle>All Subjects</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>All Subjects</CardTitle>
+        </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No subjects created yet.</p>
+          <p className="text-muted-foreground text-sm">No subjects created yet.</p>
         </CardContent>
       </Card>
     )
@@ -76,7 +86,9 @@ export function SubjectList({ subjects }: { subjects: SubjectItem[] }) {
   return (
     <>
       <Card>
-        <CardHeader><CardTitle>All Subjects ({subjects.length})</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>All Subjects ({subjects.length})</CardTitle>
+        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -103,7 +115,14 @@ export function SubjectList({ subjects }: { subjects: SubjectItem[] }) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditItem(subject); setError(null) }}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setEditItem(subject)
+                          setError(null)
+                        }}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => handleDelete(subject.id)}>
@@ -118,13 +137,21 @@ export function SubjectList({ subjects }: { subjects: SubjectItem[] }) {
         </CardContent>
       </Card>
 
-      <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
+      <Dialog
+        open={!!editItem}
+        onOpenChange={(o) => {
+          if (!o) {
+            setEditItem(null)
+            setError(null)
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Subject</DialogTitle>
           </DialogHeader>
           <form action={handleUpdate} className="space-y-4">
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
             <div className="grid gap-2">
               <Label htmlFor="edit-name">Subject Name</Label>
               <Input id="edit-name" name="name" defaultValue={editItem?.name} required />
@@ -135,12 +162,19 @@ export function SubjectList({ subjects }: { subjects: SubjectItem[] }) {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-type">Type</Label>
-              <select id="edit-type" name="type" defaultValue={editItem?.type} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <select
+                id="edit-type"
+                name="type"
+                defaultValue={editItem?.type}
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+              >
                 <option value="CORE">Core</option>
                 <option value="ELECTIVE">Elective</option>
               </select>
             </div>
-            <Button type="submit" className="w-full">Update Subject</Button>
+            <Button type="submit" className="w-full">
+              Update Subject
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

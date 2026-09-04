@@ -1,21 +1,9 @@
-import { getStudentTimetable } from "@/actions/student-portal.actions";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, User } from "lucide-react";
+import { getStudentTimetable } from "@/actions/student-portal.actions"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, Clock, MapPin, User } from "lucide-react"
 
-const DAY_ORDER = [
-  "MONDAY",
-  "TUESDAY",
-  "WEDNESDAY",
-  "THURSDAY",
-  "FRIDAY",
-  "SATURDAY",
-] as const;
+const DAY_ORDER = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"] as const
 
 const DAY_LABELS: Record<string, string> = {
   MONDAY: "Monday",
@@ -24,76 +12,73 @@ const DAY_LABELS: Record<string, string> = {
   THURSDAY: "Thursday",
   FRIDAY: "Friday",
   SATURDAY: "Saturday",
-};
+}
 
 export default async function StudentTimetablePage() {
-  const timetable = await getStudentTimetable();
+  const timetable = await getStudentTimetable()
 
-  const grouped: Record<string, typeof timetable> = {};
+  const grouped: Record<string, typeof timetable> = {}
   for (const day of DAY_ORDER) {
     grouped[day] = timetable
       .filter((entry) => entry.dayOfWeek === day)
-      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+      .sort((a, b) => a.startTime.localeCompare(b.startTime))
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Calendar className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold tracking-tight">
-          Weekly Timetable
-        </h1>
+        <Calendar className="text-primary h-6 w-6" />
+        <h1 className="text-2xl font-bold tracking-tight">Weekly Timetable</h1>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {DAY_ORDER.map((day) => {
-          const slots = grouped[day];
+          const slots = grouped[day]
 
           return (
             <Card key={day}>
               <CardHeader>
-                <CardTitle className="text-lg">
-                  {DAY_LABELS[day]}
-                </CardTitle>
+                <CardTitle className="text-lg">{DAY_LABELS[day]}</CardTitle>
               </CardHeader>
               <CardContent>
                 {slots.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No classes scheduled
-                  </p>
+                  <p className="text-muted-foreground text-sm">No classes scheduled</p>
                 ) : (
                   <div className="space-y-4">
                     {slots.map((slot, index) => (
                       <div
                         key={index}
-                        className={`rounded-lg border p-3 space-y-2 ${slot.isFree ? "bg-muted/30 border-dashed" : ""}`}
+                        className={`space-y-2 rounded-lg border p-3 ${slot.isFree ? "bg-muted/30 border-dashed" : ""}`}
                       >
                         <div className="flex items-center gap-2 text-sm font-medium">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <Clock className="text-muted-foreground h-4 w-4" />
                           <span>
                             {slot.startTime} – {slot.endTime}
                           </span>
                         </div>
                         {slot.isFree ? (
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs text-muted-foreground">Free Period</Badge>
-                            {slot.freePeriodReason && <span className="text-xs text-muted-foreground">{slot.freePeriodReason}</span>}
+                            <Badge variant="outline" className="text-muted-foreground text-xs">
+                              Free Period
+                            </Badge>
+                            {slot.freePeriodReason && (
+                              <span className="text-muted-foreground text-xs">
+                                {slot.freePeriodReason}
+                              </span>
+                            )}
                           </div>
                         ) : (
                           <>
-                            <p className="text-sm font-semibold">
-                              {slot.subject?.name}
-                            </p>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <p className="text-sm font-semibold">{slot.subject?.name}</p>
+                            <div className="text-muted-foreground flex items-center gap-2 text-sm">
                               <User className="h-4 w-4" />
                               <span>
-                                {slot.teacher?.firstName}{" "}
-                                {slot.teacher?.lastName}
+                                {slot.teacher?.firstName} {slot.teacher?.lastName}
                               </span>
                             </div>
                           </>
                         )}
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="text-muted-foreground flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4" />
                           <span>{slot.room}</span>
                         </div>
@@ -103,9 +88,9 @@ export default async function StudentTimetablePage() {
                 )}
               </CardContent>
             </Card>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }

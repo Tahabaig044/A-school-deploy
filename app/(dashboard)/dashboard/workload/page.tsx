@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
-import { getTeacherWorkload, getDepartmentWorkload, getClassDistribution, getWorkloadDefaults } from "@/actions/workload.actions"
+import {
+  getTeacherWorkload,
+  getDepartmentWorkload,
+  getClassDistribution,
+  getWorkloadDefaults,
+} from "@/actions/workload.actions"
 import { WorkloadDashboard } from "./workload-dashboard"
 
 export default async function WorkloadPage() {

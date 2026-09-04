@@ -15,10 +15,7 @@ const branchSchema = z.object({
   email: z.string().email("Invalid email").optional().nullable(),
 })
 
-export async function createBranch(
-  _prevState: unknown,
-  formData: FormData
-) {
+export async function createBranch(_prevState: unknown, formData: FormData) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
 
   const schoolId = getSchoolId(profile, formData, "Create Branch")

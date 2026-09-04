@@ -18,9 +18,7 @@ type Branch = {
 function getInitialBranch(branches: Branch[]): string {
   if (branches.length === 0) return ""
   if (typeof document === "undefined") return branches[0].id
-  const cookie = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("selected_branch="))
+  const cookie = document.cookie.split("; ").find((row) => row.startsWith("selected_branch="))
   return cookie ? cookie.split("=")[1] : branches[0].id
 }
 
@@ -35,7 +33,7 @@ export function BranchSelector({ branches }: { branches: Branch[] }) {
       document.cookie = `selected_branch=${value}; path=/; max-age=86400; SameSite=Lax`
       router.refresh()
     },
-    [router]
+    [router],
   )
 
   if (branches.length === 0) return null

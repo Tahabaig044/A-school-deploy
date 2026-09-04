@@ -6,14 +6,33 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { recordPayment } from "@/actions/fees.actions"
 import { useToast } from "@/hooks/use-toast"
-import { Plus, ArrowLeft } from "lucide-react"
+import { Plus, ArrowLeft, CreditCard, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 const statusVariants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
@@ -26,18 +45,13 @@ const statusVariants: Record<string, "default" | "secondary" | "outline" | "dest
 
 const paymentModes = ["CASH", "CHEQUE", "BANK_TRANSFER", "ONLINE"]
 
-export function PaymentView({
-  invoices,
-  profile,
-}: {
-  invoices: any[]
-  profile: any
-}) {
+export function PaymentView({ invoices, profile }: { invoices: any[]; profile: any }) {
   const router = useRouter()
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
   const [selectedInvoice, setSelectedInvoice] = useState<string>("")
   const [error, setError] = useState<string | null>(null)
+  const [loadingStripe, setLoadingStripe] = useState<string | null>(null)
 
   async function handlePayment(formData: FormData) {
     const res = await recordPayment(null, formData)
@@ -52,6 +66,27 @@ export function PaymentView({
     }
   }
 
+  async function handleOnlinePayment(invoiceId: string) {
+    setLoadingStripe(invoiceId)
+    try {
+      const res = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoiceId }),
+      })
+      const data = await res.json()
+      if (data.error) {
+        toast({ title: data.error, variant: "destructive" })
+      } else if (data.url) {
+        window.location.href = data.url
+      }
+    } catch {
+      toast({ title: "Failed to initiate online payment", variant: "destructive" })
+    } finally {
+      setLoadingStripe(null)
+    }
+  }
+
   function openPaymentDialog(invoiceId: string) {
     setSelectedInvoice(invoiceId)
     setOpen(true)
@@ -60,24 +95,25 @@ export function PaymentView({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Payments"
-        description="View invoices and record payments"
-      >
+      <PageHeader title="Payments" description="View invoices and record payments">
         <Button variant="outline" asChild>
-          <Link href="/dashboard/fees/invoices"><ArrowLeft className="mr-2 h-4 w-4" />Back to Invoices</Link>
+          <Link href="/dashboard/fees/invoices">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Invoices
+          </Link>
         </Button>
       </PageHeader>
 
       {invoices.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
+          <CardContent className="text-muted-foreground py-8 text-center">
             No invoices found. Select an invoice from the invoices page.
           </CardContent>
         </Card>
       ) : (
         invoices.map((invoice) => {
-          const totalDue = Number(invoice.totalAmount) + Number(invoice.lateFee) - Number(invoice.discountAmount)
+          const totalDue =
+            Number(invoice.totalAmount) + Number(invoice.lateFee) - Number(invoice.discountAmount)
           const remaining = totalDue - Number(invoice.paidAmount)
           const isPaidOrCancelled = invoice.status === "PAID" || invoice.status === "CANCELLED"
 
@@ -86,37 +122,44 @@ export function PaymentView({
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-lg">{invoice.invoiceNumber}</CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {invoice.student.firstName} {invoice.student.lastName} ({invoice.student.admissionNo}) — {invoice.academicSession.name}
+                  <p className="text-muted-foreground text-sm">
+                    {invoice.student.firstName} {invoice.student.lastName} (
+                    {invoice.student.admissionNo}) — {invoice.academicSession.name}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Due Date</p>
+                    <p className="text-muted-foreground text-sm">Due Date</p>
                     <p className="font-medium">{new Date(invoice.dueDate).toLocaleDateString()}</p>
                   </div>
-                  <Badge variant={statusVariants[invoice.status]} className="text-sm px-3 py-1">
+                  <Badge variant={statusVariants[invoice.status]} className="px-3 py-1 text-sm">
                     {invoice.status}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Amount</p>
+                    <p className="text-muted-foreground text-sm">Total Amount</p>
                     <p className="text-lg font-bold">${Number(invoice.totalAmount).toFixed(2)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Discount</p>
-                    <p className="text-lg font-bold">${Number(invoice.discountAmount).toFixed(2)}</p>
+                    <p className="text-muted-foreground text-sm">Discount</p>
+                    <p className="text-lg font-bold">
+                      ${Number(invoice.discountAmount).toFixed(2)}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Paid</p>
-                    <p className="text-lg font-bold text-green-600">${Number(invoice.paidAmount).toFixed(2)}</p>
+                    <p className="text-muted-foreground text-sm">Paid</p>
+                    <p className="text-lg font-bold text-green-600">
+                      ${Number(invoice.paidAmount).toFixed(2)}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Remaining</p>
-                    <p className={`text-lg font-bold ${remaining > 0 ? "text-red-600" : "text-green-600"}`}>
+                    <p className="text-muted-foreground text-sm">Remaining</p>
+                    <p
+                      className={`text-lg font-bold ${remaining > 0 ? "text-red-600" : "text-green-600"}`}
+                    >
                       ${Math.max(0, remaining).toFixed(2)}
                     </p>
                   </div>
@@ -124,7 +167,7 @@ export function PaymentView({
 
                 {invoice.items?.length > 0 && (
                   <div>
-                    <p className="text-sm font-medium mb-2">Invoice Items</p>
+                    <p className="mb-2 text-sm font-medium">Invoice Items</p>
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
@@ -137,7 +180,9 @@ export function PaymentView({
                           {invoice.items.map((item: any) => (
                             <TableRow key={item.id}>
                               <TableCell>{item.feeStructure.name}</TableCell>
-                              <TableCell className="text-right">${Number(item.amount).toFixed(2)}</TableCell>
+                              <TableCell className="text-right">
+                                ${Number(item.amount).toFixed(2)}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -148,7 +193,7 @@ export function PaymentView({
 
                 {invoice.payments?.length > 0 && (
                   <div>
-                    <p className="text-sm font-medium mb-2">Payment History</p>
+                    <p className="mb-2 text-sm font-medium">Payment History</p>
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
@@ -164,12 +209,20 @@ export function PaymentView({
                         <TableBody>
                           {invoice.payments.map((payment: any) => (
                             <TableRow key={payment.id}>
-                              <TableCell className="font-mono text-xs">{payment.receiptNumber}</TableCell>
-                              <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
+                              <TableCell className="font-mono text-xs">
+                                {payment.receiptNumber}
+                              </TableCell>
+                              <TableCell>
+                                {new Date(payment.paymentDate).toLocaleDateString()}
+                              </TableCell>
                               <TableCell>{payment.paymentMode.replace(/_/g, " ")}</TableCell>
-                              <TableCell className="text-right font-medium">${Number(payment.amount).toFixed(2)}</TableCell>
+                              <TableCell className="text-right font-medium">
+                                ${Number(payment.amount).toFixed(2)}
+                              </TableCell>
                               <TableCell>{payment.referenceNumber || "—"}</TableCell>
-                              <TableCell>{payment.recorder.firstName} {payment.recorder.lastName}</TableCell>
+                              <TableCell>
+                                {payment.recorder.firstName} {payment.recorder.lastName}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -179,9 +232,24 @@ export function PaymentView({
                 )}
 
                 {!isPaidOrCancelled && (
-                  <Button onClick={() => openPaymentDialog(invoice.id)}>
-                    <Plus className="mr-2 h-4 w-4" />Record Payment
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => openPaymentDialog(invoice.id)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Record Payment
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleOnlinePayment(invoice.id)}
+                      disabled={loadingStripe === invoice.id}
+                    >
+                      {loadingStripe === invoice.id ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <CreditCard className="mr-2 h-4 w-4" />
+                      )}
+                      Pay Online
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -189,7 +257,16 @@ export function PaymentView({
         })
       )}
 
-      <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setError(null); setSelectedInvoice("") } }}>
+      <Dialog
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o)
+          if (!o) {
+            setError(null)
+            setSelectedInvoice("")
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Record Payment</DialogTitle>
@@ -203,28 +280,44 @@ export function PaymentView({
             </div>
             <div>
               <Label htmlFor="paymentDate">Payment Date</Label>
-              <Input id="paymentDate" name="paymentDate" type="date" defaultValue={new Date().toISOString().slice(0, 10)} required />
+              <Input
+                id="paymentDate"
+                name="paymentDate"
+                type="date"
+                defaultValue={new Date().toISOString().slice(0, 10)}
+                required
+              />
             </div>
             <div>
               <Label htmlFor="paymentMode">Payment Mode</Label>
               <Select name="paymentMode" defaultValue="CASH">
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {paymentModes.map(m => (
-                    <SelectItem key={m} value={m}>{m.replace(/_/g, " ")}</SelectItem>
+                  {paymentModes.map((m) => (
+                    <SelectItem key={m} value={m}>
+                      {m.replace(/_/g, " ")}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label htmlFor="referenceNumber">Reference Number</Label>
-              <Input id="referenceNumber" name="referenceNumber" placeholder="Cheque/Transaction ref" />
+              <Input
+                id="referenceNumber"
+                name="referenceNumber"
+                placeholder="Cheque/Transaction ref"
+              />
             </div>
             <div>
               <Label htmlFor="notes">Notes</Label>
               <Input id="notes" name="notes" />
             </div>
-            <Button type="submit" className="w-full">Record Payment</Button>
+            <Button type="submit" className="w-full">
+              Record Payment
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

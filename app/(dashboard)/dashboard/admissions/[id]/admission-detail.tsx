@@ -72,7 +72,7 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
       const result = await reviewAdmission(
         admission.id,
         action,
-        action === "REJECTED" ? rejectionReason : undefined
+        action === "REJECTED" ? rejectionReason : undefined,
       )
       if (result.success) {
         toast({ title: `Admission ${action.toLowerCase()}` })
@@ -147,7 +147,7 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
         documentType,
         documentName,
         filePath,
-        file.size
+        file.size,
       )
 
       if (result.success) {
@@ -215,10 +215,7 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleReview("APPROVED")}
-                      disabled={loading}
-                    >
+                    <AlertDialogAction onClick={() => handleReview("APPROVED")} disabled={loading}>
                       Approve
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -246,17 +243,18 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
                   />
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleReview("REJECTED")}
-                      disabled={loading}
-                    >
+                    <AlertDialogAction onClick={() => handleReview("REJECTED")} disabled={loading}>
                       Reject
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
 
-              <Button variant="outline" onClick={() => handleReview("WAITLISTED")} disabled={loading}>
+              <Button
+                variant="outline"
+                onClick={() => handleReview("WAITLISTED")}
+                disabled={loading}
+              >
                 <Clock className="mr-2 h-4 w-4" />
                 Waitlist
               </Button>
@@ -301,11 +299,17 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
               <CardContent className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Full Name</span>
-                  <span>{admission.firstName} {admission.lastName}</span>
+                  <span>
+                    {admission.firstName} {admission.lastName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Date of Birth</span>
-                  <span>{admission.dateOfBirth ? new Date(admission.dateOfBirth).toLocaleDateString() : "-"}</span>
+                  <span>
+                    {admission.dateOfBirth
+                      ? new Date(admission.dateOfBirth).toLocaleDateString()
+                      : "-"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Gender</span>
@@ -384,7 +388,7 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
                   <span>{admission.previousClass || "-"}</span>
                 </div>
                 {admission.reason && (
-                  <div className="pt-2 border-t">
+                  <div className="border-t pt-2">
                     <span className="text-muted-foreground">Reason</span>
                     <p className="mt-1">{admission.reason}</p>
                   </div>
@@ -400,14 +404,18 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
                 <CardContent className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Reviewed By</span>
-                    <span>{admission.reviewedBy.firstName} {admission.reviewedBy.lastName}</span>
+                    <span>
+                      {admission.reviewedBy.firstName} {admission.reviewedBy.lastName}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Reviewed At</span>
-                    <span>{admission.reviewedAt ? new Date(admission.reviewedAt).toLocaleString() : "-"}</span>
+                    <span>
+                      {admission.reviewedAt ? new Date(admission.reviewedAt).toLocaleString() : "-"}
+                    </span>
                   </div>
                   {admission.rejectionReason && (
-                    <div className="pt-2 border-t">
+                    <div className="border-t pt-2">
                       <span className="text-muted-foreground">Rejection Reason</span>
                       <p className="mt-1 text-red-600">{admission.rejectionReason}</p>
                     </div>
@@ -463,8 +471,8 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
                 <p className="text-muted-foreground">No guardians added yet.</p>
               )}
 
-              <div className="mt-6 pt-6 border-t">
-                <h4 className="font-medium mb-4">Add Guardian</h4>
+              <div className="mt-6 border-t pt-6">
+                <h4 className="mb-4 font-medium">Add Guardian</h4>
                 <form action={handleAddGuardian} className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name *</Label>
@@ -513,7 +521,9 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
                     </Select>
                   </div>
                   <div className="md:col-span-2">
-                    <Button type="submit" disabled={loading}>Add Guardian</Button>
+                    <Button type="submit" disabled={loading}>
+                      Add Guardian
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -543,7 +553,9 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
                       <TableRow key={doc.id}>
                         <TableCell>{doc.documentType}</TableCell>
                         <TableCell className="font-medium">{doc.documentName}</TableCell>
-                        <TableCell>{doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : "-"}</TableCell>
+                        <TableCell>
+                          {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : "-"}
+                        </TableCell>
                         <TableCell>{new Date(doc.createdAt).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <Button
@@ -562,8 +574,8 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
                 <p className="text-muted-foreground">No documents uploaded yet.</p>
               )}
 
-              <div className="mt-6 pt-6 border-t">
-                <h4 className="font-medium mb-4">Upload Document</h4>
+              <div className="mt-6 border-t pt-6">
+                <h4 className="mb-4 font-medium">Upload Document</h4>
                 <form action={handleUploadDocument} className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="documentType">Document Type *</Label>
@@ -575,7 +587,9 @@ export function AdmissionDetail({ admission }: AdmissionDetailProps) {
                         <SelectItem value="Birth Certificate">Birth Certificate</SelectItem>
                         <SelectItem value="ID Proof">ID Proof</SelectItem>
                         <SelectItem value="Address Proof">Address Proof</SelectItem>
-                        <SelectItem value="Previous School Report">Previous School Report</SelectItem>
+                        <SelectItem value="Previous School Report">
+                          Previous School Report
+                        </SelectItem>
                         <SelectItem value="Transfer Certificate">Transfer Certificate</SelectItem>
                         <SelectItem value="Medical Record">Medical Record</SelectItem>
                         <SelectItem value="Photo">Photo</SelectItem>

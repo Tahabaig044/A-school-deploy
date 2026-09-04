@@ -1,11 +1,13 @@
 # Database Schema
 
 ## Overview
+
 PostgreSQL database with Prisma ORM for type-safe database access.
 
 ## Core Tables
 
 ### Users
+
 ```sql
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -20,6 +22,7 @@ CREATE TABLE users (
 ```
 
 ### Schools
+
 ```sql
 CREATE TABLE schools (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -37,6 +40,7 @@ CREATE TABLE schools (
 ```
 
 ### Students
+
 ```sql
 CREATE TABLE students (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -62,6 +66,7 @@ CREATE TABLE students (
 ```
 
 ### Teachers
+
 ```sql
 CREATE TABLE teachers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -83,6 +88,7 @@ CREATE TABLE teachers (
 ```
 
 ### Parents
+
 ```sql
 CREATE TABLE parents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -100,6 +106,7 @@ CREATE TABLE parents (
 ```
 
 ### Classes
+
 ```sql
 CREATE TABLE classes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -112,6 +119,7 @@ CREATE TABLE classes (
 ```
 
 ### Sections
+
 ```sql
 CREATE TABLE sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -125,6 +133,7 @@ CREATE TABLE sections (
 ```
 
 ### Subjects
+
 ```sql
 CREATE TABLE subjects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -139,6 +148,7 @@ CREATE TABLE subjects (
 ```
 
 ### Attendance
+
 ```sql
 CREATE TABLE attendance (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -153,6 +163,7 @@ CREATE TABLE attendance (
 ```
 
 ### Exams
+
 ```sql
 CREATE TABLE exams (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -171,6 +182,7 @@ CREATE TABLE exams (
 ```
 
 ### Results
+
 ```sql
 CREATE TABLE results (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -186,6 +198,7 @@ CREATE TABLE results (
 ```
 
 ### Fees
+
 ```sql
 CREATE TABLE fee_structures (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -214,6 +227,7 @@ CREATE TABLE fee_payments (
 ```
 
 ## Indexes
+
 ```sql
 CREATE INDEX idx_students_class ON students(class_id);
 CREATE INDEX idx_students_section ON students(section_id);
@@ -226,6 +240,7 @@ CREATE INDEX idx_fee_payments_student ON fee_payments(student_id);
 ```
 
 ## Constraints
+
 - Foreign keys with appropriate ON DELETE actions
 - Unique constraints for natural keys
 - Check constraints for enum values

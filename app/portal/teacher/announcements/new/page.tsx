@@ -25,7 +25,10 @@ export default function NewAnnouncementPage() {
   useEffect(() => {
     fetch("/api/teacher/assignments")
       .then((r) => r.json())
-      .then((data) => { setAssignments(data); setLoading(false) })
+      .then((data) => {
+        setAssignments(data)
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
   }, [])
 
@@ -40,7 +43,7 @@ export default function NewAnnouncementPage() {
       if (!acc.find((c) => c.id === key)) acc.push(a.class)
       return acc
     },
-    [] as { id: string; name: string }[]
+    [] as { id: string; name: string }[],
   )
 
   return (
@@ -72,15 +75,20 @@ export default function NewAnnouncementPage() {
                 id="content"
                 name="content"
                 rows={6}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="border-input bg-background flex w-full rounded-md border px-3 py-2 text-sm"
                 placeholder="Write your announcement..."
                 required
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="audience">Audience *</Label>
-                <select id="audience" name="audience" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                <select
+                  id="audience"
+                  name="audience"
+                  className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                  required
+                >
                   <option value="ALL">All</option>
                   <option value="TEACHER">Teachers Only</option>
                   <option value="TEACHERS">Teachers (Legacy)</option>
@@ -93,19 +101,29 @@ export default function NewAnnouncementPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="isPublished">Status</Label>
-                <select id="isPublished" name="isPublished" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <select
+                  id="isPublished"
+                  name="isPublished"
+                  className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                >
                   <option value="true">Published</option>
                   <option value="false">Draft</option>
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="classId">Class (optional)</Label>
-                <select id="classId" name="classId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <select
+                  id="classId"
+                  name="classId"
+                  className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                >
                   <option value="">All classes</option>
                   {uniqueClasses.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -114,7 +132,7 @@ export default function NewAnnouncementPage() {
                 <Input id="scheduledAt" name="scheduledAt" type="datetime-local" />
               </div>
             </div>
-            {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+            {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
             <Button type="submit" disabled={pending}>
               {pending ? "Creating..." : "Create Announcement"}
             </Button>

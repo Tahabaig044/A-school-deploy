@@ -40,13 +40,13 @@ type ActionResult = {
  */
 export async function addParent(
   _prevState: ActionResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const schoolId = getSchoolId(profile, formData, "Add Parent")
@@ -60,8 +60,26 @@ export async function addParent(
   const address = formData.get("address") as string
   const isPrimary = formData.get("isPrimary") === "on"
 
+  if (studentId) {
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: { schoolId: true },
+    })
+    if (!student) return { error: "Student not found.", success: false }
+    if (profile.role !== "SUPER_ADMIN" && student.schoolId !== profile.schoolId) {
+      return { error: "Forbidden", success: false }
+    }
+  }
+
   const parsed = parentSchema.safeParse({
-    firstName, lastName, relationship, phone, email, occupation, address, isPrimary,
+    firstName,
+    lastName,
+    relationship,
+    phone,
+    email,
+    occupation,
+    address,
+    isPrimary,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -170,7 +188,7 @@ export async function addParent(
 export async function updateParent(
   parentId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<{ error?: string; success?: boolean }> {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -193,7 +211,14 @@ export async function updateParent(
   const isPrimary = formData.get("isPrimary") === "on"
 
   const parsed = parentSchema.safeParse({
-    firstName, lastName, relationship, phone, email, occupation, address, isPrimary,
+    firstName,
+    lastName,
+    relationship,
+    phone,
+    email,
+    occupation,
+    address,
+    isPrimary,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -238,7 +263,21 @@ export async function deleteParent(parentId: string) {
 }
 
 export async function removeParent(studentId: string, parentId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { schoolId: true },
+  })
+  if (!student) return
+  if (profile.role !== "SUPER_ADMIN" && student.schoolId !== profile.schoolId) return
+
+  const parent = await prisma.parent.findUnique({
+    where: { id: parentId },
+    select: { schoolId: true },
+  })
+  if (!parent) return
+  if (profile.role !== "SUPER_ADMIN" && parent.schoolId !== profile.schoolId) return
 
   await prisma.studentParent.delete({
     where: { studentId_parentId: { studentId, parentId } },
@@ -249,15 +288,33 @@ export async function removeParent(studentId: string, parentId: string) {
 
 export async function enrollStudent(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ADMISSION_OFFICER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ADMISSION_OFFICER")
 
   const studentId = formData.get("studentId") as string
   const classId = formData.get("classId") as string
   const sectionId = formData.get("sectionId") as string
   const academicSessionId = formData.get("academicSessionId") as string
   const rollNumber = formData.get("rollNumber") as string
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { schoolId: true },
+  })
+  if (!student) return { error: "Student not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && student.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
+  const cls = await prisma.class.findUnique({
+    where: { id: classId },
+    select: { schoolId: true },
+  })
+  if (!cls) return { error: "Class not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && cls.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
 
   await prisma.studentEnrollment.create({
     data: {

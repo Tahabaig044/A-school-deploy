@@ -1,22 +1,26 @@
 # Loop 006: Subjects
 
 ## Overview
+
 Subject module manages academic subjects, their categorization, and assignment to classes and teachers.
 
 ## User Stories
 
 ### As an Admin
+
 1. I want to create and manage subjects
 2. I want to assign subjects to classes
 3. I want to categorize subjects
 4. I want to view subject statistics
 
 ### As a Teacher
+
 1. I want to see subjects I teach
 2. I want to view subject syllabus
 3. I want to manage subject resources
 
 ### As a Student
+
 1. I want to see my subjects
 2. I want to view subject materials
 
@@ -89,18 +93,21 @@ CREATE TABLE subject_teachers (
 ## Business Rules
 
 ### Subject Code Generation
+
 ```
 Format: {CLASS}{SUBJECT_CODE}
 Example: 5MATH (Class 5, Mathematics)
 ```
 
 ### Marks Configuration
+
 - Max marks default: 100
 - Passing marks default: 33 (or 33%)
 - Theory/Practical split optional
 - Credits for grading
 
 ### Subject Categories
+
 - Languages
 - Sciences
 - Mathematics
@@ -111,18 +118,21 @@ Example: 5MATH (Class 5, Mathematics)
 ## UI Components
 
 ### Subject List
+
 - Category-wise grouping
 - Class filter
 - Teacher assignment
 - Quick actions
 
 ### Subject Form
+
 - Name and code
 - Category selector
 - Marks configuration
 - Class assignment
 
 ## Acceptance Criteria
+
 - [ ] Subjects can be created and edited
 - [ ] Subject codes are unique
 - [ ] Subjects assigned to classes

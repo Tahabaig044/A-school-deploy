@@ -10,9 +10,12 @@ export default async function AssignmentsPage() {
 
   const [assignments, teachers, classes, subjects, sessions] = await Promise.all([
     prisma.teacherAssignment.findMany({
-      where: profile.role === "SUPER_ADMIN" ? undefined : {
-        class: { schoolId: profile.schoolId! }
-      },
+      where:
+        profile.role === "SUPER_ADMIN"
+          ? undefined
+          : {
+              class: { schoolId: profile.schoolId! },
+            },
       include: {
         teacher: true,
         class: true,
@@ -23,9 +26,13 @@ export default async function AssignmentsPage() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.teacher.findMany({
-      where: profile.role === "SUPER_ADMIN" ? undefined : {
-        schoolId: profile.schoolId!, branchId: profile.branchId!
-      },
+      where:
+        profile.role === "SUPER_ADMIN"
+          ? undefined
+          : {
+              schoolId: profile.schoolId!,
+              branchId: profile.branchId!,
+            },
       select: { id: true, firstName: true, lastName: true, employeeCode: true },
     }),
     prisma.class.findMany({

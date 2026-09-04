@@ -1,12 +1,30 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { updateSession } from "@/lib/supabase/middleware"
 
+const CORS_ALLOWED_ORIGINS = ["http://localhost:8080", "http://localhost:3000"]
+
+function setCorsHeaders(response: NextResponse, origin: string | null) {
+  if (origin && CORS_ALLOWED_ORIGINS.includes(origin)) {
+    response.headers.set("Access-Control-Allow-Origin", origin)
+    response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+    response.headers.set("Access-Control-Allow-Credentials", "true")
+    response.headers.set("Access-Control-Max-Age", "86400")
+  }
+}
+
 function logPerf(label: string, ms: number) {
   if (process.env.NODE_ENV === "production") return
   console.log(`[PERF] ${label}: ${ms.toFixed(0)}ms`)
 }
 
-const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/setup-password"]
+const publicRoutes = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/setup-password",
+]
 
 const roleRouteMap: Record<string, string[]> = {
   "/dashboard/schools": ["SUPER_ADMIN"],
@@ -17,7 +35,13 @@ const roleRouteMap: Record<string, string[]> = {
   "/dashboard/subjects": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PRINCIPAL"],
   "/dashboard/teachers": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"],
   "/dashboard/parents": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"],
-  "/dashboard/students": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ADMISSION_OFFICER", "TEACHER"],
+  "/dashboard/students": [
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "ADMISSION_OFFICER",
+    "TEACHER",
+  ],
   "/dashboard/staff": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"],
   "/dashboard/attendance": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER"],
   "/dashboard/exams": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER"],
@@ -29,11 +53,48 @@ const roleRouteMap: Record<string, string[]> = {
   "/dashboard/library": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "LIBRARIAN"],
   "/dashboard/transport": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TRANSPORT_MANAGER"],
   "/dashboard/reports": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER"],
-  "/dashboard/notifications": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT"],
-  "/dashboard/messages": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT"],
-  "/dashboard/meetings": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "PARENT"],
-  "/dashboard/events": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "STUDENT", "PARENT"],
-  "/dashboard/calendar": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "STUDENT", "PARENT"],
+  "/dashboard/notifications": [
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  ],
+  "/dashboard/messages": [
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  ],
+  "/dashboard/meetings": [
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "PARENT",
+  ],
+  "/dashboard/events": [
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  ],
+  "/dashboard/calendar": [
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  ],
   "/dashboard/settings": ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"],
   "/id-card": [
     "SUPER_ADMIN",
@@ -58,9 +119,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const start = performance.now()
 
-  const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route)
-  )
+  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
   // Mobile API routes authenticate via `Authorization: Bearer <Supabase JWT>`
   // inside the route handlers (see lib/supabase/mobile-auth.ts), so they must
@@ -68,6 +127,22 @@ export async function proxy(request: NextRequest) {
   const isMobileApiRoute = pathname.startsWith("/api/mobile/")
 
   if (isPublicRoute || isMobileApiRoute || pathname === "/") {
+    // Dev-only CORS for Flutter web (localhost:8080 / :3000)
+    if (isMobileApiRoute && process.env.NODE_ENV !== "production") {
+      const origin = request.headers.get("origin")
+      const isPreflight = request.method === "OPTIONS"
+
+      if (isPreflight) {
+        const preflight = new NextResponse(null, { status: 204 })
+        setCorsHeaders(preflight, origin)
+        return preflight
+      }
+
+      const response = NextResponse.next({ request })
+      setCorsHeaders(response, origin)
+      return response
+    }
+
     return NextResponse.next({ request })
   }
 
@@ -123,7 +198,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 }

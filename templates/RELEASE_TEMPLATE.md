@@ -2,11 +2,11 @@
 
 ## Release Information
 
-| Field | Value |
-|-------|-------|
-| Version | vX.Y.Z |
-| Date | [Date] |
-| Phase | [Phase number] |
+| Field   | Value          |
+| ------- | -------------- |
+| Version | vX.Y.Z         |
+| Date    | [Date]         |
+| Phase   | [Phase number] |
 
 ## Features
 

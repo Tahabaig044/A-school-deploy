@@ -1,6 +1,7 @@
 # UI Design System
 
 ## Design Principles
+
 1. **Clarity**: Information hierarchy is clear
 2. **Consistency**: Uniform patterns across the app
 3. **Efficiency**: Minimize clicks to complete tasks
@@ -10,6 +11,7 @@
 ## Color Palette
 
 ### Primary Colors
+
 ```css
 --color-primary-50: #eff6ff;
 --color-primary-100: #dbeafe;
@@ -24,6 +26,7 @@
 ```
 
 ### Neutral Colors
+
 ```css
 --color-gray-50: #f9fafb;
 --color-gray-100: #f3f4f6;
@@ -38,6 +41,7 @@
 ```
 
 ### Semantic Colors
+
 ```css
 --color-success: #10b981;
 --color-warning: #f59e0b;
@@ -48,39 +52,43 @@
 ## Typography
 
 ### Font Family
+
 ```css
---font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
---font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+--font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+--font-mono: "JetBrains Mono", "Fira Code", monospace;
 ```
 
 ### Font Sizes
+
 ```css
---text-xs: 0.75rem;    /* 12px */
---text-sm: 0.875rem;   /* 14px */
---text-base: 1rem;     /* 16px */
---text-lg: 1.125rem;   /* 18px */
---text-xl: 1.25rem;    /* 20px */
---text-2xl: 1.5rem;    /* 24px */
---text-3xl: 1.875rem;  /* 30px */
---text-4xl: 2.25rem;   /* 36px */
+--text-xs: 0.75rem; /* 12px */
+--text-sm: 0.875rem; /* 14px */
+--text-base: 1rem; /* 16px */
+--text-lg: 1.125rem; /* 18px */
+--text-xl: 1.25rem; /* 20px */
+--text-2xl: 1.5rem; /* 24px */
+--text-3xl: 1.875rem; /* 30px */
+--text-4xl: 2.25rem; /* 36px */
 ```
 
 ## Spacing Scale
+
 ```css
---space-1: 0.25rem;   /* 4px */
---space-2: 0.5rem;    /* 8px */
---space-3: 0.75rem;   /* 12px */
---space-4: 1rem;      /* 16px */
---space-5: 1.25rem;   /* 20px */
---space-6: 1.5rem;    /* 24px */
---space-8: 2rem;      /* 32px */
---space-10: 2.5rem;   /* 40px */
---space-12: 3rem;     /* 48px */
+--space-1: 0.25rem; /* 4px */
+--space-2: 0.5rem; /* 8px */
+--space-3: 0.75rem; /* 12px */
+--space-4: 1rem; /* 16px */
+--space-5: 1.25rem; /* 20px */
+--space-6: 1.5rem; /* 24px */
+--space-8: 2rem; /* 32px */
+--space-10: 2.5rem; /* 40px */
+--space-12: 3rem; /* 48px */
 ```
 
 ## Components
 
 ### Buttons
+
 ```typescript
 // Variants: primary, secondary, outline, ghost, danger
 // Sizes: sm, md, lg
@@ -91,9 +99,10 @@
 ```
 
 ### Forms
+
 ```typescript
 // Input component
-<Input 
+<Input
   label="Email Address"
   type="email"
   placeholder="Enter email"
@@ -118,6 +127,7 @@
 ```
 
 ### Tables
+
 ```typescript
 <Table
   columns={[
@@ -132,6 +142,7 @@
 ```
 
 ### Cards
+
 ```typescript
 <Card>
   <CardHeader>
@@ -147,6 +158,7 @@
 ```
 
 ### Modals
+
 ```typescript
 <Modal
   isOpen={isModalOpen}
@@ -161,6 +173,7 @@
 ## Layout
 
 ### Grid System
+
 ```css
 /* 12-column grid */
 .grid {
@@ -169,12 +182,19 @@
   gap: var(--space-6);
 }
 
-.col-span-4 { grid-column: span 4; }
-.col-span-6 { grid-column: span 6; }
-.col-span-12 { grid-column: span 12; }
+.col-span-4 {
+  grid-column: span 4;
+}
+.col-span-6 {
+  grid-column: span 6;
+}
+.col-span-12 {
+  grid-column: span 12;
+}
 ```
 
 ### Breakpoints
+
 ```css
 --breakpoint-sm: 640px;
 --breakpoint-md: 768px;
@@ -184,11 +204,13 @@
 ```
 
 ## Icons
+
 - Use Lucide React icons
 - Consistent sizing: 16px, 20px, 24px
 - inherit color from parent
 
 ## Forms
+
 - Labels always visible (not just placeholders)
 - Inline validation on blur
 - Clear error messages
@@ -196,6 +218,7 @@
 - Logical tab order
 
 ## Accessibility
+
 - All interactive elements focusable
 - Focus indicators visible
 - Color not sole indicator

@@ -3,16 +3,12 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 import { EditStudentForm } from "./edit-student-form"
 
-export default async function EditStudentPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function EditStudentPage({ params }: { params: Promise<{ id: string }> }) {
   const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const { id } = await params
@@ -39,16 +35,17 @@ export default async function EditStudentPage({
 
   if (!student) notFound()
 
-  const classes = profile.role === "SUPER_ADMIN"
-    ? await prisma.class.findMany({
-        include: { sections: true },
-        orderBy: { order: "asc" },
-      })
-    : await prisma.class.findMany({
-        where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
-        include: { sections: true },
-        orderBy: { order: "asc" },
-      })
+  const classes =
+    profile.role === "SUPER_ADMIN"
+      ? await prisma.class.findMany({
+          include: { sections: true },
+          orderBy: { order: "asc" },
+        })
+      : await prisma.class.findMany({
+          where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
+          include: { sections: true },
+          orderBy: { order: "asc" },
+        })
 
   return (
     <div className="grid gap-6">

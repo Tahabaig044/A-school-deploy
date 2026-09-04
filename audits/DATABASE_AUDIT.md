@@ -1,17 +1,21 @@
 # DATABASE_AUDIT
 
 ## Audit Date
+
 [Insert Date]
 
 ## Auditor
+
 [Insert Name]
 
 ## Scope
+
 Database design review
 
 ## Checklist
 
 ### Schema
+
 - [ ] Naming conventions
 - [ ] Required columns
 - [ ] Foreign keys
@@ -19,12 +23,14 @@ Database design review
 - [ ] Constraints
 
 ### Queries
+
 - [ ] No N+1 queries
 - [ ] Pagination used
 - [ ] Indexes used
 - [ ] School ID filtered
 
 ### Migrations
+
 - [ ] Tested on dev
 - [ ] Rollback available
 - [ ] No data loss
@@ -32,9 +38,9 @@ Database design review
 
 ## Findings
 
-| ID | Description | Severity | Status |
-|----|-------------|----------|--------|
-| | | | |
+| ID  | Description | Severity | Status |
+| --- | ----------- | -------- | ------ |
+|     |             |          |        |
 
 ## Recommendations
 

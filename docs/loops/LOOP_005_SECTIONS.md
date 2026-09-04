@@ -1,22 +1,26 @@
 # Loop 005: Sections
 
 ## Overview
+
 Section module manages divisions within classes, enabling organized student grouping and class teacher assignments.
 
 ## User Stories
 
 ### As an Admin
+
 1. I want to create sections for classes
 2. I want to assign class teachers to sections
 3. I want to manage section capacity
 4. I want to view section-wise statistics
 
 ### As a Teacher
+
 1. I want to view sections I teach
 2. I want to see students in my section
 3. I want to manage my section's attendance
 
 ### As a Parent
+
 1. I want to know which section my child is in
 2. I want to know the class teacher
 
@@ -69,16 +73,19 @@ CREATE TABLE sections (
 ## Business Rules
 
 ### Section Naming
+
 - Convention: "A", "B", "C" or "Alpha", "Beta", "Gamma"
 - Must be unique within a class
 - Auto-increment naming supported
 
 ### Class Teacher Assignment
+
 - One class teacher per section
 - Class teacher handles section management
 - Can be reassigned
 
 ### Capacity Management
+
 - Student count cannot exceed capacity
 - Warning at 90% capacity
 - Configurable per section
@@ -86,18 +93,21 @@ CREATE TABLE sections (
 ## UI Components
 
 ### Section List
+
 - Class-wise grouping
 - Student count
 - Class teacher display
 - Quick actions
 
 ### Section Form
+
 - Name input
 - Class selector
 - Teacher selector
 - Capacity setting
 
 ## Acceptance Criteria
+
 - [ ] Sections can be created for classes
 - [ ] Class teacher can be assigned
 - [ ] Capacity limits enforced

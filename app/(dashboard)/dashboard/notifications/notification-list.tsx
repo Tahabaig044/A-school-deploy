@@ -5,7 +5,11 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { markNotificationAsRead, markAllNotificationsAsRead, deleteNotification } from "@/actions/notification.actions"
+import {
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification,
+} from "@/actions/notification.actions"
 import { useToast } from "@/hooks/use-toast"
 import { Bell, Check, CheckCheck, Trash2, Filter } from "lucide-react"
 
@@ -71,7 +75,10 @@ export function NotificationList({
         </Button>
       </PageHeader>
 
-      <Tabs value={activeCategory} onValueChange={(v) => router.push(`/dashboard/notifications?category=${v}`)}>
+      <Tabs
+        value={activeCategory}
+        onValueChange={(v) => router.push(`/dashboard/notifications?category=${v}`)}
+      >
         <TabsList>
           {CATEGORIES.map((cat) => (
             <TabsTrigger key={cat.value} value={cat.value} className="flex items-center gap-2">
@@ -85,27 +92,30 @@ export function NotificationList({
 
         <TabsContent value={activeCategory} className="space-y-4">
           {notifications.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No notifications</p>
+            <p className="text-muted-foreground py-8 text-center">No notifications</p>
           ) : (
             notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-4 border rounded-lg ${
-                  !notification.isRead ? "border-l-4 border-l-primary bg-primary/5" : ""
+                className={`rounded-lg border p-4 ${
+                  !notification.isRead ? "border-l-primary bg-primary/5 border-l-4" : ""
                 }`}
               >
-                <div className="flex justify-between items-start">
+                <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <Bell className="h-4 w-4 text-muted-foreground" />
+                      <Bell className="text-muted-foreground h-4 w-4" />
                       <span className="font-medium">{notification.title}</span>
-                      <Badge variant="outline" className={PRIORITY_COLORS[notification.priority] || ""}>
+                      <Badge
+                        variant="outline"
+                        className={PRIORITY_COLORS[notification.priority] || ""}
+                      >
                         {notification.priority}
                       </Badge>
                       <Badge variant="secondary">{notification.category}</Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">{notification.content}</p>
-                    <span className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground mt-1 text-sm">{notification.content}</p>
+                    <span className="text-muted-foreground text-xs">
                       {new Date(notification.createdAt).toLocaleString()}
                     </span>
                   </div>
@@ -142,18 +152,22 @@ export function NotificationList({
             variant="outline"
             size="sm"
             disabled={page <= 1}
-            onClick={() => router.push(`/dashboard/notifications?category=${activeCategory}&page=${page - 1}`)}
+            onClick={() =>
+              router.push(`/dashboard/notifications?category=${activeCategory}&page=${page - 1}`)
+            }
           >
             Previous
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Page {page} of {totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
-            onClick={() => router.push(`/dashboard/notifications?category=${activeCategory}&page=${page + 1}`)}
+            onClick={() =>
+              router.push(`/dashboard/notifications?category=${activeCategory}&page=${page + 1}`)
+            }
           >
             Next
           </Button>

@@ -14,7 +14,7 @@ export function Sidebar({ permissions }: SidebarProps) {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col md:border-r h-full">
+    <aside className="hidden h-full md:flex md:w-64 md:flex-col md:border-r">
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/dashboard">
           <h1 className="text-lg font-semibold">SchoolMS</h1>
@@ -32,7 +32,7 @@ export function Sidebar({ permissions }: SidebarProps) {
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                   )}
                 >
                   <item.icon className="h-4 w-4" />

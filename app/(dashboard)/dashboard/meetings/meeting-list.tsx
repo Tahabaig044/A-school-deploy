@@ -7,18 +7,41 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { UserPicker } from "@/components/ui/user-picker"
 import {
-  createMeeting, addMeetingNote,
-  approveMeeting, rejectMeeting, cancelMeeting, completeMeeting,
-  editMeeting, downloadMeetingIcs,
+  createMeeting,
+  addMeetingNote,
+  approveMeeting,
+  rejectMeeting,
+  cancelMeeting,
+  completeMeeting,
+  editMeeting,
+  downloadMeetingIcs,
 } from "@/actions/meeting.actions"
 import { useToast } from "@/hooks/use-toast"
-import { Calendar, Clock, MapPin, Users, Check, X, Plus, FileText, Download, Pencil, Ban } from "lucide-react"
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  Check,
+  X,
+  Plus,
+  FileText,
+  Download,
+  Pencil,
+  Ban,
+} from "lucide-react"
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -154,7 +177,7 @@ export function MeetingList({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="meetingType">Type</Label>
-                  <select id="meetingType" name="meetingType" className="w-full border rounded p-2">
+                  <select id="meetingType" name="meetingType" className="w-full rounded border p-2">
                     <option value="PARENT_TEACHER">Parent-Teacher</option>
                     <option value="STAFF">Staff</option>
                     <option value="DEPARTMENT">Department</option>
@@ -185,7 +208,9 @@ export function MeetingList({
                   placeholder="Search users..."
                 />
               </div>
-              <Button type="submit" className="w-full">Create Meeting</Button>
+              <Button type="submit" className="w-full">
+                Create Meeting
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -201,7 +226,7 @@ export function MeetingList({
 
         <TabsContent value={activeType} className="space-y-4">
           {meetings.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No meetings found</p>
+            <p className="text-muted-foreground py-8 text-center">No meetings found</p>
           ) : (
             meetings.map((meeting) => (
               <Card key={meeting.id}>
@@ -209,13 +234,17 @@ export function MeetingList({
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-lg">{meeting.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{meeting.meetingType.replace(/_/g, " ")}</p>
+                      <p className="text-muted-foreground text-sm">
+                        {meeting.meetingType.replace(/_/g, " ")}
+                      </p>
                     </div>
                     <span className="flex items-center gap-2">
-                      <Badge className={STATUS_COLORS[meeting.status] || ""}>{meeting.status}</Badge>
+                      <Badge className={STATUS_COLORS[meeting.status] || ""}>
+                        {meeting.status}
+                      </Badge>
                       {meeting.status === "CANCELLED" || meeting.status === "REJECTED" ? (
                         <Badge variant="outline" className="border-red-200 text-red-700">
-                          <Ban className="h-3 w-3 mr-1" />
+                          <Ban className="mr-1 h-3 w-3" />
                           {meeting.status === "CANCELLED" ? "Cancelled" : "Rejected"}
                         </Badge>
                       ) : null}
@@ -224,16 +253,17 @@ export function MeetingList({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {meeting.description && (
-                    <p className="text-sm text-muted-foreground">{meeting.description}</p>
+                    <p className="text-muted-foreground text-sm">{meeting.description}</p>
                   )}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex flex-wrap items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
                       {new Date(meeting.startDateTime).toLocaleDateString()}
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="h-4 w-4" />
-                      {new Date(meeting.startDateTime).toLocaleTimeString()} - {new Date(meeting.endDateTime).toLocaleTimeString()}
+                      {new Date(meeting.startDateTime).toLocaleTimeString()} -{" "}
+                      {new Date(meeting.endDateTime).toLocaleTimeString()}
                     </div>
                     {meeting.location && (
                       <div className="flex items-center gap-1">
@@ -251,15 +281,23 @@ export function MeetingList({
                   </div>
 
                   <div className="space-y-2">
-                    <h4 className="font-medium text-sm">Attendees</h4>
+                    <h4 className="text-sm font-medium">Attendees</h4>
                     <div className="flex flex-wrap gap-2">
                       {meeting.attendees.map((attendee: any) => (
-                        <div key={attendee.id} className="flex items-center gap-2 border rounded p-2">
+                        <div
+                          key={attendee.id}
+                          className="flex items-center gap-2 rounded border p-2"
+                        >
                           <span className="text-sm">
                             {attendee.profile.firstName} {attendee.profile.lastName}
-                            <span className="text-xs text-muted-foreground ml-1">({attendee.profile.role})</span>
+                            <span className="text-muted-foreground ml-1 text-xs">
+                              ({attendee.profile.role})
+                            </span>
                           </span>
-                          <Badge variant="outline" className={ATTENDEE_STATUS_COLORS[attendee.status] || ""}>
+                          <Badge
+                            variant="outline"
+                            className={ATTENDEE_STATUS_COLORS[attendee.status] || ""}
+                          >
                             {attendee.status}
                           </Badge>
                         </div>
@@ -269,15 +307,15 @@ export function MeetingList({
 
                   {meeting.notes && meeting.notes.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="font-medium text-sm">Notes</h4>
+                      <h4 className="text-sm font-medium">Notes</h4>
                       <div className="space-y-2">
                         {meeting.notes.map((note: any) => (
-                          <div key={note.id} className="border rounded p-3 bg-muted/30">
-                            <div className="flex items-center justify-between mb-1">
+                          <div key={note.id} className="bg-muted/30 rounded border p-3">
+                            <div className="mb-1 flex items-center justify-between">
                               <span className="text-sm font-medium">
                                 {note.author.firstName} {note.author.lastName}
                               </span>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-muted-foreground text-xs">
                                 {new Date(note.createdAt).toLocaleString()}
                               </span>
                             </div>
@@ -291,32 +329,50 @@ export function MeetingList({
                   <div className="flex flex-wrap items-center gap-2">
                     {canApprove && meeting.status === "PENDING" && (
                       <>
-                        <Button variant="default" size="sm" onClick={() => handleApprove(meeting.id)}>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleApprove(meeting.id)}
+                        >
                           <Check className="mr-2 h-4 w-4" />
                           Approve
                         </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleReject(meeting.id)}>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleReject(meeting.id)}
+                        >
                           <X className="mr-2 h-4 w-4" />
                           Reject
                         </Button>
                       </>
                     )}
-                    {meeting.status !== "CANCELLED" && meeting.status !== "REJECTED" && meeting.status !== "COMPLETED" && (
-                      <>
-                        <Button variant="outline" size="sm" onClick={() => openEdit(meeting)}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleComplete(meeting.id)}>
-                          <Check className="mr-2 h-4 w-4" />
-                          Complete
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleCancel(meeting.id)}>
-                          <X className="mr-2 h-4 w-4" />
-                          Cancel
-                        </Button>
-                      </>
-                    )}
+                    {meeting.status !== "CANCELLED" &&
+                      meeting.status !== "REJECTED" &&
+                      meeting.status !== "COMPLETED" && (
+                        <>
+                          <Button variant="outline" size="sm" onClick={() => openEdit(meeting)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleComplete(meeting.id)}
+                          >
+                            <Check className="mr-2 h-4 w-4" />
+                            Complete
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleCancel(meeting.id)}
+                          >
+                            <X className="mr-2 h-4 w-4" />
+                            Cancel
+                          </Button>
+                        </>
+                      )}
                     <Button variant="outline" size="sm" onClick={() => setNoteMeeting(meeting)}>
                       <FileText className="mr-2 h-4 w-4" />
                       Add Note
@@ -366,12 +422,21 @@ export function MeetingList({
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
-                <Textarea id="description" name="description" defaultValue={editMeeting.description || ""} />
+                <Textarea
+                  id="description"
+                  name="description"
+                  defaultValue={editMeeting.description || ""}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="meetingType">Type</Label>
-                  <select id="meetingType" name="meetingType" className="w-full border rounded p-2" defaultValue={editMeeting.meetingType}>
+                  <select
+                    id="meetingType"
+                    name="meetingType"
+                    className="w-full rounded border p-2"
+                    defaultValue={editMeeting.meetingType}
+                  >
                     <option value="PARENT_TEACHER">Parent-Teacher</option>
                     <option value="STAFF">Staff</option>
                     <option value="DEPARTMENT">Department</option>
@@ -385,13 +450,23 @@ export function MeetingList({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="startDateTime">Start</Label>
-                  <Input id="startDateTime" name="startDateTime" type="datetime-local"
-                    defaultValue={new Date(editMeeting.startDateTime).toISOString().slice(0, 16)} required />
+                  <Input
+                    id="startDateTime"
+                    name="startDateTime"
+                    type="datetime-local"
+                    defaultValue={new Date(editMeeting.startDateTime).toISOString().slice(0, 16)}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="endDateTime">End</Label>
-                  <Input id="endDateTime" name="endDateTime" type="datetime-local"
-                    defaultValue={new Date(editMeeting.endDateTime).toISOString().slice(0, 16)} required />
+                  <Input
+                    id="endDateTime"
+                    name="endDateTime"
+                    type="datetime-local"
+                    defaultValue={new Date(editMeeting.endDateTime).toISOString().slice(0, 16)}
+                    required
+                  />
                 </div>
               </div>
               <div>
@@ -404,7 +479,9 @@ export function MeetingList({
                   placeholder="Search users..."
                 />
               </div>
-              <Button type="submit" className="w-full">Save Changes</Button>
+              <Button type="submit" className="w-full">
+                Save Changes
+              </Button>
             </form>
           </DialogContent>
         </Dialog>

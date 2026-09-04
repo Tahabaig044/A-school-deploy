@@ -1,6 +1,7 @@
 # Authentication System
 
 ## Overview
+
 JWT-based authentication with refresh token rotation for secure access.
 
 ## Authentication Flow
@@ -32,6 +33,7 @@ JWT-based authentication with refresh token rotation for secure access.
 ## Token Structure
 
 ### Access Token (JWT)
+
 ```json
 {
   "sub": "user-uuid",
@@ -44,6 +46,7 @@ JWT-based authentication with refresh token rotation for secure access.
 ```
 
 ### Refresh Token
+
 ```json
 {
   "sub": "user-uuid",
@@ -56,9 +59,11 @@ JWT-based authentication with refresh token rotation for secure access.
 ## API Endpoints
 
 ### POST /api/v1/auth/register
+
 Register new user account.
 
 **Request:**
+
 ```json
 {
   "email": "user@example.com",
@@ -71,6 +76,7 @@ Register new user account.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -87,9 +93,11 @@ Register new user account.
 ```
 
 ### POST /api/v1/auth/login
+
 Authenticate user and return tokens.
 
 **Request:**
+
 ```json
 {
   "email": "user@example.com",
@@ -98,23 +106,29 @@ Authenticate user and return tokens.
 ```
 
 ### POST /api/v1/auth/refresh
+
 Refresh access token using refresh token.
 
 ### POST /api/v1/auth/logout
+
 Invalidate refresh token.
 
 ### POST /api/v1/auth/forgot-password
+
 Send password reset email.
 
 ### POST /api/v1/auth/reset-password
+
 Reset password with token.
 
 ### PUT /api/v1/auth/change-password
+
 Change password (requires authentication).
 
 ## Security Features
 
 ### Password Requirements
+
 - Minimum 8 characters
 - At least 1 uppercase letter
 - At least 1 lowercase letter
@@ -123,6 +137,7 @@ Change password (requires authentication).
 - Hashed with bcrypt (12 rounds)
 
 ### Token Security
+
 - Access token expiry: 15 minutes
 - Refresh token expiry: 7 days
 - Refresh token rotation on use
@@ -130,18 +145,21 @@ Change password (requires authentication).
 - IP-based token binding (optional)
 
 ### Rate Limiting
+
 - Login: 5 attempts per 15 minutes
 - Register: 3 attempts per hour
 - Password reset: 3 attempts per hour
 - API general: 100 requests per minute
 
 ## Session Management
+
 - Active sessions tracking
 - Force logout all sessions
 - Session invalidation on password change
 - Concurrent session limits
 
 ## Multi-Factor Authentication (Future)
+
 - TOTP-based 2FA
 - SMS verification
 - Email verification

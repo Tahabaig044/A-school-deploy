@@ -1,9 +1,11 @@
 # Phase 8: Analytics
 
 ## Duration
+
 2 weeks
 
 ## Objectives
+
 - Build comprehensive analytics dashboard
 - Implement data visualization
 - Create custom report builder
@@ -12,6 +14,7 @@
 ## Deliverables
 
 ### Week 1: Dashboard & Visualizations
+
 1. **Main Dashboard**
    - Key metrics overview
    - Real-time statistics
@@ -25,6 +28,7 @@
    - Heat maps for patterns
 
 ### Week 2: Advanced Analytics
+
 1. **Custom Reports**
    - Drag-and-drop report builder
    - Custom filters
@@ -40,6 +44,7 @@
 ## Technical Implementation
 
 ### API Endpoints
+
 ```
 # Dashboard
 GET    /api/v1/dashboard/overview
@@ -68,6 +73,7 @@ GET    /api/v1/data/restore/:id
 ```
 
 ### Database Schema
+
 ```sql
 -- Saved Reports
 CREATE TABLE saved_reports (
@@ -102,6 +108,7 @@ CREATE TABLE dashboard_widgets (
 ```
 
 ### UI Pages
+
 - /dashboard - Main dashboard
 - /analytics/overview - Analytics overview
 - /analytics/students - Student analytics
@@ -113,6 +120,7 @@ CREATE TABLE dashboard_widgets (
 ## Dashboard Widgets
 
 ### Admin Dashboard
+
 1. Total Students
 2. Total Teachers
 3. Attendance Rate
@@ -123,6 +131,7 @@ CREATE TABLE dashboard_widgets (
 8. Quick Actions
 
 ### Teacher Dashboard
+
 1. My Classes
 2. Today's Schedule
 3. Pending Grades
@@ -130,6 +139,7 @@ CREATE TABLE dashboard_widgets (
 5. Attendance Overview
 
 ### Parent Dashboard
+
 1. Children Overview
 2. Attendance Status
 3. Recent Results
@@ -137,6 +147,7 @@ CREATE TABLE dashboard_widgets (
 5. Messages
 
 ## Charts Library
+
 ```typescript
 // Using Recharts
 import { LineChart, BarChart, PieChart } from 'recharts';
@@ -153,12 +164,14 @@ import { LineChart, BarChart, PieChart } from 'recharts';
 ## Features
 
 ### Dashboard
+
 - Drag-and-drop widget arrangement
 - Customizable layouts
 - Real-time data updates
 - Mobile-responsive
 
 ### Analytics
+
 - Date range selection
 - Drill-down capability
 - Comparison mode
@@ -166,6 +179,7 @@ import { LineChart, BarChart, PieChart } from 'recharts';
 - Export to PDF/Excel
 
 ### Custom Reports
+
 - Visual query builder
 - Column selection
 - Filter conditions
@@ -173,6 +187,7 @@ import { LineChart, BarChart, PieChart } from 'recharts';
 - Save and share
 
 ## Acceptance Criteria
+
 - [ ] Dashboard loads with correct metrics
 - [ ] Charts render correctly
 - [ ] Custom reports can be created
@@ -183,13 +198,15 @@ import { LineChart, BarChart, PieChart } from 'recharts';
 - [ ] Mobile responsive
 
 ## Dependencies
+
 - All previous phases completed
 - Sufficient data for analytics
 - Chart library configured
 
 ## Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Dashboard performance | High | Implement caching |
-| Data accuracy | High | Validate calculations |
+
+| Risk                   | Impact | Mitigation              |
+| ---------------------- | ------ | ----------------------- |
+| Dashboard performance  | High   | Implement caching       |
+| Data accuracy          | High   | Validate calculations   |
 | Chart rendering issues | Medium | Fallback visualizations |

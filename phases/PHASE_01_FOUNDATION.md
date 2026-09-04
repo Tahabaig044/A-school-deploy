@@ -1,6 +1,7 @@
 # PHASE 01 - FOUNDATION
 
 ## Objectives
+
 - Project setup
 - Authentication system
 - Database schema
@@ -8,13 +9,15 @@
 - Dashboard
 
 ## Modules
-| Loop | Module | Status |
-|------|--------|--------|
+
+| Loop     | Module         | Status  |
+| -------- | -------------- | ------- |
 | LOOP_001 | Authentication | Pending |
-| LOOP_002 | Permissions | Pending |
-| LOOP_003 | Dashboard | Pending |
+| LOOP_002 | Permissions    | Pending |
+| LOOP_003 | Dashboard      | Pending |
 
 ## Acceptance Criteria
+
 - [ ] Next.js project initialized
 - [ ] Supabase configured
 - [ ] Prisma schema created

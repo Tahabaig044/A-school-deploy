@@ -112,8 +112,8 @@ export function AdmissionList({
       </div>
 
       <div className="flex flex-wrap gap-4">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative max-w-sm min-w-[200px] flex-1">
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Search by name, admission no, or email..."
             value={searchInput}
@@ -126,10 +126,7 @@ export function AdmissionList({
             className="pl-10"
           />
         </div>
-        <Select
-          value={status}
-          onValueChange={(value) => updateParams("status", value)}
-        >
+        <Select value={status} onValueChange={(value) => updateParams("status", value)}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
@@ -144,7 +141,7 @@ export function AdmissionList({
         </Select>
       </div>
 
-      <div className="border rounded-lg overflow-x-auto">
+      <div className="overflow-x-auto rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -162,28 +159,32 @@ export function AdmissionList({
           <TableBody>
             {admissions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={9} className="text-muted-foreground py-8 text-center">
                   No admissions found
                 </TableCell>
               </TableRow>
             ) : (
               admissions.map((admission) => (
                 <TableRow key={admission.id}>
-                  <TableCell className="font-mono text-sm">
-                    {admission.admissionNo}
-                  </TableCell>
+                  <TableCell className="font-mono text-sm">{admission.admissionNo}</TableCell>
                   <TableCell className="font-medium">
                     {admission.firstName} {admission.lastName}
                   </TableCell>
                   <TableCell>{admission.appliedClass.name}</TableCell>
-                  <TableCell className="hidden md:table-cell">{admission.academicSession.name}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {admission.academicSession.name}
+                  </TableCell>
                   <TableCell>
                     <Badge className={statusColors[admission.status] || ""}>
                       {admission.status.replace("_", " ")}
                     </Badge>
                   </TableCell>
-                  <TableCell className="hidden lg:table-cell">{admission._count.documents}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{admission._count.guardians}</TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    {admission._count.documents}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    {admission._count.guardians}
+                  </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {new Date(admission.createdAt).toLocaleDateString()}
                   </TableCell>
@@ -213,7 +214,7 @@ export function AdmissionList({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Page {page} of {totalPages}
           </p>
           <div className="flex gap-2">

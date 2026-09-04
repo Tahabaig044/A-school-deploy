@@ -25,7 +25,10 @@ export default function NewHomeworkPage() {
   useEffect(() => {
     fetch("/api/teacher/assignments")
       .then((r) => r.json())
-      .then((data) => { setAssignments(data); setLoading(false) })
+      .then((data) => {
+        setAssignments(data)
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
   }, [])
 
@@ -53,21 +56,32 @@ export default function NewHomeworkPage() {
         </CardHeader>
         <CardContent>
           <form action={formAction} className="grid gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="classId">Class *</Label>
-                <select id="classId" name="classId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                <select
+                  id="classId"
+                  name="classId"
+                  className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                  required
+                >
                   <option value="">Select class</option>
                   {assignments.map((a, i) => (
                     <option key={`${a.class.id}-${i}`} value={a.class.id}>
-                      {a.class.name}{a.section ? ` - ${a.section.name}` : ""}
+                      {a.class.name}
+                      {a.section ? ` - ${a.section.name}` : ""}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="subjectId">Subject *</Label>
-                <select id="subjectId" name="subjectId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                <select
+                  id="subjectId"
+                  name="subjectId"
+                  className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                  required
+                >
                   <option value="">Select subject</option>
                   {assignments.map((a, i) => (
                     <option key={`${a.subject.id}-${i}`} value={a.subject.id}>
@@ -83,24 +97,34 @@ export default function NewHomeworkPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Description</Label>
-              <textarea id="description" name="description" rows={4}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                placeholder="Describe the homework tasks..." />
+              <textarea
+                id="description"
+                name="description"
+                rows={4}
+                className="border-input bg-background flex w-full rounded-md border px-3 py-2 text-sm"
+                placeholder="Describe the homework tasks..."
+              />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="dueDate">Due Date *</Label>
                 <Input id="dueDate" name="dueDate" type="date" required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="totalMarks">Total Marks</Label>
-                <Input id="totalMarks" name="totalMarks" type="number" min="0" placeholder="Optional" />
+                <Input
+                  id="totalMarks"
+                  name="totalMarks"
+                  type="number"
+                  min="0"
+                  placeholder="Optional"
+                />
               </div>
             </div>
             <Button type="submit" disabled={pending}>
               {pending ? "Creating..." : "Create Homework"}
             </Button>
-            {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+            {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
           </form>
         </CardContent>
       </Card>

@@ -19,7 +19,8 @@ type RecordItem = {
 }
 
 export function AttendanceHistory({
-  records, classes,
+  records,
+  classes,
 }: {
   records: RecordItem[]
   classes: { id: string; name: string }[]
@@ -31,7 +32,7 @@ export function AttendanceHistory({
       </CardHeader>
       <CardContent>
         {records.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No attendance records found.</p>
+          <p className="text-muted-foreground text-sm">No attendance records found.</p>
         ) : (
           <div className="overflow-x-auto">
             <Table>
@@ -50,14 +51,21 @@ export function AttendanceHistory({
                     <TableCell className="font-medium">
                       {r.student.firstName} {r.student.lastName}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">{r.student.admissionNo || "-"}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {r.student.admissionNo || "-"}
+                    </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        r.status === "PRESENT" ? "bg-green-100 text-green-800" :
-                        r.status === "ABSENT" ? "bg-red-100 text-red-800" :
-                        r.status === "LATE" ? "bg-yellow-100 text-yellow-800" :
-                        "bg-blue-100 text-blue-800"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          r.status === "PRESENT"
+                            ? "bg-green-100 text-green-800"
+                            : r.status === "ABSENT"
+                              ? "bg-red-100 text-red-800"
+                              : r.status === "LATE"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
                         {r.status.charAt(0) + r.status.slice(1).toLowerCase()}
                       </span>
                     </TableCell>

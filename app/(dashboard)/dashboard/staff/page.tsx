@@ -15,9 +15,10 @@ export default async function StaffPage({
   const page = Math.max(1, Number(params.page) || 1)
   const skip = (page - 1) * PAGE_SIZE
 
-  const where = profile.role === "SUPER_ADMIN"
-    ? {}
-    : { schoolId: profile.schoolId!, branchId: profile.branchId! }
+  const where =
+    profile.role === "SUPER_ADMIN"
+      ? {}
+      : { schoolId: profile.schoolId!, branchId: profile.branchId! }
 
   const [staff, total] = await Promise.all([
     prisma.staff.findMany({
@@ -39,7 +40,12 @@ export default async function StaffPage({
         <p className="text-muted-foreground">Manage non-teaching staff</p>
       </div>
       <StaffForm />
-      <StaffList staff={JSON.parse(JSON.stringify(staff))} total={total} page={page} totalPages={totalPages} />
+      <StaffList
+        staff={JSON.parse(JSON.stringify(staff))}
+        total={total}
+        page={page}
+        totalPages={totalPages}
+      />
     </div>
   )
 }

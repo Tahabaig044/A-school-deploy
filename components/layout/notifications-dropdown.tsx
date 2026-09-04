@@ -12,7 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/actions/notification.actions"
+import {
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+} from "@/actions/notification.actions"
 import { useToast } from "@/hooks/use-toast"
 
 export function NotificationsDropdown({ initialCount = 0 }: { initialCount?: number }) {
@@ -38,9 +42,7 @@ export function NotificationsDropdown({ initialCount = 0 }: { initialCount?: num
   async function handleMarkAsRead(id: string) {
     await markNotificationAsRead(id)
     setCount((c) => Math.max(0, c - 1))
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    )
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)))
     router.refresh()
   }
 
@@ -57,7 +59,7 @@ export function NotificationsDropdown({ initialCount = 0 }: { initialCount?: num
       <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="relative" />}>
         <Bell className="h-5 w-5" />
         {count > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+          <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px]">
             {count > 99 ? "99+" : count}
           </span>
         )}
@@ -73,15 +75,13 @@ export function NotificationsDropdown({ initialCount = 0 }: { initialCount?: num
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {notifications.length === 0 ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            No new notifications
-          </div>
+          <div className="text-muted-foreground p-4 text-center text-sm">No new notifications</div>
         ) : (
           <div className="max-h-[300px] overflow-y-auto">
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-3 cursor-pointer hover:bg-muted/50 ${
+                className={`hover:bg-muted/50 cursor-pointer p-3 ${
                   !notification.isRead ? "bg-primary/5" : ""
                 }`}
                 onClick={() => handleMarkAsRead(notification.id)}
@@ -89,16 +89,14 @@ export function NotificationsDropdown({ initialCount = 0 }: { initialCount?: num
                 <div className="flex items-start gap-2">
                   <div className="flex-1">
                     <p className="text-sm font-medium">{notification.title}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
+                    <p className="text-muted-foreground line-clamp-2 text-xs">
                       {notification.content}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-muted-foreground mt-1 text-xs">
                       {new Date(notification.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  {!notification.isRead && (
-                    <div className="h-2 w-2 rounded-full bg-primary" />
-                  )}
+                  {!notification.isRead && <div className="bg-primary h-2 w-2 rounded-full" />}
                 </div>
               </div>
             ))}

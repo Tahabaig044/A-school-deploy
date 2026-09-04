@@ -142,7 +142,7 @@ const submitSchema = z.object({
 
 export async function submitHomework(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { user, student, enrollment } = await getStudentRecord()
   if (!user || !student || !enrollment) return { error: "Not authenticated.", success: false }
@@ -154,7 +154,11 @@ export async function submitHomework(
   if (!parsed.success) return { error: parsed.error.issues[0].message, success: false }
 
   const homework = await prisma.homework.findFirst({
-    where: { id: homeworkId, classId: enrollment.classId, academicSessionId: enrollment.academicSessionId },
+    where: {
+      id: homeworkId,
+      classId: enrollment.classId,
+      academicSessionId: enrollment.academicSessionId,
+    },
   })
   if (!homework) return { error: "Homework not found.", success: false }
 
@@ -165,7 +169,9 @@ export async function submitHomework(
   const attachmentsJson = formData.get("attachments") as string
   let attachments: { url: string; fileName: string; fileType: string; fileSize: number }[] = []
   if (attachmentsJson) {
-    try { attachments = JSON.parse(attachmentsJson) } catch { }
+    try {
+      attachments = JSON.parse(attachmentsJson)
+    } catch {}
   }
 
   const submission = await prisma.homeworkSubmission.create({
@@ -200,7 +206,11 @@ export async function getHomeworkDetail(homeworkId: string) {
   if (!user || !student || !enrollment) return null
 
   const homework = await prisma.homework.findFirst({
-    where: { id: homeworkId, classId: enrollment.classId, academicSessionId: enrollment.academicSessionId },
+    where: {
+      id: homeworkId,
+      classId: enrollment.classId,
+      academicSessionId: enrollment.academicSessionId,
+    },
     include: {
       subject: true,
       teacher: { select: { firstName: true, lastName: true } },
@@ -297,7 +307,7 @@ export async function getStudentLeaveRequests() {
 
 export async function createStudentLeaveRequest(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { user } = await getStudentRecord()
   if (!user) return { error: "Not authenticated.", success: false }
@@ -331,7 +341,11 @@ export async function createStudentLeaveRequest(
 export async function getStudentProfile() {
   const { user, student, enrollment } = await getStudentRecord()
   if (!user || !student) return null
-  return { profile: { firstName: user.user_metadata?.first_name, email: user.email }, student, enrollment }
+  return {
+    profile: { firstName: user.user_metadata?.first_name, email: user.email },
+    student,
+    enrollment,
+  }
 }
 
 export async function getStudentMessages() {

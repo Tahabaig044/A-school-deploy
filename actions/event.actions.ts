@@ -21,21 +21,23 @@ const eventSchema = z.object({
 
 export async function createEvent(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
   const schoolId = getSchoolId(profile, formData, "Create Event")
 
   const title = formData.get("title") as string
-  const description = formData.get("description") as string || undefined
+  const description = (formData.get("description") as string) || undefined
   const eventType = formData.get("eventType") as string
   const startDateTime = formData.get("startDateTime") as string
   const endDateTime = formData.get("endDateTime") as string
-  const location = formData.get("location") as string || undefined
+  const location = (formData.get("location") as string) || undefined
   const isRegistrationRequired = formData.get("isRegistrationRequired") === "true"
-  const maxParticipants = formData.get("maxParticipants") ? Number(formData.get("maxParticipants")) : undefined
-  const classId = formData.get("classId") as string || undefined
-  const sectionId = formData.get("sectionId") as string || undefined
+  const maxParticipants = formData.get("maxParticipants")
+    ? Number(formData.get("maxParticipants"))
+    : undefined
+  const classId = (formData.get("classId") as string) || undefined
+  const sectionId = (formData.get("sectionId") as string) || undefined
 
   const parsed = eventSchema.safeParse({
     title,
@@ -84,6 +86,15 @@ export async function createEvent(
 export async function updateEventStatus(eventId: string, status: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
+  const existing = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { schoolId: true },
+  })
+  if (!existing) return { error: "Event not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
   await prisma.event.update({
     where: { id: eventId },
     data: { status: status as any },
@@ -94,10 +105,20 @@ export async function updateEventStatus(eventId: string, status: string) {
 }
 
 export async function registerForEvent(eventId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   const event = await prisma.event.findFirst({
-    where: { id: eventId },
+    where: {
+      id: eventId,
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
+    },
     include: { _count: { select: { registrations: true } } },
   })
 
@@ -121,7 +142,14 @@ export async function registerForEvent(eventId: string) {
 }
 
 export async function cancelEventRegistration(eventId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   await prisma.eventRegistration.delete({
     where: {
@@ -137,11 +165,18 @@ export async function cancelEventRegistration(eventId: string) {
 }
 
 export async function getEvents(eventType?: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.event.findMany({
     where: {
-      schoolId: profile.schoolId!,
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
       status: "PUBLISHED",
       ...(eventType ? { eventType: eventType as any } : {}),
     },
@@ -158,10 +193,20 @@ export async function getEvents(eventType?: string) {
 }
 
 export async function getEventById(eventId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.event.findFirst({
-    where: { id: eventId },
+    where: {
+      id: eventId,
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
+    },
     include: {
       createdBy: { select: { firstName: true, lastName: true } },
       _count: { select: { registrations: true } },
@@ -176,11 +221,18 @@ export async function getEventById(eventId: string) {
 }
 
 export async function getUpcomingEvents() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.event.findMany({
     where: {
-      schoolId: profile.schoolId!,
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
       status: "PUBLISHED",
       startDateTime: { gte: new Date() },
     },

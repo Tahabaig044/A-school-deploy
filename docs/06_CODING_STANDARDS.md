@@ -3,6 +3,7 @@
 ## TypeScript/JavaScript
 
 ### General
+
 - Use TypeScript for all new code
 - Strict mode enabled
 - No `any` types (use `unknown` if needed)
@@ -10,6 +11,7 @@
 - Use readonly for immutable data
 
 ### Naming
+
 ```typescript
 // Variables & Functions: camelCase
 const studentCount = 0;
@@ -27,14 +29,15 @@ private _cache = new Map();
 ```
 
 ### Functions
+
 ```typescript
 // Prefer arrow functions for callbacks
-const numbers = [1, 2, 3].map(n => n * 2);
+const numbers = [1, 2, 3].map((n) => n * 2)
 
 // Use named functions for statements
 function calculateAverage(scores: number[]): number {
-  const sum = scores.reduce((a, b) => a + b, 0);
-  return sum / scores.length;
+  const sum = scores.reduce((a, b) => a + b, 0)
+  return sum / scores.length
 }
 
 // Maximum 3 parameters, use object for more
@@ -42,19 +45,20 @@ function createStudent(data: CreateStudentDto) {}
 ```
 
 ### Classes
+
 ```typescript
 class StudentService {
   // Properties first
-  private readonly studentRepository: StudentRepository;
-  
+  private readonly studentRepository: StudentRepository
+
   // Constructor
   constructor(studentRepository: StudentRepository) {
-    this.studentRepository = studentRepository;
+    this.studentRepository = studentRepository
   }
-  
+
   // Public methods
   async findById(id: string): Promise<Student> {}
-  
+
   // Private methods
   private validateInput(data: any) {}
 }
@@ -63,6 +67,7 @@ class StudentService {
 ## React/Next.js
 
 ### Component Structure
+
 ```typescript
 // Functional components only
 interface ButtonProps {
@@ -81,12 +86,14 @@ export const Button = ({ label, onClick, variant = 'primary' }: ButtonProps) => 
 ```
 
 ### Hooks Rules
+
 - Custom hooks prefixed with `use`
 - Extract logic into custom hooks
 - No conditional hooks
 - Dependency arrays must be complete
 
 ### State Management
+
 - Local state for UI state
 - Context for shared state
 - Server state via API hooks
@@ -95,21 +102,29 @@ export const Button = ({ label, onClick, variant = 'primary' }: ButtonProps) => 
 ## CSS/Styling
 
 ### Class Naming (BEM)
+
 ```css
 /* Block */
-.card {}
+.card {
+}
 
 /* Element */
-.card__header {}
-.card__content {}
-.card__footer {}
+.card__header {
+}
+.card__content {
+}
+.card__footer {
+}
 
 /* Modifier */
-.card--highlighted {}
-.card__header--primary {}
+.card--highlighted {
+}
+.card__header--primary {
+}
 ```
 
 ### CSS Variables
+
 ```css
 :root {
   --color-primary: #3b82f6;
@@ -121,12 +136,13 @@ export const Button = ({ label, onClick, variant = 'primary' }: ButtonProps) => 
 ## Error Handling
 
 ### Backend
+
 ```typescript
 // Custom error classes
 class NotFoundError extends Error {
   constructor(resource: string, id: string) {
-    super(`${resource} with id ${id} not found`);
-    this.name = 'NotFoundError';
+    super(`${resource} with id ${id} not found`)
+    this.name = "NotFoundError"
   }
 }
 
@@ -140,13 +156,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 ```
 
 ### Frontend
+
 ```typescript
 // API error handling
 try {
-  const data = await api.getStudents();
+  const data = await api.getStudents()
 } catch (error) {
   if (error instanceof ApiError) {
-    showToast(error.message);
+    showToast(error.message)
   }
 }
 ```
@@ -154,31 +171,34 @@ try {
 ## Testing
 
 ### Unit Tests
+
 ```typescript
-describe('StudentService', () => {
-  describe('findById', () => {
-    it('should return student when found', async () => {
+describe("StudentService", () => {
+  describe("findById", () => {
+    it("should return student when found", async () => {
       // Arrange
-      const mockStudent = { id: '1', name: 'John' };
-      jest.spyOn(repo, 'findById').mockResolvedValue(mockStudent);
-      
+      const mockStudent = { id: "1", name: "John" }
+      jest.spyOn(repo, "findById").mockResolvedValue(mockStudent)
+
       // Act
-      const result = await service.findById('1');
-      
+      const result = await service.findById("1")
+
       // Assert
-      expect(result).toEqual(mockStudent);
-    });
-  });
-});
+      expect(result).toEqual(mockStudent)
+    })
+  })
+})
 ```
 
 ### Test Coverage
+
 - Statements: 80%
 - Branches: 75%
 - Functions: 80%
 - Lines: 80%
 
 ## Code Review Checklist
+
 - [ ] TypeScript strict mode compliance
 - [ ] No `any` types
 - [ ] Proper error handling

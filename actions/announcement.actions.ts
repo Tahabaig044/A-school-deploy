@@ -12,7 +12,16 @@ const announcementSchema = z.object({
   branchId: z.string().uuid(),
   title: z.string().min(1, "Title is required"),
   content: z.string().min(1, "Content is required"),
-  audience: z.enum(["ALL", "SCHOOL", "BRANCH", "CLASS", "SECTION", "TEACHERS", "STUDENTS", "PARENTS"]),
+  audience: z.enum([
+    "ALL",
+    "SCHOOL",
+    "BRANCH",
+    "CLASS",
+    "SECTION",
+    "TEACHERS",
+    "STUDENTS",
+    "PARENTS",
+  ]),
   classId: z.string().uuid().optional(),
   sectionId: z.string().uuid().optional(),
   isPublished: z.boolean().default(true),
@@ -21,7 +30,7 @@ const announcementSchema = z.object({
 
 export async function createAnnouncement(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
 
@@ -36,7 +45,15 @@ export async function createAnnouncement(
   const scheduledAt = (formData.get("scheduledAt") as string) || undefined
 
   const parsed = announcementSchema.safeParse({
-    schoolId, branchId, title, content, audience, classId, sectionId, isPublished, scheduledAt,
+    schoolId,
+    branchId,
+    title,
+    content,
+    audience,
+    classId,
+    sectionId,
+    isPublished,
+    scheduledAt,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -48,7 +65,9 @@ export async function createAnnouncement(
     school: { connect: { id: schoolId } },
     branch: { connect: { id: branchId } },
     author: { connect: { id: profile.id } },
-    title, content, audience,
+    title,
+    content,
+    audience,
     isPublished: hasScheduledPublish ? false : isPublished,
   }
   if (classId) createData.class = { connect: { id: classId } }
@@ -74,11 +93,14 @@ export async function createAnnouncement(
 export async function updateAnnouncement(
   announcementId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
 
-  const existing = await prisma.announcement.findUnique({ where: { id: announcementId }, select: { schoolId: true, publishedAt: true } })
+  const existing = await prisma.announcement.findUnique({
+    where: { id: announcementId },
+    select: { schoolId: true, publishedAt: true },
+  })
   if (!existing) return { error: "Announcement not found.", success: false }
   if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
     return { error: "Forbidden", success: false }
@@ -95,7 +117,9 @@ export async function updateAnnouncement(
   const hasScheduledPublish = scheduledAt && new Date(scheduledAt) > new Date()
 
   const updateData: any = {
-    title, content, audience,
+    title,
+    content,
+    audience,
     isPublished: hasScheduledPublish ? false : isPublished,
   }
   if (classId) updateData.class = { connect: { id: classId } }
@@ -119,7 +143,10 @@ export async function updateAnnouncement(
 export async function deleteAnnouncement(announcementId: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
 
-  const existing = await prisma.announcement.findUnique({ where: { id: announcementId }, select: { schoolId: true } })
+  const existing = await prisma.announcement.findUnique({
+    where: { id: announcementId },
+    select: { schoolId: true },
+  })
   if (!existing) return { error: "Announcement not found.", success: false }
   if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
     return { error: "Forbidden", success: false }
@@ -133,13 +160,23 @@ export async function deleteAnnouncement(announcementId: string) {
 export async function getAnnouncements(
   schoolId: string,
   branchId: string,
-  filters?: { audience?: string; authorId?: string }
+  filters?: { audience?: string; authorId?: string },
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  )
+
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
   return prisma.announcement.findMany({
     where: {
-      schoolId, branchId,
+      schoolId: effectiveSchoolId,
+      ...(profile.role === "SUPER_ADMIN" ? { branchId } : {}),
       isPublished: true,
       ...(filters?.audience && { audience: filters.audience }),
       ...(filters?.authorId && { authorId: filters.authorId }),
@@ -155,9 +192,16 @@ export async function getAnnouncements(
 }
 
 export async function getAnnouncementById(announcementId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  )
 
-  return prisma.announcement.findUnique({
+  const announcement = await prisma.announcement.findUnique({
     where: { id: announcementId },
     include: {
       author: { select: { id: true, firstName: true, lastName: true, role: true } },
@@ -166,10 +210,21 @@ export async function getAnnouncementById(announcementId: string) {
       section: true,
     },
   })
+  if (!announcement) return null
+  if (profile.role !== "SUPER_ADMIN" && announcement.schoolId !== profile.schoolId) return null
+
+  return announcement
 }
 
 export async function getAnnouncementsForUser() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  )
 
   const now = new Date()
 
@@ -223,7 +278,10 @@ export async function getAnnouncementReadStats(announcementId: string) {
   await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
 
   const user = await requireAuth()
-  const profile = await prisma.profile.findUnique({ where: { id: user.id }, select: { schoolId: true } })
+  const profile = await prisma.profile.findUnique({
+    where: { id: user.id },
+    select: { schoolId: true },
+  })
 
   const totalProfiles = await prisma.profile.count({
     where: { schoolId: profile?.schoolId || "", isActive: true },
@@ -241,11 +299,14 @@ export async function addAnnouncementAttachment(
   fileName: string,
   fileUrl: string,
   fileSize?: number,
-  fileType?: string
+  fileType?: string,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
 
-  const existing = await prisma.announcement.findUnique({ where: { id: announcementId }, select: { schoolId: true } })
+  const existing = await prisma.announcement.findUnique({
+    where: { id: announcementId },
+    select: { schoolId: true },
+  })
   if (!existing) return { error: "Announcement not found.", success: false }
   if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
     return { error: "Forbidden", success: false }
@@ -283,13 +344,14 @@ export async function deleteAnnouncementAttachment(attachmentId: string) {
 }
 
 export async function publishScheduledAnnouncements() {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
 
   const now = new Date()
   const scheduled = await prisma.announcement.findMany({
     where: {
       isPublished: false,
       scheduledAt: { lte: now },
+      ...(profile.role !== "SUPER_ADMIN" ? { schoolId: profile.schoolId! } : {}),
     },
   })
 

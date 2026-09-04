@@ -19,16 +19,14 @@ export function ErrorBoundary({
     <div className="flex min-h-[400px] items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-center text-destructive">Something went wrong</CardTitle>
+          <CardTitle className="text-destructive text-center">Something went wrong</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-center text-muted-foreground">
+          <p className="text-muted-foreground text-center">
             An unexpected error occurred. Please try again.
           </p>
           {error.digest && (
-            <p className="text-center text-xs text-muted-foreground">
-              Error ID: {error.digest}
-            </p>
+            <p className="text-muted-foreground text-center text-xs">Error ID: {error.digest}</p>
           )}
           <div className="flex justify-center">
             <Button onClick={reset}>Try again</Button>

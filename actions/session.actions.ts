@@ -12,14 +12,11 @@ const sessionSchema = z.object({
   endDate: z.string().min(1, "End date is required"),
 })
 
-export async function createSession(
-  _prevState: unknown,
-  formData: FormData
-) {
+export async function createSession(_prevState: unknown, formData: FormData) {
   const { profile: sessionProfile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
-    "BRANCH_ADMIN"
+    "BRANCH_ADMIN",
   )
 
   const schoolId = getSchoolId(sessionProfile, formData, "Create Academic Session")
@@ -36,11 +33,14 @@ export async function createSession(
   }
 
   try {
-    await prisma.academicSession.create({ 
+    await prisma.academicSession.create({
       data: {
         school: { connect: { id: schoolId } },
         branch: branchId ? { connect: { id: branchId } } : undefined,
-        name, startDate: new Date(startDate), endDate: new Date(endDate), isCurrent,
+        name,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        isCurrent,
       },
     })
 
@@ -51,11 +51,7 @@ export async function createSession(
 }
 
 export async function setCurrentSession(sessionId: string) {
-  const { profile } = await requireRole(
-    "SUPER_ADMIN",
-    "SCHOOL_ADMIN",
-    "BRANCH_ADMIN"
-  )
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
   const session = await prisma.academicSession.findUnique({
     where: { id: sessionId },
@@ -104,15 +100,11 @@ export async function deleteSession(sessionId: string) {
   }
 }
 
-export async function updateSession(
-  sessionId: string,
-  _prevState: unknown,
-  formData: FormData
-) {
+export async function updateSession(sessionId: string, _prevState: unknown, formData: FormData) {
   const { profile: sessionProfile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
-    "BRANCH_ADMIN"
+    "BRANCH_ADMIN",
   )
 
   const session = await prisma.academicSession.findUnique({

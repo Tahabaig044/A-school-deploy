@@ -1,6 +1,7 @@
 # UI_PROMPT
 
 ## Usage
+
 When working with UI, use this prompt.
 
 ## Prompt

@@ -4,13 +4,7 @@ import { PageHeader } from "@/components/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-export function FeeDefaulterReportView({
-  data,
-  profile,
-}: {
-  data: any[]
-  profile: any
-}) {
+export function FeeDefaulterReportView({ data, profile }: { data: any[]; profile: any }) {
   const totalDue = data.reduce((sum, d) => sum + d.dueAmount, 0)
   const totalStudents = data.length
 
@@ -42,10 +36,10 @@ export function FeeDefaulterReportView({
           <CardTitle>Fee Defaulters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="rounded-lg border">
             <table className="w-full">
               <thead>
-                <tr className="border-b bg-muted/50">
+                <tr className="bg-muted/50 border-b">
                   <th className="p-3 text-left">Student</th>
                   <th className="p-3 text-left">Admission No</th>
                   <th className="p-3 text-left">Invoice</th>
@@ -60,12 +54,16 @@ export function FeeDefaulterReportView({
               <tbody>
                 {data.map((item, index) => (
                   <tr key={index} className="border-b">
-                    <td className="p-3">{item.student?.firstName} {item.student?.lastName}</td>
+                    <td className="p-3">
+                      {item.student?.firstName} {item.student?.lastName}
+                    </td>
                     <td className="p-3">{item.student?.admissionNo}</td>
                     <td className="p-3">{item.invoiceNumber}</td>
                     <td className="p-3 text-right">${item.totalAmount.toLocaleString()}</td>
                     <td className="p-3 text-right">${item.paidAmount.toLocaleString()}</td>
-                    <td className="p-3 text-right text-red-600">${item.dueAmount.toLocaleString()}</td>
+                    <td className="p-3 text-right text-red-600">
+                      ${item.dueAmount.toLocaleString()}
+                    </td>
                     <td className="p-3">{new Date(item.dueDate).toLocaleDateString()}</td>
                     <td className="p-3 text-right">
                       {item.daysOverdue > 0 ? (

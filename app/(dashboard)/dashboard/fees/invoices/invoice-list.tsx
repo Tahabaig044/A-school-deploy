@@ -6,13 +6,25 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { generateInvoice, cancelInvoice } from "@/actions/fees.actions"
 import { useToast } from "@/hooks/use-toast"
-import { Plus, Eye, Trash2 } from "lucide-react"
+import { Plus, Eye, Trash2, Download } from "lucide-react"
 import Link from "next/link"
 
 const statusVariants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
@@ -76,13 +88,19 @@ export function InvoiceList({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Invoices"
-        description="Manage fee invoices"
-      >
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setError(null) }}>
+      <PageHeader title="Invoices" description="Manage fee invoices">
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o)
+            if (!o) setError(null)
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Generate Invoice</Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Generate Invoice
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -93,9 +111,11 @@ export function InvoiceList({
               <div>
                 <Label htmlFor="studentId">Student</Label>
                 <Select name="studentId" required>
-                  <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select student" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {students.map(s => (
+                    {students.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
                         {s.firstName} {s.lastName} ({s.admissionNo})
                       </SelectItem>
@@ -106,10 +126,14 @@ export function InvoiceList({
               <div>
                 <Label htmlFor="academicSessionId">Academic Session</Label>
                 <Select name="academicSessionId" required>
-                  <SelectTrigger><SelectValue placeholder="Select session" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select session" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {academicSessions.map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    {academicSessions.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -122,7 +146,9 @@ export function InvoiceList({
                 <Label htmlFor="notes">Notes</Label>
                 <Input id="notes" name="notes" />
               </div>
-              <Button type="submit" className="w-full">Generate</Button>
+              <Button type="submit" className="w-full">
+                Generate
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -134,7 +160,10 @@ export function InvoiceList({
           {
             header: "Student",
             cell: ({ row }: any) => (
-              <Link href={`/dashboard/students/${row.studentId}`} className="text-primary hover:underline">
+              <Link
+                href={`/dashboard/students/${row.studentId}`}
+                className="text-primary hover:underline"
+              >
                 {row.student.firstName} {row.student.lastName}
               </Link>
             ),
@@ -153,26 +182,52 @@ export function InvoiceList({
           {
             header: "Due",
             cell: ({ row }: any) => {
-              const due = Number(row.totalAmount) + Number(row.lateFee) - Number(row.paidAmount) - Number(row.discountAmount)
+              const due =
+                Number(row.totalAmount) +
+                Number(row.lateFee) -
+                Number(row.paidAmount) -
+                Number(row.discountAmount)
               return <span className="font-semibold">${Math.max(0, due).toFixed(2)}</span>
             },
           },
-          { header: "Due Date", accessorKey: "dueDate", cell: ({ row }: any) => new Date(row.dueDate).toLocaleDateString() },
+          {
+            header: "Due Date",
+            accessorKey: "dueDate",
+            cell: ({ row }: any) => new Date(row.dueDate).toLocaleDateString(),
+          },
           {
             header: "Status",
             accessorKey: "status",
-            cell: ({ row }: any) => <Badge variant={statusVariants[row.status] || "secondary"}>{row.status}</Badge>,
+            cell: ({ row }: any) => (
+              <Badge variant={statusVariants[row.status] || "secondary"}>{row.status}</Badge>
+            ),
           },
           {
             header: "Actions",
             cell: ({ row }: any) => (
               <div className="flex gap-1">
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href={`/dashboard/fees/payments?invoiceId=${row.id}`}><Eye className="mr-1 h-4 w-4" />View</Link>
+                  <Link href={`/dashboard/fees/payments?invoiceId=${row.id}`}>
+                    <Eye className="mr-1 h-4 w-4" />
+                    View
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.open(`/api/invoices/pdf?invoiceId=${row.id}`, "_blank")}
+                >
+                  <Download className="mr-1 h-4 w-4" />
+                  PDF
                 </Button>
                 {row.status !== "CANCELLED" && row.status !== "PAID" && (
-                  <Button variant="ghost" size="sm" onClick={() => handleCancel(row.id, row.invoiceNumber)}>
-                    <Trash2 className="mr-1 h-4 w-4" />Cancel
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleCancel(row.id, row.invoiceNumber)}
+                  >
+                    <Trash2 className="mr-1 h-4 w-4" />
+                    Cancel
                   </Button>
                 )}
               </div>

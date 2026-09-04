@@ -7,7 +7,13 @@ export default async function HomeworkPage({
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>
 }) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "STUDENT",
+  )
   const params = await searchParams
   const page = parseInt(params.page || "1")
   const pageSize = 10

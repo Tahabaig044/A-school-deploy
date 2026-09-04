@@ -2,14 +2,14 @@
 
 ## Feature Information
 
-| Field | Value |
-|-------|-------|
-| Feature ID | FEAT_XXX |
-| Title | [Short description] |
-| Priority | High/Medium/Low |
-| Status | Planned/In Progress/Complete |
-| Phase | [Phase number] |
-| Loop | [Loop number] |
+| Field      | Value                        |
+| ---------- | ---------------------------- |
+| Feature ID | FEAT_XXX                     |
+| Title      | [Short description]          |
+| Priority   | High/Medium/Low              |
+| Status     | Planned/In Progress/Complete |
+| Phase      | [Phase number]               |
+| Loop       | [Loop number]                |
 
 ## Objective
 
@@ -18,6 +18,7 @@
 ## User Stories
 
 ### As a [role]
+
 1. I want to [action]
 2. So that [benefit]
 

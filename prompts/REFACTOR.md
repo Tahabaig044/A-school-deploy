@@ -1,6 +1,7 @@
 # REFACTOR_PROMPT
 
 ## Usage
+
 When refactoring code, use this prompt.
 
 ## Prompt

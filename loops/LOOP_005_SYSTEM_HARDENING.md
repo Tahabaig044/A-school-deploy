@@ -1,9 +1,11 @@
 # LOOP_005 - SYSTEM HARDENING & BUILD REPAIR
 
 ## Objective
+
 Eliminate the module-global request-context pattern (React `cache()` migration), scope dashboard aggregates to the tenant, validate the `selected_branch` cookie, dedupe auth/profile lookups, and clear all 36 pre-existing build-blocking TypeScript errors so `npm run build` passes again.
 
 ## Allowed Files
+
 - lib/auth.ts
 - lib/dashboard-validation.ts
 - app/(dashboard)/layout.tsx
@@ -21,10 +23,12 @@ Eliminate the module-global request-context pattern (React `cache()` migration),
 - app/(dashboard)/dashboard/page.tsx
 
 ## Forbidden Files
+
 - prisma/schema.prisma (do not modify)
 - package.json (no new/removed dependencies)
 
 ## Tasks
+
 1. [x] Remove module-global request context (setRequestContext/getRequestContext/clearRequestContext) in favor of React `cache()`
 2. [x] Rewrite `lib/auth.ts` getCurrentUser/getCurrentProfile as cached; keep requireAuth/requireRole
 3. [x] Refactor all 4 dashboard validators to use cached getters
@@ -40,16 +44,20 @@ Eliminate the module-global request-context pattern (React `cache()` migration),
 13. [x] Fix qr-card-generator + qr-scanner (SetStateAction<string> Select handlers)
 
 ## Acceptance Criteria
+
 - [x] `npx tsc --noEmit` -> 0 errors
 - [x] `npm run build` -> passes (TypeScript gate + 116 static pages + all routes)
 - [x] No references to setRequestContext/getRequestContext/clearRequestContext remain
 - [x] No module added/removed; schema untouched
 
 ## Stop Condition
+
 Task complete when the build passes with zero TypeScript errors and the Phase 1 audit fixes are in.
 
 ## Dependencies
+
 - Loop 1-4 stabilization complete
 
 ## Estimated Time
+
 2 days

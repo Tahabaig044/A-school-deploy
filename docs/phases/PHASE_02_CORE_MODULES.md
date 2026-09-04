@@ -1,9 +1,11 @@
 # Phase 2: Core Modules
 
 ## Duration
+
 4 weeks
 
 ## Objectives
+
 - Implement Student management module
 - Implement Teacher management module
 - Implement Class/Section management
@@ -13,6 +15,7 @@
 ## Deliverables
 
 ### Week 1-2: Student Module
+
 1. **Student CRUD**
    - Create student with admission number
    - Read student profiles
@@ -27,6 +30,7 @@
    - Student timeline/history
 
 ### Week 2-3: Teacher Module
+
 1. **Teacher CRUD**
    - Create teacher with employee ID
    - Read teacher profiles
@@ -40,6 +44,7 @@
    - Leave management
 
 ### Week 3-4: Class & Section Module
+
 1. **Class Management**
    - Create/edit classes
    - Grade level organization
@@ -53,6 +58,7 @@
 ## Technical Implementation
 
 ### API Endpoints
+
 ```
 # Students
 GET    /api/v1/students
@@ -85,6 +91,7 @@ DELETE /api/v1/sections/:id
 ```
 
 ### Database Schema
+
 ```sql
 -- Students table
 CREATE TABLE students (
@@ -114,6 +121,7 @@ CREATE TABLE teachers (
 ```
 
 ### UI Pages
+
 - /students - Student list with filters
 - /students/:id - Student profile
 - /students/new - Add new student
@@ -122,6 +130,7 @@ CREATE TABLE teachers (
 - /classes - Class management
 
 ## Acceptance Criteria
+
 - [ ] CRUD operations work for all entities
 - [ ] Search and filter functionality works
 - [ ] Bulk import works correctly
@@ -131,13 +140,15 @@ CREATE TABLE teachers (
 - [ ] Unit tests written (80% coverage)
 
 ## Dependencies
+
 - Phase 1 completed
 - Authentication system working
 - Database schema ready
 
 ## Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Data validation issues | High | Implement comprehensive validation |
-| Performance with large datasets | Medium | Add pagination and indexing |
-| File upload failures | Medium | Implement chunked uploads |
+
+| Risk                            | Impact | Mitigation                         |
+| ------------------------------- | ------ | ---------------------------------- |
+| Data validation issues          | High   | Implement comprehensive validation |
+| Performance with large datasets | Medium | Add pagination and indexing        |
+| File upload failures            | Medium | Implement chunked uploads          |

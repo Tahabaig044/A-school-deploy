@@ -43,12 +43,12 @@ export function SetupPasswordForm() {
     return (
       <div className="flex flex-col items-center gap-6">
         <div className="flex items-center gap-2">
-          <GraduationCap className="h-8 w-8 text-primary" />
+          <GraduationCap className="text-primary h-8 w-8" />
           <h1 className="text-2xl font-bold">SchoolMS</h1>
         </div>
         <Card className="w-full max-w-sm">
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Loading...</p>
+            <p className="text-muted-foreground text-center">Loading...</p>
           </CardContent>
         </Card>
       </div>
@@ -59,14 +59,14 @@ export function SetupPasswordForm() {
     return (
       <div className="flex flex-col items-center gap-6">
         <div className="flex items-center gap-2">
-          <GraduationCap className="h-8 w-8 text-primary" />
+          <GraduationCap className="text-primary h-8 w-8" />
           <h1 className="text-2xl font-bold">SchoolMS</h1>
         </div>
         <Card className="w-full max-w-sm">
           <CardContent className="pt-6">
-            <p className="text-center text-destructive">{error}</p>
+            <p className="text-destructive text-center">{error}</p>
             <div className="mt-4 text-center">
-              <Link href="/login" className="text-sm text-primary hover:underline">
+              <Link href="/login" className="text-primary text-sm hover:underline">
                 Go to Login
               </Link>
             </div>
@@ -80,18 +80,18 @@ export function SetupPasswordForm() {
     return (
       <div className="flex flex-col items-center gap-6">
         <div className="flex items-center gap-2">
-          <GraduationCap className="h-8 w-8 text-primary" />
+          <GraduationCap className="text-primary h-8 w-8" />
           <h1 className="text-2xl font-bold">SchoolMS</h1>
         </div>
         <Card className="w-full max-w-sm">
           <CardContent className="pt-6 text-center">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+            <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-500" />
             <p className="font-medium">Password set successfully!</p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-sm">
               You can now sign in with your email and password.
             </p>
             <Link href="/login" className="mt-4 inline-block">
-              <Button className="w-full mt-4">Sign In</Button>
+              <Button className="mt-4 w-full">Sign In</Button>
             </Link>
           </CardContent>
         </Card>
@@ -102,7 +102,7 @@ export function SetupPasswordForm() {
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="flex items-center gap-2">
-        <GraduationCap className="h-8 w-8 text-primary" />
+        <GraduationCap className="text-primary h-8 w-8" />
         <h1 className="text-2xl font-bold">SchoolMS</h1>
       </div>
       <Card className="w-full max-w-sm">
@@ -119,8 +119,8 @@ export function SetupPasswordForm() {
             <input type="hidden" name="token" value={token || ""} />
 
             {state?.error && (
-              <div className="rounded-md bg-destructive/10 p-3">
-                <p className="text-sm text-destructive">{state.error}</p>
+              <div className="bg-destructive/10 rounded-md p-3">
+                <p className="text-destructive text-sm">{state.error}</p>
               </div>
             )}
 
@@ -131,7 +131,11 @@ export function SetupPasswordForm() {
 
             <div className="grid gap-2">
               <Label>Role</Label>
-              <Input value={invitation?.role?.replace("_", " ") || ""} disabled className="capitalize" />
+              <Input
+                value={invitation?.role?.replace("_", " ") || ""}
+                disabled
+                className="capitalize"
+              />
             </div>
 
             <div className="grid gap-2">
@@ -149,7 +153,7 @@ export function SetupPasswordForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -172,7 +176,7 @@ export function SetupPasswordForm() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
                   tabIndex={-1}
                 >
                   {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

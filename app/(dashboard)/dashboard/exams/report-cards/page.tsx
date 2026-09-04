@@ -12,7 +12,10 @@ export default async function ReportCardsPage({
 
   const where: any = {}
   if (profile.role !== "SUPER_ADMIN") {
-    where.student = { schoolId: profile.schoolId || undefined, branchId: profile.branchId || undefined }
+    where.student = {
+      schoolId: profile.schoolId || undefined,
+      branchId: profile.branchId || undefined,
+    }
   }
 
   const reportCards = await prisma.reportCard.findMany({

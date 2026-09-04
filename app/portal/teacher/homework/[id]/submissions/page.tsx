@@ -50,7 +50,9 @@ export default async function HomeworkSubmissionsPage({
   })
 
   const gradedCount = submissions.filter((s) => s.status === "GRADED").length
-  const pendingCount = submissions.filter((s) => s.status === "SUBMITTED" || s.status === "LATE").length
+  const pendingCount = submissions.filter(
+    (s) => s.status === "SUBMITTED" || s.status === "LATE",
+  ).length
   const returnedCount = submissions.filter((s) => s.status === "RETURNED").length
 
   return (
@@ -64,7 +66,8 @@ export default async function HomeworkSubmissionsPage({
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{homework.title} — Submissions</h2>
           <p className="text-muted-foreground">
-            {homework.subject?.name ?? "General"} — {homework.class.name}{homework.section ? ` - ${homework.section.name}` : ""}
+            {homework.subject?.name ?? "General"} — {homework.class.name}
+            {homework.section ? ` - ${homework.section.name}` : ""}
             {homework.totalMarks ? ` — Total: ${homework.totalMarks}` : ""}
           </p>
         </div>
@@ -111,36 +114,45 @@ export default async function HomeworkSubmissionsPage({
         </CardHeader>
         <CardContent>
           {submissions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No submissions yet.</p>
+            <p className="text-muted-foreground text-sm">No submissions yet.</p>
           ) : (
             <div className="space-y-3">
               {submissions.map((sub) => (
                 <div key={sub.id} className="rounded-lg border p-4">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="mb-3 flex items-center justify-between">
                     <div>
                       <p className="font-medium">
                         {sub.student.firstName} {sub.student.lastName}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        {sub.student.admissionNo} — Submitted {new Date(sub.submittedAt).toLocaleString()}
-                        {sub.isLate && <span className="text-orange-600 font-medium"> (Late)</span>}
+                      <p className="text-muted-foreground text-xs">
+                        {sub.student.admissionNo} — Submitted{" "}
+                        {new Date(sub.submittedAt).toLocaleString()}
+                        {sub.isLate && <span className="font-medium text-orange-600"> (Late)</span>}
                       </p>
                     </div>
                     <Badge className={statusStyles[sub.status]}>
-                      {sub.status === "GRADED" ? "Graded" : sub.status === "RETURNED" ? "Returned" : sub.status === "LATE" ? "Late" : "Submitted"}
+                      {sub.status === "GRADED"
+                        ? "Graded"
+                        : sub.status === "RETURNED"
+                          ? "Returned"
+                          : sub.status === "LATE"
+                            ? "Late"
+                            : "Submitted"}
                     </Badge>
                   </div>
 
                   {sub.content && (
-                    <div className="mb-3 rounded bg-muted/30 p-3 text-sm">
-                      <p className="font-medium text-xs text-muted-foreground mb-1">Submission Content:</p>
+                    <div className="bg-muted/30 mb-3 rounded p-3 text-sm">
+                      <p className="text-muted-foreground mb-1 text-xs font-medium">
+                        Submission Content:
+                      </p>
                       <p className="whitespace-pre-wrap">{sub.content}</p>
                     </div>
                   )}
 
                   {sub.attachments.length > 0 && (
                     <div className="mb-3">
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Attachments:</p>
+                      <p className="text-muted-foreground mb-1 text-xs font-medium">Attachments:</p>
                       <div className="flex flex-wrap gap-2">
                         {sub.attachments.map((att) => (
                           <a
@@ -148,11 +160,11 @@ export default async function HomeworkSubmissionsPage({
                             href={att.filePath}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs hover:bg-muted"
+                            className="hover:bg-muted inline-flex items-center gap-1 rounded border px-2 py-1 text-xs"
                           >
                             <FileText className="h-3 w-3" />
                             {att.fileName}
-                            <Download className="h-3 w-3 ml-1" />
+                            <Download className="ml-1 h-3 w-3" />
                           </a>
                         ))}
                       </div>
@@ -161,7 +173,7 @@ export default async function HomeworkSubmissionsPage({
 
                   {sub.status === "RETURNED" && sub.returnReason && (
                     <div className="mb-3 rounded border border-purple-200 bg-purple-50 p-3 text-sm">
-                      <p className="font-medium text-xs text-purple-700 mb-1">Return Reason:</p>
+                      <p className="mb-1 text-xs font-medium text-purple-700">Return Reason:</p>
                       <p className="text-purple-800">{sub.returnReason}</p>
                     </div>
                   )}

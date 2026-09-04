@@ -6,20 +6,20 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { assignStudentTransport, removeStudentTransport } from "@/actions/transport.actions"
 import { useToast } from "@/hooks/use-toast"
 import { Trash2, Plus } from "lucide-react"
 
-export function AssignmentList({
-  assignments,
-  profile,
-}: {
-  assignments: any[]
-  profile: any
-}) {
+export function AssignmentList({ assignments, profile }: { assignments: any[]; profile: any }) {
   const router = useRouter()
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
@@ -49,9 +49,18 @@ export function AssignmentList({
   return (
     <div className="space-y-6">
       <PageHeader title="Transport Assignments" description="Assign students to transport routes">
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setError(null) }}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o)
+            if (!o) setError(null)
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Assign Student</Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Assign Student
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -83,7 +92,9 @@ export function AssignmentList({
                 <Label htmlFor="endDate">End Date</Label>
                 <Input id="endDate" name="endDate" type="date" />
               </div>
-              <Button type="submit" className="w-full">Assign</Button>
+              <Button type="submit" className="w-full">
+                Assign
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -91,19 +102,51 @@ export function AssignmentList({
 
       <DataTable
         columns={[
-          { header: "Student", accessorKey: "student", cell: ({ row }: any) => `${row.student?.firstName} ${row.student?.lastName}` },
-          { header: "Admission No", accessorKey: "student", cell: ({ row }: any) => row.student?.admissionNo },
+          {
+            header: "Student",
+            accessorKey: "student",
+            cell: ({ row }: any) => `${row.student?.firstName} ${row.student?.lastName}`,
+          },
+          {
+            header: "Admission No",
+            accessorKey: "student",
+            cell: ({ row }: any) => row.student?.admissionNo,
+          },
           { header: "Route", accessorKey: "route", cell: ({ row }: any) => row.route?.name },
-          { header: "Vehicle", accessorKey: "vehicle", cell: ({ row }: any) => `${row.vehicle?.plateNumber} (${row.vehicle?.vehicleType})` },
-          { header: "Start Location", accessorKey: "route", cell: ({ row }: any) => row.route?.startLocation },
-          { header: "End Location", accessorKey: "route", cell: ({ row }: any) => row.route?.endLocation },
-          { header: "Monthly Fee", accessorKey: "route", cell: ({ row }: any) => row.route?.monthlyFee ? `$${row.route.monthlyFee}` : "-" },
-          { header: "Start Date", accessorKey: "startDate", cell: ({ row }: any) => new Date(row.startDate).toLocaleDateString() },
-          { header: "Status", accessorKey: "isActive", cell: ({ row }: any) => (
-            <Badge variant={row.isActive ? "default" : "secondary"}>
-              {row.isActive ? "Active" : "Inactive"}
-            </Badge>
-          )},
+          {
+            header: "Vehicle",
+            accessorKey: "vehicle",
+            cell: ({ row }: any) => `${row.vehicle?.plateNumber} (${row.vehicle?.vehicleType})`,
+          },
+          {
+            header: "Start Location",
+            accessorKey: "route",
+            cell: ({ row }: any) => row.route?.startLocation,
+          },
+          {
+            header: "End Location",
+            accessorKey: "route",
+            cell: ({ row }: any) => row.route?.endLocation,
+          },
+          {
+            header: "Monthly Fee",
+            accessorKey: "route",
+            cell: ({ row }: any) => (row.route?.monthlyFee ? `$${row.route.monthlyFee}` : "-"),
+          },
+          {
+            header: "Start Date",
+            accessorKey: "startDate",
+            cell: ({ row }: any) => new Date(row.startDate).toLocaleDateString(),
+          },
+          {
+            header: "Status",
+            accessorKey: "isActive",
+            cell: ({ row }: any) => (
+              <Badge variant={row.isActive ? "default" : "secondary"}>
+                {row.isActive ? "Active" : "Inactive"}
+              </Badge>
+            ),
+          },
           {
             header: "Actions",
             cell: ({ row }: any) => (

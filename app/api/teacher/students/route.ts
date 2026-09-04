@@ -28,7 +28,9 @@ export async function GET(request: Request) {
       })
       if (!student) return NextResponse.json(null, { status: 404 })
 
-      const currentEnrollment = student.enrollments.find((e: { academicSession: { isCurrent: any } }) => e.academicSession.isCurrent)
+      const currentEnrollment = student.enrollments.find(
+        (e: { academicSession: { isCurrent: any } }) => e.academicSession.isCurrent,
+      )
 
       const attendanceRecords = await prisma.studentAttendance.findMany({
         where: { studentId: student.id },
@@ -37,7 +39,9 @@ export async function GET(request: Request) {
         take: 100,
       })
 
-      const presentCount = attendanceRecords.filter((a: { status: string }) => a.status === "PRESENT").length
+      const presentCount = attendanceRecords.filter(
+        (a: { status: string }) => a.status === "PRESENT",
+      ).length
       const totalCount = attendanceRecords.length
       const attendancePercent = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0
 
@@ -102,13 +106,15 @@ export async function GET(request: Request) {
     ])
 
     return NextResponse.json({
-      students: students.map((s: { id: any; firstName: any; lastName: any; admissionNo: any; enrollments: any[] }) => ({
-        id: s.id,
-        firstName: s.firstName,
-        lastName: s.lastName,
-        admissionNo: s.admissionNo,
-        enrollment: s.enrollments[0] || null,
-      })),
+      students: students.map(
+        (s: { id: any; firstName: any; lastName: any; admissionNo: any; enrollments: any[] }) => ({
+          id: s.id,
+          firstName: s.firstName,
+          lastName: s.lastName,
+          admissionNo: s.admissionNo,
+          enrollment: s.enrollments[0] || null,
+        }),
+      ),
       total,
       page,
       totalPages: Math.ceil(total / limit),

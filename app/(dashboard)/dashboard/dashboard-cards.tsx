@@ -1,8 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
-  Users, GraduationCap, CalendarCheck, DollarSign, AlertCircle, UserPlus, Clock, FileText,
-  Building2, UserCheck, CalendarClock, Bell, AlertTriangle, Layers, HeartHandshake,
+  Users,
+  GraduationCap,
+  CalendarCheck,
+  DollarSign,
+  AlertCircle,
+  UserPlus,
+  Clock,
+  FileText,
+  Building2,
+  UserCheck,
+  CalendarClock,
+  Bell,
+  AlertTriangle,
+  Layers,
+  HeartHandshake,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -41,7 +54,9 @@ export function DashboardCards({
   profile: DashboardProfile
   branchName?: string
 }) {
-  const isAdmin = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"].includes(profile.role)
+  const isAdmin = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"].includes(
+    profile.role,
+  )
 
   return (
     <div className="space-y-6">
@@ -59,44 +74,46 @@ export function DashboardCards({
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-                <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                <GraduationCap className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalStudents}</div>
-                <p className="text-xs text-muted-foreground">Active students</p>
+                <p className="text-muted-foreground text-xs">Active students</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Teachers</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <Users className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalTeachers}</div>
-                <p className="text-xs text-muted-foreground">Active teachers</p>
+                <p className="text-muted-foreground text-xs">Active teachers</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Parents</CardTitle>
-                <HeartHandshake className="h-4 w-4 text-muted-foreground" />
+                <HeartHandshake className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalParents}</div>
-                <p className="text-xs text-muted-foreground">Registered parents</p>
+                <p className="text-muted-foreground text-xs">Registered parents</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Classes / Sections</CardTitle>
-                <Layers className="h-4 w-4 text-muted-foreground" />
+                <Layers className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalClasses} / {stats.totalSections}</div>
-                <p className="text-xs text-muted-foreground">Classes and sections</p>
+                <div className="text-2xl font-bold">
+                  {stats.totalClasses} / {stats.totalSections}
+                </div>
+                <p className="text-muted-foreground text-xs">Classes and sections</p>
               </CardContent>
             </Card>
           </div>
@@ -105,11 +122,13 @@ export function DashboardCards({
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Today&apos;s Attendance</CardTitle>
-                <CalendarCheck className={`h-4 w-4 ${stats.attendanceRate >= 75 ? "text-green-500" : stats.attendanceRate >= 50 ? "text-yellow-500" : "text-red-500"}`} />
+                <CalendarCheck
+                  className={`h-4 w-4 ${stats.attendanceRate >= 75 ? "text-green-500" : stats.attendanceRate >= 50 ? "text-yellow-500" : "text-red-500"}`}
+                />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.todayAttendance}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {stats.attendanceRate}% of {stats.totalStudentsCount} total students
                 </p>
               </CardContent>
@@ -118,33 +137,37 @@ export function DashboardCards({
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Pending Fee Amount</CardTitle>
-                <AlertCircle className="h-4 w-4 text-destructive" />
+                <AlertCircle className="text-destructive h-4 w-4" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-destructive">${stats.pendingFeeAmount.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">Outstanding fees</p>
+                <div className="text-destructive text-2xl font-bold">
+                  ${stats.pendingFeeAmount.toLocaleString()}
+                </div>
+                <p className="text-muted-foreground text-xs">Outstanding fees</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Monthly Fee Collection</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <DollarSign className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${stats.monthlyFeeCollection.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">Collected this month</p>
+                <div className="text-2xl font-bold">
+                  ${stats.monthlyFeeCollection.toLocaleString()}
+                </div>
+                <p className="text-muted-foreground text-xs">Collected this month</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Upcoming Exams</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
+                <FileText className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.upcomingExams}</div>
-                <p className="text-xs text-muted-foreground">Scheduled exams</p>
+                <p className="text-muted-foreground text-xs">Scheduled exams</p>
               </CardContent>
             </Card>
           </div>
@@ -153,13 +176,17 @@ export function DashboardCards({
             <Card className={stats.timetableConflicts > 0 ? "border-destructive/50" : ""}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Timetable Conflicts</CardTitle>
-                <AlertTriangle className={`h-4 w-4 ${stats.timetableConflicts > 0 ? "text-destructive" : "text-muted-foreground"}`} />
+                <AlertTriangle
+                  className={`h-4 w-4 ${stats.timetableConflicts > 0 ? "text-destructive" : "text-muted-foreground"}`}
+                />
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${stats.timetableConflicts > 0 ? "text-destructive" : ""}`}>
+                <div
+                  className={`text-2xl font-bold ${stats.timetableConflicts > 0 ? "text-destructive" : ""}`}
+                >
                   {stats.timetableConflicts}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {stats.timetableConflicts > 0 ? "Conflicts detected!" : "No conflicts"}
                 </p>
               </CardContent>
@@ -168,33 +195,33 @@ export function DashboardCards({
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Teachers on Leave</CardTitle>
-                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                <UserCheck className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.teachersOnLeave}</div>
-                <p className="text-xs text-muted-foreground">Currently on leave</p>
+                <p className="text-muted-foreground text-xs">Currently on leave</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Upcoming Meetings</CardTitle>
-                <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                <CalendarClock className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.upcomingMeetings}</div>
-                <p className="text-xs text-muted-foreground">Scheduled meetings</p>
+                <p className="text-muted-foreground text-xs">Scheduled meetings</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">New Admissions</CardTitle>
-                <UserPlus className="h-4 w-4 text-muted-foreground" />
+                <UserPlus className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.newAdmissions}</div>
-                <p className="text-xs text-muted-foreground">This month</p>
+                <p className="text-muted-foreground text-xs">This month</p>
               </CardContent>
             </Card>
           </div>
@@ -209,7 +236,7 @@ export function DashboardCards({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.pendingLeaveRequests}</div>
-                <p className="text-xs text-muted-foreground mb-3">Awaiting approval</p>
+                <p className="text-muted-foreground mb-3 text-xs">Awaiting approval</p>
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/dashboard/leaves">View Leaves</Link>
                 </Button>
@@ -225,7 +252,7 @@ export function DashboardCards({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.unreadNotifications}</div>
-                <p className="text-xs text-muted-foreground mb-3">Unread notifications</p>
+                <p className="text-muted-foreground mb-3 text-xs">Unread notifications</p>
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/dashboard/notifications">View Notifications</Link>
                 </Button>
@@ -263,44 +290,46 @@ export function DashboardCards({
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-              <GraduationCap className="h-4 w-4 text-muted-foreground" />
+              <GraduationCap className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalStudents}</div>
-              <p className="text-xs text-muted-foreground">Active students</p>
+              <p className="text-muted-foreground text-xs">Active students</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Today&apos;s Attendance</CardTitle>
-              <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+              <CalendarCheck className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.todayAttendance}</div>
-              <p className="text-xs text-muted-foreground">Students present today</p>
+              <p className="text-muted-foreground text-xs">Students present today</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Fee Amount</CardTitle>
-              <AlertCircle className="h-4 w-4 text-destructive" />
+              <AlertCircle className="text-destructive h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-destructive">${stats.pendingFeeAmount.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Outstanding fees</p>
+              <div className="text-destructive text-2xl font-bold">
+                ${stats.pendingFeeAmount.toLocaleString()}
+              </div>
+              <p className="text-muted-foreground text-xs">Outstanding fees</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Upcoming Exams</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <FileText className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.upcomingExams}</div>
-              <p className="text-xs text-muted-foreground">Scheduled exams</p>
+              <p className="text-muted-foreground text-xs">Scheduled exams</p>
             </CardContent>
           </Card>
         </div>

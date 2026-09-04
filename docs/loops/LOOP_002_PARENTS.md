@@ -1,23 +1,27 @@
 # Loop 002: Parents
 
 ## Overview
+
 Parent module manages parent/guardian information and their relationship with students. This enables effective communication and tracking of student guardians.
 
 ## User Stories
 
 ### As an Admin
+
 1. I want to add parent information
 2. I want to link parents to students
 3. I want to manage parent accounts
 4. I want to view parent contact details
 
 ### As a Parent
+
 1. I want to view my profile
 2. I want to update my contact information
 3. I want to view all my children
 4. I want to communicate with teachers
 
 ### As a Teacher
+
 1. I want to view parent information for my students
 2. I want to contact parents when needed
 
@@ -95,12 +99,14 @@ CREATE TABLE parent_student (
 ## Business Rules
 
 ### Parent-Student Relationship
+
 - A student can have multiple parents/guardians
 - One parent can be marked as primary
 - Primary parent receives all communications
 - Parent must have valid contact information
 
 ### Validation Rules
+
 1. Phone number required and valid
 2. Email must be unique if provided
 3. Relationship must be valid enum
@@ -109,23 +115,27 @@ CREATE TABLE parent_student (
 ## UI Components
 
 ### Parent List
+
 - Search and filter
 - View children count
 - Quick contact actions
 
 ### Parent Form
+
 - Personal information
 - Contact details
 - Professional information
 - Address information
 
 ### Parent Profile
+
 - Personal details
 - Linked students
 - Communication history
 - Fee payment history
 
 ## Acceptance Criteria
+
 - [ ] Parent can be created and edited
 - [ ] Parent can be linked to students
 - [ ] Primary parent can be marked

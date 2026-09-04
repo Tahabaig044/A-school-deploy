@@ -6,10 +6,22 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { createExam, updateExam, deleteExam } from "@/actions/exam.actions"
 import { useToast } from "@/hooks/use-toast"
 import { Pencil, Trash2, Plus, Eye } from "lucide-react"
@@ -71,9 +83,21 @@ export function ExamList({
   return (
     <div className="space-y-6">
       <PageHeader title="Exams" description="Manage examinations">
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditItem(null); setError(null) } }}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o)
+            if (!o) {
+              setEditItem(null)
+              setError(null)
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Add Exam</Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Exam
+            </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -81,57 +105,113 @@ export function ExamList({
             </DialogHeader>
             <form action={handleSubmit} className="space-y-4">
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="name">Exam Name</Label>
                   <Input id="name" name="name" defaultValue={editItem?.name || ""} required />
                 </div>
                 <div>
                   <Label htmlFor="examTypeId">Exam Type</Label>
-                  <Input id="examTypeId" name="examTypeId" defaultValue={editItem?.examTypeId || ""} required />
+                  <Input
+                    id="examTypeId"
+                    name="examTypeId"
+                    defaultValue={editItem?.examTypeId || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="classId">Class ID</Label>
-                  <Input id="classId" name="classId" defaultValue={editItem?.classId || ""} required />
+                  <Input
+                    id="classId"
+                    name="classId"
+                    defaultValue={editItem?.classId || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="subjectId">Subject ID</Label>
-                  <Input id="subjectId" name="subjectId" defaultValue={editItem?.subjectId || ""} required />
+                  <Input
+                    id="subjectId"
+                    name="subjectId"
+                    defaultValue={editItem?.subjectId || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="academicSessionId">Academic Session ID</Label>
-                  <Input id="academicSessionId" name="academicSessionId" defaultValue={editItem?.academicSessionId || ""} required />
+                  <Input
+                    id="academicSessionId"
+                    name="academicSessionId"
+                    defaultValue={editItem?.academicSessionId || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="totalMarks">Total Marks</Label>
-                  <Input id="totalMarks" name="totalMarks" type="number" defaultValue={editItem?.totalMarks || ""} required />
+                  <Input
+                    id="totalMarks"
+                    name="totalMarks"
+                    type="number"
+                    defaultValue={editItem?.totalMarks || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="passingMarks">Passing Marks</Label>
-                  <Input id="passingMarks" name="passingMarks" type="number" defaultValue={editItem?.passingMarks || ""} required />
+                  <Input
+                    id="passingMarks"
+                    name="passingMarks"
+                    type="number"
+                    defaultValue={editItem?.passingMarks || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="examDate">Exam Date</Label>
-                  <Input id="examDate" name="examDate" type="date" defaultValue={editItem?.examDate?.split("T")[0] || ""} />
+                  <Input
+                    id="examDate"
+                    name="examDate"
+                    type="date"
+                    defaultValue={editItem?.examDate?.split("T")[0] || ""}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="startTime">Start Time</Label>
-                  <Input id="startTime" name="startTime" type="time" defaultValue={editItem?.startTime || ""} />
+                  <Input
+                    id="startTime"
+                    name="startTime"
+                    type="time"
+                    defaultValue={editItem?.startTime || ""}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="endTime">End Time</Label>
-                  <Input id="endTime" name="endTime" type="time" defaultValue={editItem?.endTime || ""} />
+                  <Input
+                    id="endTime"
+                    name="endTime"
+                    type="time"
+                    defaultValue={editItem?.endTime || ""}
+                  />
                 </div>
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
-                <Input id="description" name="description" defaultValue={editItem?.description || ""} />
+                <Input
+                  id="description"
+                  name="description"
+                  defaultValue={editItem?.description || ""}
+                />
               </div>
               {editItem && (
                 <div>
                   <Label htmlFor="isPublished">Published</Label>
-                  <Select name="isPublished" defaultValue={editItem?.isPublished ? "true" : "false"}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    name="isPublished"
+                    defaultValue={editItem?.isPublished ? "true" : "false"}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="true">Published</SelectItem>
                       <SelectItem value="false">Draft</SelectItem>
@@ -139,7 +219,9 @@ export function ExamList({
                   </Select>
                 </div>
               )}
-              <Button type="submit" className="w-full">{editItem ? "Update" : "Create"}</Button>
+              <Button type="submit" className="w-full">
+                {editItem ? "Update" : "Create"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -153,21 +235,43 @@ export function ExamList({
           { header: "Subject", accessorKey: "subject", cell: ({ row }: any) => row.subject?.name },
           { header: "Total Marks", accessorKey: "totalMarks" },
           { header: "Passing Marks", accessorKey: "passingMarks" },
-          { header: "Date", accessorKey: "examDate", cell: ({ row }: any) => row.examDate ? new Date(row.examDate).toLocaleDateString() : "-" },
-          { header: "Results", accessorKey: "_count", cell: ({ row }: any) => row._count?.results || 0 },
-          { header: "Status", accessorKey: "isPublished", cell: ({ row }: any) => (
-            <Badge variant={row.isPublished ? "default" : "secondary"}>
-              {row.isPublished ? "Published" : "Draft"}
-            </Badge>
-          )},
+          {
+            header: "Date",
+            accessorKey: "examDate",
+            cell: ({ row }: any) =>
+              row.examDate ? new Date(row.examDate).toLocaleDateString() : "-",
+          },
+          {
+            header: "Results",
+            accessorKey: "_count",
+            cell: ({ row }: any) => row._count?.results || 0,
+          },
+          {
+            header: "Status",
+            accessorKey: "isPublished",
+            cell: ({ row }: any) => (
+              <Badge variant={row.isPublished ? "default" : "secondary"}>
+                {row.isPublished ? "Published" : "Draft"}
+              </Badge>
+            ),
+          },
           {
             header: "Actions",
             cell: ({ row }: any) => (
               <div className="flex gap-2">
                 <Link href={`/dashboard/exams/marks-entry?examId=${row.id}`}>
-                  <Button variant="ghost" size="icon"><Eye className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon">
+                    <Eye className="h-4 w-4" />
+                  </Button>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={() => { setEditItem(row); setOpen(true) }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setEditItem(row)
+                    setOpen(true)
+                  }}
+                >
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)}>

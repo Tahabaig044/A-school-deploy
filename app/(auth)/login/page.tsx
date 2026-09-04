@@ -6,7 +6,7 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="flex items-center gap-2">
-        <GraduationCap className="h-8 w-8 text-primary" />
+        <GraduationCap className="text-primary h-8 w-8" />
         <h1 className="text-2xl font-bold">SchoolMS</h1>
       </div>
       <Card className="w-full max-w-sm">

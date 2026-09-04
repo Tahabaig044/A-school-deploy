@@ -1,6 +1,16 @@
 import { prisma } from "@/lib/prisma"
 
-export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT" | "PAYMENT" | "ENROLLMENT" | "ATTENDANCE" | "CANCEL"
+export type AuditAction =
+  | "CREATE"
+  | "UPDATE"
+  | "DELETE"
+  | "LOGIN"
+  | "LOGOUT"
+  | "PAYMENT"
+  | "ONLINE_PAYMENT"
+  | "ENROLLMENT"
+  | "ATTENDANCE"
+  | "CANCEL"
 
 interface AuditLogParams {
   userId: string

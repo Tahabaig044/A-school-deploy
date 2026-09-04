@@ -8,15 +8,20 @@ import { getSchoolId } from "@/lib/school-context"
 const ATTENDANCE_POLICY_KEY = "attendance_policy"
 
 export async function getAttendancePolicy(schoolId: string): Promise<string> {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
+
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId
+  if (!effectiveSchoolId) return "first_period_teacher"
+
   const setting = await prisma.setting.findUnique({
-    where: { schoolId_key: { schoolId, key: ATTENDANCE_POLICY_KEY } },
+    where: { schoolId_key: { schoolId: effectiveSchoolId, key: ATTENDANCE_POLICY_KEY } },
   })
   return setting?.value || "first_period_teacher"
 }
 
 export async function updateAttendancePolicy(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<{ error?: string; success?: boolean }> {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
   const schoolId = getSchoolId(profile, formData, "Update Attendance Policy")

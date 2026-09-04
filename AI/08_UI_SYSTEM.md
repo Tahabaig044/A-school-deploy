@@ -14,15 +14,15 @@
 
 ## Tech Stack
 
-| Tool | Purpose |
-|------|---------|
-| Tailwind CSS | Styling |
-| shadcn/ui | Base components |
-| Radix UI | Primitives |
-| Lucide React | Icons |
-| class-variance-authority | Variants |
-| clsx | Conditional classes |
-| tailwind-merge | Class merging |
+| Tool                     | Purpose             |
+| ------------------------ | ------------------- |
+| Tailwind CSS             | Styling             |
+| shadcn/ui                | Base components     |
+| Radix UI                 | Primitives          |
+| Lucide React             | Icons               |
+| class-variance-authority | Variants            |
+| clsx                     | Conditional classes |
+| tailwind-merge           | Class merging       |
 
 ## Color System
 
@@ -46,25 +46,30 @@
 ## Core Components
 
 ### Button
+
 - Variants: primary, secondary, outline, ghost, danger
 - Sizes: sm, md, lg
 - States: default, loading, disabled
 
 ### Input
+
 - Label always visible
 - Error messages below
 - Placeholder for hints
 
 ### Card
+
 - Header, Content, Footer sections
 - Consistent padding (p-6)
 
 ### Table
+
 - Responsive (horizontal scroll)
 - Loading and empty states
 - Sortable columns
 
 ### Modal
+
 - Accessible (focus trap)
 - Close on escape
 - Overlay click closes
@@ -72,16 +77,19 @@
 ## Layout Rules
 
 ### Sidebar
+
 - Fixed width: 256px
 - Dark background (gray-900)
 - Active state highlighted
 
 ### Main Content
+
 - Padding: 24px
 - Max-width: 1280px
 - Centered
 
 ### Responsive Breakpoints
+
 - Mobile: < 640px
 - Tablet: 640px - 1024px
 - Desktop: > 1024px

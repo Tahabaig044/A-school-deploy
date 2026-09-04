@@ -1,9 +1,11 @@
 # Phase 3: Academics
 
 ## Duration
+
 3 weeks
 
 ## Objectives
+
 - Implement Subject management
 - Build Attendance system
 - Create Timetable module
@@ -12,6 +14,7 @@
 ## Deliverables
 
 ### Week 1: Subjects & Attendance
+
 1. **Subject Management**
    - CRUD operations for subjects
    - Subject-class mapping
@@ -25,6 +28,7 @@
    - Parent notifications
 
 ### Week 2: Timetable
+
 1. **Timetable Management**
    - Create class timetables
    - Teacher schedule management
@@ -38,6 +42,7 @@
    - Schedule changes
 
 ### Week 3: Examinations
+
 1. **Exam Management**
    - Create exam schedules
    - Define exam types
@@ -52,6 +57,7 @@
 ## Technical Implementation
 
 ### API Endpoints
+
 ```
 # Subjects
 GET    /api/v1/subjects
@@ -79,6 +85,7 @@ DELETE /api/v1/exams/:id
 ```
 
 ### Database Schema
+
 ```sql
 -- Subjects
 CREATE TABLE subjects (
@@ -126,6 +133,7 @@ CREATE TABLE exams (
 ```
 
 ### UI Pages
+
 - /subjects - Subject list
 - /attendance/mark - Mark attendance
 - /attendance/report - Attendance reports
@@ -135,6 +143,7 @@ CREATE TABLE exams (
 ## Features
 
 ### Attendance
+
 - Calendar view for attendance
 - Quick mark with status buttons
 - Auto-save functionality
@@ -142,18 +151,21 @@ CREATE TABLE exams (
 - Export attendance reports
 
 ### Timetable
+
 - Drag-and-drop interface
 - Color-coded by subject
 - Print-friendly view
 - Mobile-responsive
 
 ### Exams
+
 - Exam creation wizard
 - Marks entry interface
 - Grade calculation
 - Report card generation
 
 ## Acceptance Criteria
+
 - [ ] Attendance can be marked for entire class
 - [ ] Timetable displays correctly
 - [ ] No scheduling conflicts allowed
@@ -163,13 +175,15 @@ CREATE TABLE exams (
 - [ ] All validations in place
 
 ## Dependencies
+
 - Phase 2 completed
 - Students and Teachers modules ready
 - Classes and Sections configured
 
 ## Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Attendance marking performance | High | Optimize queries, use bulk operations |
-| Timetable conflicts | High | Implement conflict detection |
-| Exam scheduling overlaps | Medium | Validation rules |
+
+| Risk                           | Impact | Mitigation                            |
+| ------------------------------ | ------ | ------------------------------------- |
+| Attendance marking performance | High   | Optimize queries, use bulk operations |
+| Timetable conflicts            | High   | Implement conflict detection          |
+| Exam scheduling overlaps       | Medium | Validation rules                      |

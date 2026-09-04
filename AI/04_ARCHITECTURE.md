@@ -64,6 +64,7 @@
 ## Data Flow
 
 ### Read Flow (Server Component)
+
 ```
 1. Browser requests page
 2. Next.js server receives
@@ -75,6 +76,7 @@
 ```
 
 ### Write Flow (Server Action)
+
 ```
 1. User submits form
 2. Server Action called
@@ -112,18 +114,21 @@
 ## Component Architecture
 
 ### Server Components
+
 - Fetch data directly
 - No client-side JS
 - Automatic streaming
 - SEO friendly
 
 ### Client Components
+
 - Interactive UI
 - Event handlers
 - Browser APIs
 - State management
 
 ### Shared Components
+
 - Used by both
 - No side effects
 - Pure functions
@@ -166,28 +171,31 @@ src/
 ## State Management
 
 ### Server State
+
 - Fetched in Server Components
 - Cached by Next.js
 - Revalidated on mutation
 
 ### Client State
+
 - useState for local state
 - URL state for filters
 - No global state library
 
 ### Form State
+
 - React Hook Form
 - Zod validation
 - Server Action submission
 
 ## Caching Strategy
 
-| Data Type | Cache | Revalidation |
-|-----------|-------|--------------|
-| Static pages | ISR | On demand |
-| User data | Session | On mutation |
-| Lists | 1 hour | On mutation |
-| Counts | 5 min | On mutation |
+| Data Type    | Cache   | Revalidation |
+| ------------ | ------- | ------------ |
+| Static pages | ISR     | On demand    |
+| User data    | Session | On mutation  |
+| Lists        | 1 hour  | On mutation  |
+| Counts       | 5 min   | On mutation  |
 
 ## Security Layers
 

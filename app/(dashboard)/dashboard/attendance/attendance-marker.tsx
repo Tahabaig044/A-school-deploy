@@ -28,8 +28,14 @@ type StudentItem = {
 type AttendanceRecord = { studentId: string; status: string }
 
 export function AttendanceMarker({
-  classes, sessions, students, existingAttendance,
-  currentClassId, currentSectionId, currentSessionId, currentDate,
+  classes,
+  sessions,
+  students,
+  existingAttendance,
+  currentClassId,
+  currentSectionId,
+  currentSessionId,
+  currentDate,
 }: {
   classes: ClassItem[]
   sessions: SessionItem[]
@@ -66,34 +72,67 @@ export function AttendanceMarker({
         <CardTitle>Attendance</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex flex-wrap gap-4 items-end">
+        <div className="flex flex-wrap items-end gap-4">
           <div className="grid gap-2">
             <Label htmlFor="classId">Class</Label>
-            <select id="classId" value={classId} onChange={(e) => { setClassId(e.target.value); setSectionId("") }}
-              className="flex h-10 w-44 rounded-md border border-input bg-background px-3 py-2 text-sm">
+            <select
+              id="classId"
+              value={classId}
+              onChange={(e) => {
+                setClassId(e.target.value)
+                setSectionId("")
+              }}
+              className="border-input bg-background flex h-10 w-44 rounded-md border px-3 py-2 text-sm"
+            >
               <option value="">Select class</option>
-              {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="sectionId">Section</Label>
-            <select id="sectionId" value={sectionId} onChange={(e) => setSectionId(e.target.value)}
-              className="flex h-10 w-32 rounded-md border border-input bg-background px-3 py-2 text-sm">
+            <select
+              id="sectionId"
+              value={sectionId}
+              onChange={(e) => setSectionId(e.target.value)}
+              className="border-input bg-background flex h-10 w-32 rounded-md border px-3 py-2 text-sm"
+            >
               <option value="">All</option>
-              {sections.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {sections.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="sessionId">Session</Label>
-            <select id="sessionId" value={sessionId} onChange={(e) => setSessionId(e.target.value)}
-              className="flex h-10 w-48 rounded-md border border-input bg-background px-3 py-2 text-sm">
+            <select
+              id="sessionId"
+              value={sessionId}
+              onChange={(e) => setSessionId(e.target.value)}
+              className="border-input bg-background flex h-10 w-48 rounded-md border px-3 py-2 text-sm"
+            >
               <option value="">Select session</option>
-              {sessions.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {sessions.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="date">Date</Label>
-            <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-40" />
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-40"
+            />
           </div>
           <Button onClick={loadStudents}>Load Students</Button>
         </div>
@@ -130,7 +169,7 @@ export function AttendanceMarker({
                     <TableCell>
                       <select
                         name={`status_${student.id}`}
-                        className="flex h-10 w-32 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="border-input bg-background flex h-10 w-32 rounded-md border px-3 py-2 text-sm"
                         defaultValue={existingMap.get(student.id) || "PRESENT"}
                       >
                         <option value="PRESENT">Present</option>
@@ -150,7 +189,9 @@ export function AttendanceMarker({
         )}
 
         {students.length === 0 && (classId || date) && (
-          <p className="text-sm text-muted-foreground">Select a class, session, and date, then click Load Students.</p>
+          <p className="text-muted-foreground text-sm">
+            Select a class, session, and date, then click Load Students.
+          </p>
         )}
       </CardContent>
     </Card>

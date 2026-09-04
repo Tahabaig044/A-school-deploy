@@ -80,7 +80,16 @@ export async function getTeacherWorkloadDetail(teacherId: string, academicSessio
 
   const teacher = await prisma.teacher.findUnique({
     where: { id: teacherId },
-    select: { schoolId: true, firstName: true, lastName: true, employeeCode: true, department: true, designation: true, maxPeriodsPerDay: true, maxPeriodsPerWeek: true },
+    select: {
+      schoolId: true,
+      firstName: true,
+      lastName: true,
+      employeeCode: true,
+      department: true,
+      designation: true,
+      maxPeriodsPerDay: true,
+      maxPeriodsPerWeek: true,
+    },
   })
   if (!teacher) return null
   if (profile.role !== "SUPER_ADMIN" && profile.schoolId !== teacher.schoolId) return null
@@ -99,12 +108,20 @@ export async function getTeacherWorkloadDetail(teacherId: string, academicSessio
   const [timetableSlots, assignments] = await Promise.all([
     prisma.timetable.findMany({
       where: { teacherId, ...(activeSessionId ? { academicSessionId: activeSessionId } : {}) },
-      include: { class: { select: { name: true } }, section: { select: { name: true } }, subject: { select: { name: true, code: true } } },
+      include: {
+        class: { select: { name: true } },
+        section: { select: { name: true } },
+        subject: { select: { name: true, code: true } },
+      },
       orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
     }),
     prisma.teacherAssignment.findMany({
       where: { teacherId, ...(activeSessionId ? { academicSessionId: activeSessionId } : {}) },
-      include: { class: { select: { name: true } }, section: { select: { name: true } }, subject: { select: { name: true, code: true } } },
+      include: {
+        class: { select: { name: true } },
+        section: { select: { name: true } },
+        subject: { select: { name: true, code: true } },
+      },
     }),
   ])
 
@@ -126,7 +143,9 @@ export async function getTeacherWorkloadDetail(teacherId: string, academicSessio
     periodsByDay,
     maxPeriodsPerDay: maxPerDay,
     maxPeriodsPerWeek: maxPerWeek,
-    isOverloaded: (maxPerWeek && totalPeriods > maxPerWeek) || Object.values(periodsByDay).some((d) => maxPerDay && d.count > maxPerDay),
+    isOverloaded:
+      (maxPerWeek && totalPeriods > maxPerWeek) ||
+      Object.values(periodsByDay).some((d) => maxPerDay && d.count > maxPerDay),
     isUnderloaded: maxPerWeek ? totalPeriods < Math.ceil(maxPerWeek * 0.6) : false,
     weeklySlots: timetableSlots,
     assignments,
@@ -138,7 +157,9 @@ export async function getWorkloadDefaults(schoolId: string) {
     where: { schoolId_key: { schoolId, key: WORKLOAD_DEFAULTS_KEY } },
   })
   if (setting?.value) {
-    try { return JSON.parse(setting.value) } catch { }
+    try {
+      return JSON.parse(setting.value)
+    } catch {}
   }
   return { maxPeriodsPerDay: 8, maxPeriodsPerWeek: 40 }
 }
@@ -150,7 +171,7 @@ const workloadSettingsSchema = z.object({
 
 export async function updateWorkloadDefaults(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
   const schoolId = formData.get("schoolId") as string
@@ -183,12 +204,15 @@ const teacherLimitsSchema = z.object({
 
 export async function updateTeacherWorkloadLimits(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
   const teacherId = formData.get("teacherId") as string
 
-  const teacher = await prisma.teacher.findUnique({ where: { id: teacherId }, select: { schoolId: true } })
+  const teacher = await prisma.teacher.findUnique({
+    where: { id: teacherId },
+    select: { schoolId: true },
+  })
   if (!teacher) return { error: "Teacher not found.", success: false }
   if (profile.role !== "SUPER_ADMIN" && profile.schoolId !== teacher.schoolId) {
     return { error: "Not authorized.", success: false }
@@ -213,7 +237,11 @@ export async function updateTeacherWorkloadLimits(
   return { success: true }
 }
 
-export async function checkWorkloadBeforeAssign(teacherId: string, dayOfWeek: string, academicSessionId: string) {
+export async function checkWorkloadBeforeAssign(
+  teacherId: string,
+  dayOfWeek: string,
+  academicSessionId: string,
+) {
   const teacher = await prisma.teacher.findUnique({
     where: { id: teacherId },
     select: { maxPeriodsPerDay: true, maxPeriodsPerWeek: true, schoolId: true },
@@ -248,7 +276,11 @@ export async function checkWorkloadBeforeAssign(teacherId: string, dayOfWeek: st
     }
   }
 
-  return { allowed: true, current: { day: dayCount, week: weekCount }, max: { day: maxPerDay, week: maxPerWeek } }
+  return {
+    allowed: true,
+    current: { day: dayCount, week: weekCount },
+    max: { day: maxPerDay, week: maxPerWeek },
+  }
 }
 
 export async function getDepartmentWorkload(schoolId: string, academicSessionId?: string) {
@@ -257,11 +289,26 @@ export async function getDepartmentWorkload(schoolId: string, academicSessionId?
 
   const workload = await getTeacherWorkload(schoolId, academicSessionId)
 
-  const deptMap: Record<string, { teachers: typeof workload; totalPeriods: number; avgPeriods: number; overloaded: number; underloaded: number }> = {}
+  const deptMap: Record<
+    string,
+    {
+      teachers: typeof workload
+      totalPeriods: number
+      avgPeriods: number
+      overloaded: number
+      underloaded: number
+    }
+  > = {}
   for (const w of workload) {
     const dept = w.department || "Unassigned"
     if (!deptMap[dept]) {
-      deptMap[dept] = { teachers: [], totalPeriods: 0, avgPeriods: 0, overloaded: 0, underloaded: 0 }
+      deptMap[dept] = {
+        teachers: [],
+        totalPeriods: 0,
+        avgPeriods: 0,
+        overloaded: 0,
+        underloaded: 0,
+      }
     }
     deptMap[dept].teachers.push(w)
     deptMap[dept].totalPeriods += w.totalPeriods
@@ -289,10 +336,16 @@ export async function getClassDistribution(schoolId: string, academicSessionId?:
 
   const slots = await prisma.timetable.findMany({
     where: slotWhere,
-    include: { class: { select: { name: true } }, teacher: { select: { id: true, firstName: true, lastName: true } } },
+    include: {
+      class: { select: { name: true } },
+      teacher: { select: { id: true, firstName: true, lastName: true } },
+    },
   })
 
-  const classMap: Record<string, { className: string; totalPeriods: number; teachers: Set<string> }> = {}
+  const classMap: Record<
+    string,
+    { className: string; totalPeriods: number; teachers: Set<string> }
+  > = {}
   for (const slot of slots) {
     const key = slot.classId
     if (!classMap[key]) {
@@ -304,9 +357,11 @@ export async function getClassDistribution(schoolId: string, academicSessionId?:
     }
   }
 
-  return Object.entries(classMap).map(([, data]) => ({
-    className: data.className,
-    totalPeriods: data.totalPeriods,
-    teacherCount: data.teachers.size,
-  })).sort((a, b) => b.totalPeriods - a.totalPeriods)
+  return Object.entries(classMap)
+    .map(([, data]) => ({
+      className: data.className,
+      totalPeriods: data.totalPeriods,
+      teacherCount: data.teachers.size,
+    }))
+    .sort((a, b) => b.totalPeriods - a.totalPeriods)
 }

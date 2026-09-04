@@ -21,9 +21,7 @@ export function PortalMobileSidebar({ role }: PortalMobileSidebarProps) {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger
-        render={<Button variant="ghost" size="icon" className="md:hidden" />}
-      >
+      <SheetTrigger render={<Button variant="ghost" size="icon" className="md:hidden" />}>
         <Menu className="h-5 w-5" />
         <span className="sr-only">Toggle menu</span>
       </SheetTrigger>

@@ -35,7 +35,14 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ADMISSION_OFFICER", "PRINCIPAL", "TEACHER")
+    await requireRole(
+      "SUPER_ADMIN",
+      "SCHOOL_ADMIN",
+      "BRANCH_ADMIN",
+      "ADMISSION_OFFICER",
+      "PRINCIPAL",
+      "TEACHER",
+    )
   } catch (err) {
     const unauthorized = err instanceof Error && err.message === "Unauthorized"
     return new Response(unauthorized ? "Unauthorized" : "Forbidden", {

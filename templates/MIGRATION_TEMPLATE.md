@@ -2,11 +2,11 @@
 
 ## Migration Information
 
-| Field | Value |
-|-------|-------|
-| Migration ID | [ID] |
-| Date | [Date] |
-| Author | [Name] |
+| Field        | Value  |
+| ------------ | ------ |
+| Migration ID | [ID]   |
+| Date         | [Date] |
+| Author       | [Name] |
 
 ## Description
 

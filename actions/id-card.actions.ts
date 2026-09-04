@@ -30,7 +30,7 @@ export async function getBulkStudentIdCardDataAction(
   schoolId: string,
   classId: string,
   sectionId?: string,
-  sessionId?: string
+  sessionId?: string,
 ): Promise<IdCardData[]> {
   return getBulkStudentIdCardData(schoolId, classId, sectionId, sessionId)
 }
@@ -47,7 +47,7 @@ export async function verifyIdCardTokenAction(token: string): Promise<IdCardVeri
 
 export async function updateIdCardStatusAction(
   profileId: string,
-  status: CardStatusValue
+  status: CardStatusValue,
 ): Promise<{ success?: boolean; error?: string }> {
   return updateIdCardStatus(profileId, status)
 }

@@ -2,9 +2,9 @@
 
 ## Project Progress
 
-| Version | Phase | Features | Date |
-|---------|-------|----------|------|
-| v0.1.0 | Phase 1 | Authentication | [Date] |
+| Version | Phase   | Features       | Date   |
+| ------- | ------- | -------------- | ------ |
+| v0.1.0  | Phase 1 | Authentication | [Date] |
 
 ## Current Status
 

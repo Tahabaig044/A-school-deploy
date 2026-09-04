@@ -4,10 +4,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 
-export async function createSchool(
-  _prevState: unknown,
-  formData: FormData
-) {
+export async function createSchool(_prevState: unknown, formData: FormData) {
   await requireRole("SUPER_ADMIN")
 
   const name = formData.get("name") as string

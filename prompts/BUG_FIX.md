@@ -1,6 +1,7 @@
 # BUG_FIX_PROMPT
 
 ## Usage
+
 When fixing a bug, use this prompt.
 
 ## Prompt

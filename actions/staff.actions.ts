@@ -40,7 +40,7 @@ type ActionResult = {
  */
 export async function createStaff(
   _prevState: ActionResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -56,7 +56,14 @@ export async function createStaff(
   const joiningDate = formData.get("joiningDate") as string
 
   const parsed = staffSchema.safeParse({
-    firstName, lastName, employeeCode, department, designation, phone, email, joiningDate,
+    firstName,
+    lastName,
+    employeeCode,
+    department,
+    designation,
+    phone,
+    email,
+    joiningDate,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -81,7 +88,10 @@ export async function createStaff(
     select: { id: true },
   })
   if (existingStaff) {
-    return { error: "A staff member with this employee code already exists in this school.", success: false }
+    return {
+      error: "A staff member with this employee code already exists in this school.",
+      success: false,
+    }
   }
 
   // Generate invitation token
@@ -164,7 +174,15 @@ export async function createStaff(
       action: "CREATE",
       entityType: "Staff",
       entityId: staff.id,
-      newValues: { firstName, lastName, employeeCode, department, designation, email, profileId: authUserId },
+      newValues: {
+        firstName,
+        lastName,
+        employeeCode,
+        department,
+        designation,
+        email,
+        profileId: authUserId,
+      },
     })
 
     // Step 6: Generate invitation link
@@ -181,7 +199,7 @@ export async function createStaff(
 export async function updateStaff(
   staffId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -205,7 +223,15 @@ export async function updateStaff(
   const status = formData.get("status") as string
 
   const parsed = staffSchema.safeParse({
-    firstName, lastName, employeeCode, department, designation, phone, email, joiningDate, status,
+    firstName,
+    lastName,
+    employeeCode,
+    department,
+    designation,
+    phone,
+    email,
+    joiningDate,
+    status,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -229,10 +255,12 @@ export async function updateStaff(
 
     // Sync profile if linked
     if (existing.profileId) {
-      await prisma.profile.update({
-        where: { id: existing.profileId },
-        data: { firstName, lastName, phone: phone || null },
-      }).catch(() => {})
+      await prisma.profile
+        .update({
+          where: { id: existing.profileId },
+          data: { firstName, lastName, phone: phone || null },
+        })
+        .catch(() => {})
     }
 
     revalidatePath("/dashboard/staff")
@@ -261,10 +289,12 @@ export async function deleteStaff(staffId: string) {
 
     // Deactivate linked profile
     if (existing.profileId) {
-      await prisma.profile.update({
-        where: { id: existing.profileId },
-        data: { status: "SUSPENDED", isActive: false },
-      }).catch(() => {})
+      await prisma.profile
+        .update({
+          where: { id: existing.profileId },
+          data: { status: "SUSPENDED", isActive: false },
+        })
+        .catch(() => {})
     }
 
     revalidatePath("/dashboard/staff")

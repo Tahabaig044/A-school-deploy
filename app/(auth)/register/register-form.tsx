@@ -12,7 +12,7 @@ export function RegisterForm() {
 
   if (state?.success) {
     return (
-      <div className="text-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-center text-sm">
         Check your email for a confirmation link.
       </div>
     )
@@ -20,10 +20,8 @@ export function RegisterForm() {
 
   return (
     <form action={formAction} className="grid gap-4">
-      {state?.error && (
-        <p className="text-sm text-destructive">{state.error}</p>
-      )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
           <Label htmlFor="firstName">First Name</Label>
           <Input id="firstName" name="firstName" required />
@@ -46,7 +44,7 @@ export function RegisterForm() {
         <select
           id="role"
           name="role"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         >
           <option value="STUDENT">Student</option>
           <option value="PARENT">Parent</option>
@@ -56,12 +54,9 @@ export function RegisterForm() {
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Creating account..." : "Create Account"}
       </Button>
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-center text-sm">
         Already have an account?{" "}
-        <Link
-          href="/login"
-          className="underline underline-offset-4 hover:text-primary"
-        >
+        <Link href="/login" className="hover:text-primary underline underline-offset-4">
           Sign in
         </Link>
       </p>

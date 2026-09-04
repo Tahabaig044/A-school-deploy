@@ -6,16 +6,17 @@
 
 ## Auth Stack
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Provider | Supabase Auth | Authentication |
-| Tokens | JWT | Session management |
-| Cookies | httpOnly | Token storage |
-| Middleware | Next.js | Route protection |
+| Component  | Technology    | Purpose            |
+| ---------- | ------------- | ------------------ |
+| Provider   | Supabase Auth | Authentication     |
+| Tokens     | JWT           | Session management |
+| Cookies    | httpOnly      | Token storage      |
+| Middleware | Next.js       | Route protection   |
 
 ## Auth Flow
 
 ### Registration
+
 ```
 1. User fills form
 2. Zod validates input
@@ -27,6 +28,7 @@
 ```
 
 ### Login
+
 ```
 1. User enters credentials
 2. Supabase validates
@@ -37,6 +39,7 @@
 ```
 
 ### Logout
+
 ```
 1. User clicks logout
 2. Session invalidated
@@ -75,12 +78,13 @@
 ## Implementation
 
 ### Server Action: Register
+
 ```typescript
 // actions/auth.ts
-'use server'
+"use server"
 
-import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { z } from "zod"
+import { createClient } from "@/lib/supabase/server"
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -92,10 +96,10 @@ const registerSchema = z.object({
 export async function register(data: FormData) {
   // 1. Validate input
   const validated = registerSchema.parse({
-    email: data.get('email'),
-    password: data.get('password'),
-    firstName: data.get('firstName'),
-    lastName: data.get('lastName'),
+    email: data.get("email"),
+    password: data.get("password"),
+    firstName: data.get("firstName"),
+    lastName: data.get("lastName"),
   })
 
   // 2. Create user in Supabase
@@ -114,7 +118,7 @@ export async function register(data: FormData) {
       email: validated.email,
       firstName: validated.firstName,
       lastName: validated.lastName,
-    }
+    },
   })
 
   // 4. Return success
@@ -123,12 +127,13 @@ export async function register(data: FormData) {
 ```
 
 ### Server Action: Login
+
 ```typescript
 export async function login(data: FormData) {
   // 1. Validate input
   const validated = loginSchema.parse({
-    email: data.get('email'),
-    password: data.get('password'),
+    email: data.get("email"),
+    password: data.get("password"),
   })
 
   // 2. Authenticate with Supabase
@@ -144,34 +149,37 @@ export async function login(data: FormData) {
   await prisma.auditLog.create({
     data: {
       userId: authData.user.id,
-      action: 'LOGIN',
+      action: "LOGIN",
       ip: getClientIp(),
-    }
+    },
   })
 
   // 4. Redirect to dashboard
-  redirect('/dashboard')
+  redirect("/dashboard")
 }
 ```
 
 ### Middleware: Route Protection
+
 ```typescript
 // middleware.ts
-import { createClient } from '@/lib/supabase/middleware'
+import { createClient } from "@/lib/supabase/middleware"
 
 export async function middleware(request: NextRequest) {
   const supabase = createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   // Protected routes
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/login", request.url))
   }
 
   // Public routes
-  if (user && request.nextUrl.pathname === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (user && request.nextUrl.pathname === "/login") {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   return NextResponse.next()
@@ -181,18 +189,21 @@ export async function middleware(request: NextRequest) {
 ## Password Rules
 
 ### Validation
+
 ```typescript
-const passwordSchema = z.string()
-  .min(8, 'Password must be at least 8 characters')
-  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-  .regex(/[0-9]/, 'Password must contain at least one number')
-  .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character")
 ```
 
 ### Hashing
+
 ```typescript
-import bcrypt from 'bcryptjs'
+import bcrypt from "bcryptjs"
 
 const SALT_ROUNDS = 12
 
@@ -209,12 +220,12 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 
 ```typescript
 // lib/rate-limit.ts
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
+import { Ratelimit } from "@upstash/ratelimit"
+import { Redis } from "@upstash/redis"
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, '15 m'), // 5 requests per 15 minutes
+  limiter: Ratelimit.slidingWindow(5, "15 m"), // 5 requests per 15 minutes
 })
 
 export async function checkRateLimit(key: string) {
@@ -226,6 +237,7 @@ export async function checkRateLimit(key: string) {
 ## Session Management
 
 ### Token Structure
+
 ```json
 {
   "sub": "user-uuid",
@@ -238,6 +250,7 @@ export async function checkRateLimit(key: string) {
 ```
 
 ### Token Expiry
+
 - Access Token: 15 minutes
 - Refresh Token: 7 days
 
@@ -246,11 +259,11 @@ export async function checkRateLimit(key: string) {
 ```typescript
 // next.config.js
 const securityHeaders = [
-  { key: 'X-Frame-Options', value: 'DENY' },
-  { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'X-XSS-Protection', value: '1; mode=block' },
-  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-XSS-Protection", value: "1; mode=block" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
 ]
 ```
 
@@ -261,11 +274,11 @@ const securityHeaders = [
 await prisma.auditLog.create({
   data: {
     userId: user.id,
-    action: 'LOGIN', // LOGIN, LOGOUT, REGISTER, PASSWORD_CHANGE
+    action: "LOGIN", // LOGIN, LOGOUT, REGISTER, PASSWORD_CHANGE
     ip: getClientIp(),
     userAgent: getUserAgent(),
     success: true,
-  }
+  },
 })
 ```
 

@@ -7,16 +7,18 @@ export default async function NewAdmissionPage() {
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
-  const classWhere = profile.role === "SUPER_ADMIN"
-    ? {}
-    : { schoolId: profile.schoolId!, branchId: profile.branchId! }
+  const classWhere =
+    profile.role === "SUPER_ADMIN"
+      ? {}
+      : { schoolId: profile.schoolId!, branchId: profile.branchId! }
 
-  const sessionWhere = profile.role === "SUPER_ADMIN"
-    ? { isCurrent: true as const }
-    : { schoolId: profile.schoolId!, isCurrent: true as const }
+  const sessionWhere =
+    profile.role === "SUPER_ADMIN"
+      ? { isCurrent: true as const }
+      : { schoolId: profile.schoolId!, isCurrent: true as const }
 
   const [classes, sessions] = await Promise.all([
     prisma.class.findMany({ where: classWhere, orderBy: { order: "asc" } }),

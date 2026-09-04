@@ -1,9 +1,11 @@
 # Phase 7: Settings
 
 ## Duration
+
 1 week
 
 ## Objectives
+
 - Implement School Settings
 - Build User Profile management
 - Create System Configuration
@@ -12,6 +14,7 @@
 ## Deliverables
 
 ### Week 1: Settings & Configuration
+
 1. **School Settings**
    - School profile management
    - Academic year configuration
@@ -33,6 +36,7 @@
 ## Technical Implementation
 
 ### API Endpoints
+
 ```
 # School Settings
 GET    /api/v1/settings/school
@@ -59,6 +63,7 @@ GET    /api/v1/audit-logs/:id
 ```
 
 ### Database Schema
+
 ```sql
 -- School Settings
 CREATE TABLE school_settings (
@@ -116,6 +121,7 @@ CREATE TABLE system_settings (
 ```
 
 ### UI Pages
+
 - /settings - Settings dashboard
 - /settings/school - School settings
 - /settings/academic-year - Academic year
@@ -127,24 +133,28 @@ CREATE TABLE system_settings (
 ## Features
 
 ### School Settings
+
 - Logo upload
 - Contact information
 - Address management
 - Social media links
 
 ### User Settings
+
 - Avatar upload
 - Two-factor authentication (future)
 - Session management
 - Connected accounts
 
 ### System Settings
+
 - Email configuration
 - SMS configuration
 - Storage settings
 - Cache management
 
 ### Audit Logging
+
 - Track all CRUD operations
 - User activity logging
 - Login/logout tracking
@@ -152,6 +162,7 @@ CREATE TABLE system_settings (
 - Search and filter logs
 
 ## Acceptance Criteria
+
 - [ ] School settings can be updated
 - [ ] Academic year configurable
 - [ ] User profile editable
@@ -162,12 +173,14 @@ CREATE TABLE system_settings (
 - [ ] All changes logged
 
 ## Dependencies
+
 - All previous phases completed
 - Admin access configured
 
 ## Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Settings corruption | High | Backup before changes |
-| Audit log performance | Medium | Archival strategy |
-| Configuration drift | Medium | Validation rules |
+
+| Risk                  | Impact | Mitigation            |
+| --------------------- | ------ | --------------------- |
+| Settings corruption   | High   | Backup before changes |
+| Audit log performance | Medium | Archival strategy     |
+| Configuration drift   | Medium | Validation rules      |

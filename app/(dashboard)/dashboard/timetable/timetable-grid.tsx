@@ -38,7 +38,8 @@ type SlotItem = {
 }
 
 export function TimetableGrid({
-  slots, currentClassId,
+  slots,
+  currentClassId,
 }: {
   slots: SlotItem[]
   currentClassId: string
@@ -55,7 +56,9 @@ export function TimetableGrid({
   }
 
   function getSlotsForDay(day: string) {
-    return slots.filter((s) => s.dayOfWeek === day).sort((a, b) => a.startTime.localeCompare(b.startTime))
+    return slots
+      .filter((s) => s.dayOfWeek === day)
+      .sort((a, b) => a.startTime.localeCompare(b.startTime))
   }
 
   const uniqueClasses = [...new Map(slots.map((s) => [s.class.id, s.class])).values()]
@@ -63,7 +66,9 @@ export function TimetableGrid({
   if (!currentClassId) {
     return (
       <Card>
-        <CardHeader><CardTitle>Timetable</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Timetable</CardTitle>
+        </CardHeader>
         <CardContent>
           <div className="mb-4">
             <Select value={currentClassId} onValueChange={handleClassFilter}>
@@ -72,12 +77,14 @@ export function TimetableGrid({
               </SelectTrigger>
               <SelectContent>
                 {uniqueClasses.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <p className="text-sm text-muted-foreground">Select a class to view its timetable.</p>
+          <p className="text-muted-foreground text-sm">Select a class to view its timetable.</p>
         </CardContent>
       </Card>
     )
@@ -95,13 +102,19 @@ export function TimetableGrid({
               </SelectTrigger>
               <SelectContent>
                 {uniqueClasses.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <TimetablePrintButton
               slots={slots.filter((s) => !currentClassId || s.class.id === currentClassId)}
-              title={currentClassId ? `Timetable - ${slots.find((s) => s.class.id === currentClassId)?.class.name || ""}` : "Timetable"}
+              title={
+                currentClassId
+                  ? `Timetable - ${slots.find((s) => s.class.id === currentClassId)?.class.name || ""}`
+                  : "Timetable"
+              }
             />
           </div>
         </div>
@@ -135,21 +148,43 @@ export function TimetableGrid({
                     <TableCell colSpan={6} className="p-0">
                       <div className="divide-y">
                         {daySlots.map((slot) => (
-                          <div key={slot.id} className={`flex flex-wrap items-center gap-2 px-4 py-2 text-sm md:gap-4 ${slot.isFree ? "bg-muted/30" : ""}`}>
-                            <span className="hidden md:inline md:w-24 font-medium">{slot.startTime} - {slot.endTime}</span>
+                          <div
+                            key={slot.id}
+                            className={`flex flex-wrap items-center gap-2 px-4 py-2 text-sm md:gap-4 ${slot.isFree ? "bg-muted/30" : ""}`}
+                          >
+                            <span className="hidden font-medium md:inline md:w-24">
+                              {slot.startTime} - {slot.endTime}
+                            </span>
                             {slot.isFree ? (
-                              <span className="md:w-32 flex items-center gap-1">
-                                <Badge variant="secondary" className="text-xs">Free</Badge>
-                                {slot.freePeriodReason && <span className="text-muted-foreground text-xs">{slot.freePeriodReason}</span>}
+                              <span className="flex items-center gap-1 md:w-32">
+                                <Badge variant="secondary" className="text-xs">
+                                  Free
+                                </Badge>
+                                {slot.freePeriodReason && (
+                                  <span className="text-muted-foreground text-xs">
+                                    {slot.freePeriodReason}
+                                  </span>
+                                )}
                               </span>
                             ) : (
                               <span className="md:w-32">{slot.subject?.name}</span>
                             )}
-                            <span className="hidden lg:inline lg:w-36">{slot.isFree ? "-" : `${slot.teacher?.firstName} ${slot.teacher?.lastName}`}</span>
+                            <span className="hidden lg:inline lg:w-36">
+                              {slot.isFree
+                                ? "-"
+                                : `${slot.teacher?.firstName} ${slot.teacher?.lastName}`}
+                            </span>
                             <span className="hidden lg:inline lg:w-20">{slot.room || "-"}</span>
-                            <span className="hidden md:inline md:w-16">{slot.section?.name || "All"}</span>
+                            <span className="hidden md:inline md:w-16">
+                              {slot.section?.name || "All"}
+                            </span>
                             <form action={deleteTimetableSlot.bind(null, slot.id)}>
-                              <Button variant="ghost" size="sm" type="submit" className="text-destructive">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                type="submit"
+                                className="text-destructive"
+                              >
                                 Remove
                               </Button>
                             </form>

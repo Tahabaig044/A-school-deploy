@@ -10,7 +10,7 @@ export default function NotFound() {
           <CardTitle className="text-center">404 - Page Not Found</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-center text-muted-foreground">
+          <p className="text-muted-foreground text-center">
             The page you are looking for does not exist or has been moved.
           </p>
           <div className="flex justify-center">

@@ -19,30 +19,31 @@ Comprehensive permission audit and remediation of the School Management System. 
 
 ## Files Modified
 
-| # | File | Change Type |
-|---|------|-------------|
-| 1 | `lib/school-context.ts` | Security fix - prevent client-controlled school/branch |
-| 2 | `actions/notification.actions.ts` | Security fix - add missing auth checks |
-| 3 | `actions/message.actions.ts` | Security fix - add auth, fix senderId impersonation |
-| 4 | `actions/announcement.actions.ts` | Security fix - fix authorId impersonation, add ownership checks |
-| 5 | `actions/homework.actions.ts` | Security fix - fix studentId impersonation, add ownership checks |
-| 6 | `app/(dashboard)/dashboard/students/[id]/page.tsx` | Security fix - add school scoping |
-| 7 | `app/(dashboard)/dashboard/students/[id]/edit/page.tsx` | Security fix - add school scoping |
-| 8 | `app/(dashboard)/dashboard/classes/[id]/page.tsx` | Security fix - add school scoping |
-| 9 | `app/(dashboard)/dashboard/leaves/page.tsx` | Security fix - add school filter for admin queries |
-| 10 | `app/(dashboard)/dashboard/homework/check/page.tsx` | Security fix - add school scoping |
-| 11 | `app/(dashboard)/dashboard/homework/submissions/page.tsx` | Security fix - fix admin filter logic |
-| 12 | `app/(dashboard)/dashboard/fees/defaulters/page.tsx` | Security fix - add schoolId filter |
-| 13 | `app/(dashboard)/dashboard/fees/collection-report/page.tsx` | Security fix - add schoolId filter |
-| 14 | `app/(dashboard)/dashboard/exams/schedule/page.tsx` | Security fix - add schoolId filter |
-| 15 | `app/(dashboard)/dashboard/exams/results/page.tsx` | Security fix - add schoolId filter |
-| 16 | `app/(dashboard)/dashboard/exams/report-cards/page.tsx` | Security fix - add schoolId filter |
+| #   | File                                                        | Change Type                                                      |
+| --- | ----------------------------------------------------------- | ---------------------------------------------------------------- |
+| 1   | `lib/school-context.ts`                                     | Security fix - prevent client-controlled school/branch           |
+| 2   | `actions/notification.actions.ts`                           | Security fix - add missing auth checks                           |
+| 3   | `actions/message.actions.ts`                                | Security fix - add auth, fix senderId impersonation              |
+| 4   | `actions/announcement.actions.ts`                           | Security fix - fix authorId impersonation, add ownership checks  |
+| 5   | `actions/homework.actions.ts`                               | Security fix - fix studentId impersonation, add ownership checks |
+| 6   | `app/(dashboard)/dashboard/students/[id]/page.tsx`          | Security fix - add school scoping                                |
+| 7   | `app/(dashboard)/dashboard/students/[id]/edit/page.tsx`     | Security fix - add school scoping                                |
+| 8   | `app/(dashboard)/dashboard/classes/[id]/page.tsx`           | Security fix - add school scoping                                |
+| 9   | `app/(dashboard)/dashboard/leaves/page.tsx`                 | Security fix - add school filter for admin queries               |
+| 10  | `app/(dashboard)/dashboard/homework/check/page.tsx`         | Security fix - add school scoping                                |
+| 11  | `app/(dashboard)/dashboard/homework/submissions/page.tsx`   | Security fix - fix admin filter logic                            |
+| 12  | `app/(dashboard)/dashboard/fees/defaulters/page.tsx`        | Security fix - add schoolId filter                               |
+| 13  | `app/(dashboard)/dashboard/fees/collection-report/page.tsx` | Security fix - add schoolId filter                               |
+| 14  | `app/(dashboard)/dashboard/exams/schedule/page.tsx`         | Security fix - add schoolId filter                               |
+| 15  | `app/(dashboard)/dashboard/exams/results/page.tsx`          | Security fix - add schoolId filter                               |
+| 16  | `app/(dashboard)/dashboard/exams/report-cards/page.tsx`     | Security fix - add schoolId filter                               |
 
 ---
 
 ## Permission Bugs Fixed
 
 ### CRITICAL: Client-Controlled School/Branch Isolation
+
 **File:** `lib/school-context.ts`
 
 **Issue:** `getSchoolId()` and `getBranchId()` trusted client formData BEFORE the profile. Any authenticated user with the right role could pass any schoolId/branchId via formData to operate on other schools' data.
@@ -54,9 +55,11 @@ Comprehensive permission audit and remediation of the School Management System. 
 ---
 
 ### CRITICAL: Missing Auth Checks on Server Actions
+
 **Files:** `notification.actions.ts`, `message.actions.ts`
 
 **Issue:** Multiple functions had NO authentication check:
+
 - `createNotification()` - any caller could create notifications for any user
 - `markAllNotificationsAsRead(userId)` - any caller could mark any user's notifications
 - `getNotifications(userId)` - any caller could read any user's notifications
@@ -68,14 +71,17 @@ Comprehensive permission audit and remediation of the School Management System. 
 ---
 
 ### CRITICAL: Client-Controlled Impersonation Vectors
+
 **Files:** `announcement.actions.ts`, `message.actions.ts`, `homework.actions.ts`
 
 **Issue:** Three server actions accepted user IDs from client formData, allowing impersonation:
+
 - `createAnnouncement` accepted `authorId` from formData
 - `sendMessage` accepted `senderId` from formData
 - `submitHomework` accepted `studentId` from formData
 
 **Fix:** Removed client-supplied user IDs. All three functions now use the authenticated user's ID from the session:
+
 - Announcements: `authorId` always = `profile.id`
 - Messages: `senderId` always = `profile.id`
 - Homework submissions: `studentId` always = `profile.id`
@@ -83,6 +89,7 @@ Comprehensive permission audit and remediation of the School Management System. 
 ---
 
 ### HIGH: No Ownership Checks on Update/Delete
+
 **Files:** `announcement.actions.ts`, `homework.actions.ts`
 
 **Issue:** `updateAnnouncement`, `deleteAnnouncement`, `updateHomework`, `deleteHomework` had no ownership verification. Any authorized role could modify/delete records from any school.
@@ -92,6 +99,7 @@ Comprehensive permission audit and remediation of the School Management System. 
 ---
 
 ### HIGH: Missing School/Branch Scoping on Detail Pages
+
 **Files:** `students/[id]/page.tsx`, `students/[id]/edit/page.tsx`, `classes/[id]/page.tsx`
 
 **Issue:** Direct ID lookups (`findUnique`) had zero school/branch filtering. Any authorized user could view/edit any student or class by knowing the UUID.
@@ -101,6 +109,7 @@ Comprehensive permission audit and remediation of the School Management System. 
 ---
 
 ### HIGH: Missing School Filter on Admin Queries
+
 **Files:** `leaves/page.tsx`, `homework/check/page.tsx`, `homework/submissions/page.tsx`, `fees/defaulters/page.tsx`, `fees/collection-report/page.tsx`, `exams/schedule/page.tsx`, `exams/results/page.tsx`, `exams/report-cards/page.tsx`
 
 **Issue:** Multiple list/report pages had no `schoolId` filter for non-SUPER_ADMIN roles. Admins could see data from other schools.
@@ -111,64 +120,64 @@ Comprehensive permission audit and remediation of the School Management System. 
 
 ## Route Protection Status
 
-| Route | Auth Check | Role Check | School Scoping |
-|-------|-----------|------------|----------------|
-| `/dashboard` | Supabase session | Layout redirect | profile.schoolId |
-| `/dashboard/students` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/students/[id]` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/students/[id]/edit` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/teachers` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/staff` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/classes` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/classes/[id]` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/subjects` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/exams` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/exams/schedule` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/exams/results` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/exams/report-cards` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/fees/*` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/fees/defaulters` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/fees/collection-report` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/homework` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/homework/check` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/homework/submissions` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/leaves` | requireRole | Per-role | schoolId (FIXED) |
-| `/dashboard/announcements` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/messages` | requireRole | Per-role | userId-scoped |
-| `/dashboard/library` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/transport/*` | requireRole | Per-role | schoolId/branchId |
-| `/dashboard/settings` | requireRole | SUPER_ADMIN, SCHOOL_ADMIN | profile.schoolId |
-| `/dashboard/audit-logs` | requireRole | SUPER_ADMIN, SCHOOL_ADMIN | schoolId |
-| `/portal/student` | Manual auth | STUDENT role | student-scoped |
-| `/portal/teacher` | Manual auth | TEACHER role | teacher-scoped |
-| `/portal/parent` | Manual auth | PARENT role | parent-scoped |
+| Route                               | Auth Check       | Role Check                | School Scoping    |
+| ----------------------------------- | ---------------- | ------------------------- | ----------------- |
+| `/dashboard`                        | Supabase session | Layout redirect           | profile.schoolId  |
+| `/dashboard/students`               | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/students/[id]`          | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/students/[id]/edit`     | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/teachers`               | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/staff`                  | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/classes`                | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/classes/[id]`           | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/subjects`               | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/exams`                  | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/exams/schedule`         | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/exams/results`          | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/exams/report-cards`     | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/fees/*`                 | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/fees/defaulters`        | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/fees/collection-report` | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/homework`               | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/homework/check`         | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/homework/submissions`   | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/leaves`                 | requireRole      | Per-role                  | schoolId (FIXED)  |
+| `/dashboard/announcements`          | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/messages`               | requireRole      | Per-role                  | userId-scoped     |
+| `/dashboard/library`                | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/transport/*`            | requireRole      | Per-role                  | schoolId/branchId |
+| `/dashboard/settings`               | requireRole      | SUPER_ADMIN, SCHOOL_ADMIN | profile.schoolId  |
+| `/dashboard/audit-logs`             | requireRole      | SUPER_ADMIN, SCHOOL_ADMIN | schoolId          |
+| `/portal/student`                   | Manual auth      | STUDENT role              | student-scoped    |
+| `/portal/teacher`                   | Manual auth      | TEACHER role              | teacher-scoped    |
+| `/portal/parent`                    | Manual auth      | PARENT role               | parent-scoped     |
 
 ---
 
 ## CRUD Permission Status
 
-| Module | Create | Read | Update | Delete | School Scoped |
-|--------|--------|------|--------|--------|---------------|
-| Students | requireRole | requireRole | requireRole | requireRole | YES |
-| Teachers | requireRole | requireRole | requireRole | requireRole | YES |
-| Staff | requireRole | requireRole | requireRole | requireRole | YES |
-| Classes | requireRole | requireRole | requireRole | requireRole | YES |
-| Subjects | requireRole | requireRole | requireRole | requireRole | YES |
-| Exams | requireRole | requireRole | requireRole | requireRole | YES |
-| Exam Types | requireRole | requireRole | requireRole | requireRole | YES |
-| Fee Structures | requireRole | requireRole | requireRole | requireRole | YES |
-| Invoices | requireRole | requireRole | - | - | YES |
-| Payments | requireRole | requireRole | - | - | YES |
-| Expenses | requireRole | requireRole | requireRole | requireRole | YES |
-| Homework | requireRole | requireRole | requireRole | requireRole | YES |
-| Library Books | requireRole | requireRole | requireRole | requireRole | YES |
-| Transport | requireRole | requireRole | requireRole | requireRole | YES |
-| Announcements | requireRole | requireRole | requireRole | requireRole | YES |
-| Messages | requireRole | requireRole | - | - | userId-scoped |
-| Leaves | requireAuth | requireRole | - | - | schoolId (FIXED) |
-| Sessions | requireRole | requireRole | requireRole | requireRole | YES |
-| Branches | requireRole | requireRole | requireRole | requireRole | YES |
-| Schools | requireRole(SUPER_ADMIN) | requireRole | requireRole | requireRole | N/A |
+| Module         | Create                   | Read        | Update      | Delete      | School Scoped    |
+| -------------- | ------------------------ | ----------- | ----------- | ----------- | ---------------- |
+| Students       | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Teachers       | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Staff          | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Classes        | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Subjects       | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Exams          | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Exam Types     | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Fee Structures | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Invoices       | requireRole              | requireRole | -           | -           | YES              |
+| Payments       | requireRole              | requireRole | -           | -           | YES              |
+| Expenses       | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Homework       | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Library Books  | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Transport      | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Announcements  | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Messages       | requireRole              | requireRole | -           | -           | userId-scoped    |
+| Leaves         | requireAuth              | requireRole | -           | -           | schoolId (FIXED) |
+| Sessions       | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Branches       | requireRole              | requireRole | requireRole | requireRole | YES              |
+| Schools        | requireRole(SUPER_ADMIN) | requireRole | requireRole | requireRole | N/A              |
 
 ---
 

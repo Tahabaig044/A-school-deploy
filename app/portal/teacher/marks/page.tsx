@@ -44,7 +44,7 @@ export default async function TeacherMarksPage() {
       acc[examId].results.push(result)
       return acc
     },
-    {} as Record<string, { exam: (typeof results)[number]["exam"]; results: typeof results }>
+    {} as Record<string, { exam: (typeof results)[number]["exam"]; results: typeof results }>,
   )
 
   return (
@@ -58,7 +58,7 @@ export default async function TeacherMarksPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Results</CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+            <GraduationCap className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalResults}</div>
@@ -76,7 +76,7 @@ export default async function TeacherMarksPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pass Rate</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
+            <Award className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{passRate}%</div>
@@ -87,7 +87,7 @@ export default async function TeacherMarksPage() {
       {totalResults === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Award className="h-12 w-12 text-muted-foreground mb-4" />
+            <Award className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-muted-foreground">No exam results found</p>
           </CardContent>
         </Card>
@@ -100,7 +100,7 @@ export default async function TeacherMarksPage() {
                   <CardTitle>{exam.name}</CardTitle>
                   <Badge variant="secondary">{exam.examType.name}</Badge>
                 </div>
-                <div className="flex gap-4 text-sm text-muted-foreground">
+                <div className="text-muted-foreground flex gap-4 text-sm">
                   <span>Subject: {exam.subject.name}</span>
                   <span>Total: {exam.totalMarks}</span>
                   <span>Passing: {exam.passingMarks}</span>
@@ -118,64 +118,64 @@ export default async function TeacherMarksPage() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Admission No</TableHead>
-                      <TableHead className="text-right">Marks</TableHead>
-                      <TableHead className="text-center">Grade</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {examResults.map((result) => {
-                      const isPassed =
-                        result.marksObtained != null &&
-                        exam.passingMarks != null &&
-                        Number(result.marksObtained) >= exam.passingMarks
-                      return (
-                        <TableRow key={result.student.admissionNo}>
-                          <TableCell className="font-medium">
-                            {result.student.firstName} {result.student.lastName}
-                          </TableCell>
-                          <TableCell>{result.student.admissionNo}</TableCell>
-                          <TableCell className="text-right">
-                            {result.marksObtained != null
-                              ? `${Number(result.marksObtained)} / ${exam.totalMarks}`
-                              : "—"}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {result.grade ? (
-                              <Badge variant="outline">
-                                {GRADE_DISPLAY[result.grade] ?? result.grade}
-                              </Badge>
-                            ) : (
-                              "—"
-                            )}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {result.marksObtained != null ? (
-                              isPassed ? (
-                                <Badge variant="success" className="gap-1">
-                                  <CheckCircle className="h-3 w-3" />
-                                  Pass
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Admission No</TableHead>
+                        <TableHead className="text-right">Marks</TableHead>
+                        <TableHead className="text-center">Grade</TableHead>
+                        <TableHead className="text-center">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {examResults.map((result) => {
+                        const isPassed =
+                          result.marksObtained != null &&
+                          exam.passingMarks != null &&
+                          Number(result.marksObtained) >= exam.passingMarks
+                        return (
+                          <TableRow key={result.student.admissionNo}>
+                            <TableCell className="font-medium">
+                              {result.student.firstName} {result.student.lastName}
+                            </TableCell>
+                            <TableCell>{result.student.admissionNo}</TableCell>
+                            <TableCell className="text-right">
+                              {result.marksObtained != null
+                                ? `${Number(result.marksObtained)} / ${exam.totalMarks}`
+                                : "—"}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {result.grade ? (
+                                <Badge variant="outline">
+                                  {GRADE_DISPLAY[result.grade] ?? result.grade}
                                 </Badge>
                               ) : (
-                                <Badge variant="destructive" className="gap-1">
-                                  <XCircle className="h-3 w-3" />
-                                  Fail
-                                </Badge>
-                              )
-                            ) : (
-                              "—"
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table>
+                                "—"
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {result.marksObtained != null ? (
+                                isPassed ? (
+                                  <Badge variant="success" className="gap-1">
+                                    <CheckCircle className="h-3 w-3" />
+                                    Pass
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="destructive" className="gap-1">
+                                    <XCircle className="h-3 w-3" />
+                                    Fail
+                                  </Badge>
+                                )
+                              ) : (
+                                "—"
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>

@@ -23,10 +23,14 @@ async function ParentPortalContent() {
   if (!profile || profile.status !== "ACTIVE" || !profile.isActive) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-destructive">Account Not Active</h1>
-          <p className="text-muted-foreground">Your account is not active. Please contact administration.</p>
-          <a href="/login" className="text-primary underline">Return to Login</a>
+        <div className="space-y-4 text-center">
+          <h1 className="text-destructive text-2xl font-bold">Account Not Active</h1>
+          <p className="text-muted-foreground">
+            Your account is not active. Please contact administration.
+          </p>
+          <a href="/login" className="text-primary underline">
+            Return to Login
+          </a>
         </div>
       </div>
     )
@@ -60,10 +64,14 @@ async function ParentPortalContent() {
   if (!parent) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-destructive">Parent Record Not Found</h1>
-          <p className="text-muted-foreground">Your parent profile could not be found. Please contact administration.</p>
-          <a href="/login" className="text-primary underline">Return to Login</a>
+        <div className="space-y-4 text-center">
+          <h1 className="text-destructive text-2xl font-bold">Parent Record Not Found</h1>
+          <p className="text-muted-foreground">
+            Your parent profile could not be found. Please contact administration.
+          </p>
+          <a href="/login" className="text-primary underline">
+            Return to Login
+          </a>
         </div>
       </div>
     )
@@ -74,23 +82,53 @@ async function ParentPortalContent() {
 
   const [feeInvoiceCount, messageCount, announcementCount] = await Promise.all([
     childIds.length > 0
-      ? prisma.feeInvoice.count({
-          where: { studentId: { in: childIds }, status: { in: ["PENDING", "PARTIAL"] } },
-        }).catch(() => 0)
+      ? prisma.feeInvoice
+          .count({
+            where: { studentId: { in: childIds }, status: { in: ["PENDING", "PARTIAL"] } },
+          })
+          .catch(() => 0)
       : 0,
-    prisma.message.count({
-      where: { receiverId: userId },
-    }).catch(() => 0),
-    prisma.announcement.count({
-      where: { isPublished: true },
-    }).catch(() => 0),
+    prisma.message
+      .count({
+        where: { receiverId: userId },
+      })
+      .catch(() => 0),
+    prisma.announcement
+      .count({
+        where: { isPublished: true },
+      })
+      .catch(() => 0),
   ])
 
   const cards = [
-    { title: "My Children", value: children.length, icon: Users, href: "/portal/parent/children", description: "Enrolled students" },
-    { title: "Pending Fees", value: feeInvoiceCount, icon: DollarSign, href: "/portal/parent/fees", description: "Unpaid invoices" },
-    { title: "Announcements", value: announcementCount, icon: FileText, href: "/portal/parent/notices", description: "Active announcements" },
-    { title: "Messages", value: messageCount, icon: MessageSquare, href: "/portal/parent/messages", description: "Unread messages" },
+    {
+      title: "My Children",
+      value: children.length,
+      icon: Users,
+      href: "/portal/parent/children",
+      description: "Enrolled students",
+    },
+    {
+      title: "Pending Fees",
+      value: feeInvoiceCount,
+      icon: DollarSign,
+      href: "/portal/parent/fees",
+      description: "Unpaid invoices",
+    },
+    {
+      title: "Announcements",
+      value: announcementCount,
+      icon: FileText,
+      href: "/portal/parent/notices",
+      description: "Active announcements",
+    },
+    {
+      title: "Messages",
+      value: messageCount,
+      icon: MessageSquare,
+      href: "/portal/parent/messages",
+      description: "Unread messages",
+    },
   ]
 
   return (
@@ -102,14 +140,14 @@ async function ParentPortalContent() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
           <Link key={card.title} href={card.href}>
-            <Card className="transition-colors hover:bg-accent">
+            <Card className="hover:bg-accent transition-colors">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-                <card.icon className="h-4 w-4 text-muted-foreground" />
+                <card.icon className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{card.value}</div>
-                <p className="text-xs text-muted-foreground">{card.description}</p>
+                <p className="text-muted-foreground text-xs">{card.description}</p>
               </CardContent>
             </Card>
           </Link>
@@ -117,7 +155,7 @@ async function ParentPortalContent() {
       </div>
       {children.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold mb-4">Your Children</h3>
+          <h3 className="mb-4 text-lg font-semibold">Your Children</h3>
           <div className="grid gap-4 md:grid-cols-2">
             {children.map((child) => (
               <Card key={child.id}>
@@ -127,14 +165,12 @@ async function ParentPortalContent() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {child.enrollments[0]
                       ? `${child.enrollments[0].class.name} - ${child.enrollments[0].section?.name || "N/A"}`
                       : "No active enrollment"}
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Admission No: {child.admissionNo}
-                  </p>
+                  <p className="text-muted-foreground text-sm">Admission No: {child.admissionNo}</p>
                 </CardContent>
               </Card>
             ))}

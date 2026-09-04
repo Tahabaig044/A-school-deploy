@@ -5,10 +5,22 @@ import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { updateUser, deleteUser } from "@/actions/auth.actions"
 import { useToast } from "@/hooks/use-toast"
 import { Pencil, Trash2 } from "lucide-react"
@@ -26,8 +38,17 @@ type User = {
 }
 
 const ROLES: Role[] = [
-  "SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT",
-  "PARENT", "ACCOUNTANT", "PRINCIPAL", "LIBRARIAN", "TRANSPORT_MANAGER", "ADMISSION_OFFICER",
+  "SUPER_ADMIN",
+  "SCHOOL_ADMIN",
+  "BRANCH_ADMIN",
+  "TEACHER",
+  "STUDENT",
+  "PARENT",
+  "ACCOUNTANT",
+  "PRINCIPAL",
+  "LIBRARIAN",
+  "TRANSPORT_MANAGER",
+  "ADMISSION_OFFICER",
 ]
 
 function getStatusBadge(status: string) {
@@ -108,7 +129,7 @@ export function UsersList({ users }: { users: User[] }) {
       </CardHeader>
       <CardContent>
         {users.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">
+          <p className="text-muted-foreground py-8 text-center">
             No users found. Invite your first user above.
           </p>
         ) : (
@@ -116,12 +137,12 @@ export function UsersList({ users }: { users: User[] }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-2 font-medium">Name</th>
-                  <th className="text-left p-2 font-medium hidden md:table-cell">Email</th>
-                  <th className="text-left p-2 font-medium">Role</th>
-                  <th className="text-left p-2 font-medium">Status</th>
-                  <th className="text-left p-2 font-medium hidden lg:table-cell">Joined</th>
-                  <th className="text-right p-2 font-medium">Actions</th>
+                  <th className="p-2 text-left font-medium">Name</th>
+                  <th className="hidden p-2 text-left font-medium md:table-cell">Email</th>
+                  <th className="p-2 text-left font-medium">Role</th>
+                  <th className="p-2 text-left font-medium">Status</th>
+                  <th className="hidden p-2 text-left font-medium lg:table-cell">Joined</th>
+                  <th className="p-2 text-right font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -130,15 +151,26 @@ export function UsersList({ users }: { users: User[] }) {
                     <td className="p-2">
                       {user.firstName} {user.lastName}
                     </td>
-                    <td className="p-2 text-muted-foreground hidden md:table-cell">{user.email || "—"}</td>
+                    <td className="text-muted-foreground hidden p-2 md:table-cell">
+                      {user.email || "—"}
+                    </td>
                     <td className="p-2">{getRoleBadge(user.role)}</td>
                     <td className="p-2">{getStatusBadge(user.status)}</td>
-                    <td className="p-2 text-muted-foreground hidden lg:table-cell">
+                    <td className="text-muted-foreground hidden p-2 lg:table-cell">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                     <td className="p-2 text-right">
                       <div className="flex justify-end gap-1">
-                        <Dialog open={open && editItem?.id === user.id} onOpenChange={(o) => { setOpen(o); if (!o) { setEditItem(null); setError(null) } }}>
+                        <Dialog
+                          open={open && editItem?.id === user.id}
+                          onOpenChange={(o) => {
+                            setOpen(o)
+                            if (!o) {
+                              setEditItem(null)
+                              setError(null)
+                            }
+                          }}
+                        >
                           <DialogTrigger render={<Button variant="ghost" size="icon" />}>
                             <Pencil className="h-4 w-4" />
                           </DialogTrigger>
@@ -150,19 +182,33 @@ export function UsersList({ users }: { users: User[] }) {
                               {error && <p className="text-sm text-red-500">{error}</p>}
                               <div>
                                 <Label htmlFor="firstName">First Name</Label>
-                                <Input id="firstName" name="firstName" defaultValue={user.firstName || ""} required />
+                                <Input
+                                  id="firstName"
+                                  name="firstName"
+                                  defaultValue={user.firstName || ""}
+                                  required
+                                />
                               </div>
                               <div>
                                 <Label htmlFor="lastName">Last Name</Label>
-                                <Input id="lastName" name="lastName" defaultValue={user.lastName || ""} required />
+                                <Input
+                                  id="lastName"
+                                  name="lastName"
+                                  defaultValue={user.lastName || ""}
+                                  required
+                                />
                               </div>
                               <div>
                                 <Label htmlFor="role">Role</Label>
                                 <Select name="role" defaultValue={user.role}>
-                                  <SelectTrigger><SelectValue /></SelectTrigger>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
                                   <SelectContent>
-                                    {ROLES.map(r => (
-                                      <SelectItem key={r} value={r}>{r.replace(/_/g, " ")}</SelectItem>
+                                    {ROLES.map((r) => (
+                                      <SelectItem key={r} value={r}>
+                                        {r.replace(/_/g, " ")}
+                                      </SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
@@ -173,19 +219,32 @@ export function UsersList({ users }: { users: User[] }) {
                               </div>
                               <div>
                                 <Label htmlFor="isActive">Active</Label>
-                                <Select name="isActive" defaultValue={user.isActive ? "true" : "false"}>
-                                  <SelectTrigger><SelectValue /></SelectTrigger>
+                                <Select
+                                  name="isActive"
+                                  defaultValue={user.isActive ? "true" : "false"}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="true">Active</SelectItem>
                                     <SelectItem value="false">Inactive</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
-                              <Button type="submit" className="w-full">Update</Button>
+                              <Button type="submit" className="w-full">
+                                Update
+                              </Button>
                             </form>
                           </DialogContent>
                         </Dialog>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(user.id, `${user.firstName} ${user.lastName}`)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            handleDelete(user.id, `${user.firstName} ${user.lastName}`)
+                          }
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

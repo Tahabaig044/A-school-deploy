@@ -14,13 +14,8 @@ export default async function ExpenseReportPage({
     profile.schoolId!,
     profile.branchId || undefined,
     params.fromDate || undefined,
-    params.toDate || undefined
+    params.toDate || undefined,
   )
 
-  return (
-    <ExpenseReportView
-      data={data}
-      profile={JSON.parse(JSON.stringify(profile))}
-    />
-  )
+  return <ExpenseReportView data={data} profile={JSON.parse(JSON.stringify(profile))} />
 }

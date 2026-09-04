@@ -1,22 +1,26 @@
 # Loop 009: Exams
 
 ## Overview
+
 Exam module manages examination scheduling, configuration, and administration throughout the academic year.
 
 ## User Stories
 
 ### As an Admin
+
 1. I want to create exam schedules
 2. I want to define exam types
 3. I want to set marks criteria
 4. I want to manage exam centers
 
 ### As a Teacher
+
 1. I want to view my exam duties
 2. I want to enter marks
 3. I want to view exam statistics
 
 ### As a Student
+
 1. I want to see exam schedule
 2. I want to download hall ticket
 3. I want to view exam results
@@ -125,12 +129,14 @@ CREATE TABLE exam_attendance (
 ## Business Rules
 
 ### Exam Code Generation
+
 ```
 Format: {EXAM_TYPE}{CLASS}{YEAR}{SEQUENCE}
 Example: MT202405001 (Midterm 2024, Class 5, 001)
 ```
 
 ### Exam Types
+
 - **Unit Test**: Short, frequent assessments
 - **Midterm**: Mid-semester examination
 - **Final**: End-semester examination
@@ -139,12 +145,14 @@ Example: MT202405001 (Midterm 2024, Class 5, 001)
 - **Practical**: Lab/practical exams
 
 ### Marks Rules
+
 - Marks cannot exceed total marks
 - Passing marks must be less than total
 - Marks entry validates range
 - Grade calculated automatically
 
 ### Status Flow
+
 ```
 draft → scheduled → ongoing → completed
                          ↓
@@ -154,30 +162,35 @@ draft → scheduled → ongoing → completed
 ## UI Components
 
 ### Exam List
+
 - Type filters
 - Status indicators
 - Date range selector
 - Quick actions
 
 ### Exam Form
+
 - Basic details
 - Date configuration
 - Marks settings
 - Schedule builder
 
 ### Marks Entry
+
 - Excel-like interface
 - Bulk entry mode
 - Validation feedback
 - Approval workflow
 
 ### Hall Ticket
+
 - Student details
 - Exam schedule
 - Instructions
 - School branding
 
 ## Acceptance Criteria
+
 - [ ] Exams can be created with all details
 - [ ] Exam schedule works correctly
 - [ ] Marks entry validates properly

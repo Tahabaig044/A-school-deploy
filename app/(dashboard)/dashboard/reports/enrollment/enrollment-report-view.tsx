@@ -3,28 +3,25 @@
 import { PageHeader } from "@/components/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function EnrollmentReportView({
-  data,
-  profile,
-}: {
-  data: any[]
-  profile: any
-}) {
+export function EnrollmentReportView({ data, profile }: { data: any[]; profile: any }) {
   const totalStudents = data.reduce((sum, d) => sum + d.count, 0)
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Student Enrollment Report" description="Class-wise student enrollment statistics" />
+      <PageHeader
+        title="Student Enrollment Report"
+        description="Class-wise student enrollment statistics"
+      />
 
       <Card>
         <CardHeader>
           <CardTitle>Total Students: {totalStudents}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="rounded-lg border">
             <table className="w-full">
               <thead>
-                <tr className="border-b bg-muted/50">
+                <tr className="bg-muted/50 border-b">
                   <th className="p-3 text-left">Class</th>
                   <th className="p-3 text-right">Students</th>
                   <th className="p-3 text-right">Percentage</th>

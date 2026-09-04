@@ -2,7 +2,8 @@ import type { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "School Management System",
-  description: "A comprehensive school management system for managing students, teachers, fees, attendance, exams, and more.",
+  description:
+    "A comprehensive school management system for managing students, teachers, fees, attendance, exams, and more.",
   keywords: ["school", "management", "students", "teachers", "fees", "attendance", "exams"],
   authors: [{ name: "School Management Team" }],
   openGraph: {
@@ -10,12 +11,14 @@ export const metadata: Metadata = {
     locale: "en_US",
     siteName: "School Management System",
     title: "School Management System",
-    description: "A comprehensive school management system for managing students, teachers, fees, attendance, exams, and more.",
+    description:
+      "A comprehensive school management system for managing students, teachers, fees, attendance, exams, and more.",
   },
   twitter: {
     card: "summary_large_image",
     title: "School Management System",
-    description: "A comprehensive school management system for managing students, teachers, fees, attendance, exams, and more.",
+    description:
+      "A comprehensive school management system for managing students, teachers, fees, attendance, exams, and more.",
   },
   robots: {
     index: false,
@@ -23,10 +26,6 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return children
 }

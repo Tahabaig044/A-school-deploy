@@ -7,11 +7,22 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { createEvent, registerForEvent, cancelEventRegistration, updateEventStatus } from "@/actions/event.actions"
+import {
+  createEvent,
+  registerForEvent,
+  cancelEventRegistration,
+  updateEventStatus,
+} from "@/actions/event.actions"
 import { useToast } from "@/hooks/use-toast"
 import { Calendar, Clock, MapPin, Users, Plus, Check, X } from "lucide-react"
 
@@ -28,13 +39,7 @@ const TYPE_COLORS: Record<string, string> = {
   CLASS: "bg-green-100 text-green-800",
 }
 
-export function EventList({
-  events,
-  activeType,
-}: {
-  events: any[]
-  activeType: string
-}) {
+export function EventList({ events, activeType }: { events: any[]; activeType: string }) {
   const router = useRouter()
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
@@ -42,7 +47,10 @@ export function EventList({
   const [customLocation, setCustomLocation] = useState("")
 
   async function handleCreateEvent(formData: FormData) {
-    formData.set("isRegistrationRequired", formData.get("isRegistrationRequired") === "on" ? "true" : "false")
+    formData.set(
+      "isRegistrationRequired",
+      formData.get("isRegistrationRequired") === "on" ? "true" : "false",
+    )
     const location = locationType === "Custom" ? customLocation : locationType
     formData.set("location", location)
 
@@ -104,7 +112,7 @@ export function EventList({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="eventType">Type</Label>
-                  <select id="eventType" name="eventType" className="w-full border rounded p-2">
+                  <select id="eventType" name="eventType" className="w-full rounded border p-2">
                     <option value="SCHOOL">School</option>
                     <option value="BRANCH">Branch</option>
                     <option value="CLASS">Class</option>
@@ -116,7 +124,7 @@ export function EventList({
                     id="location"
                     value={locationType}
                     onChange={(e) => setLocationType(e.target.value)}
-                    className="w-full border rounded p-2"
+                    className="w-full rounded border p-2"
                   >
                     <option value="">Select location...</option>
                     <option value="Campus">Campus</option>
@@ -157,7 +165,7 @@ export function EventList({
                     type="checkbox"
                     id="isRegistrationRequired"
                     name="isRegistrationRequired"
-                    className="w-4 h-4"
+                    className="h-4 w-4"
                   />
                   <Label htmlFor="isRegistrationRequired">Registration Required</Label>
                 </div>
@@ -166,7 +174,9 @@ export function EventList({
                   <Input id="maxParticipants" name="maxParticipants" type="number" />
                 </div>
               </div>
-              <Button type="submit" className="w-full">Create Event</Button>
+              <Button type="submit" className="w-full">
+                Create Event
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -182,7 +192,7 @@ export function EventList({
 
         <TabsContent value={activeType} className="space-y-4">
           {events.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No events found</p>
+            <p className="text-muted-foreground py-8 text-center">No events found</p>
           ) : (
             events.map((event) => (
               <Card key={event.id}>
@@ -190,21 +200,17 @@ export function EventList({
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-lg">{event.title}</CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="mt-1 flex items-center gap-2">
                         <Badge className={TYPE_COLORS[event.eventType] || ""}>
                           {event.eventType}
                         </Badge>
-                        <Badge className={STATUS_COLORS[event.status] || ""}>
-                          {event.status}
-                        </Badge>
+                        <Badge className={STATUS_COLORS[event.status] || ""}>{event.status}</Badge>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium">
-                        {event._count.registrations} registered
-                      </p>
+                      <p className="text-sm font-medium">{event._count.registrations} registered</p>
                       {event.maxParticipants && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           Max: {event.maxParticipants}
                         </p>
                       )}
@@ -213,16 +219,17 @@ export function EventList({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {event.description && (
-                    <p className="text-sm text-muted-foreground">{event.description}</p>
+                    <p className="text-muted-foreground text-sm">{event.description}</p>
                   )}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex flex-wrap items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
                       {new Date(event.startDateTime).toLocaleDateString()}
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="h-4 w-4" />
-                      {new Date(event.startDateTime).toLocaleTimeString()} - {new Date(event.endDateTime).toLocaleTimeString()}
+                      {new Date(event.startDateTime).toLocaleTimeString()} -{" "}
+                      {new Date(event.endDateTime).toLocaleTimeString()}
                     </div>
                     {event.location && (
                       <div className="flex items-center gap-1">
@@ -234,7 +241,11 @@ export function EventList({
 
                   <div className="flex items-center gap-2">
                     {event.registrations && event.registrations.length > 0 ? (
-                      <Button variant="outline" size="sm" onClick={() => handleCancelRegistration(event.id)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCancelRegistration(event.id)}
+                      >
                         <X className="mr-2 h-4 w-4" />
                         Cancel Registration
                       </Button>
@@ -245,7 +256,11 @@ export function EventList({
                       </Button>
                     ) : null}
                     {event.status === "DRAFT" && (
-                      <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(event.id, "PUBLISHED")}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUpdateStatus(event.id, "PUBLISHED")}
+                      >
                         Publish
                       </Button>
                     )}

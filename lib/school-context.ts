@@ -2,7 +2,7 @@ export class MissingSchoolContextError extends Error {
   constructor(action: string) {
     super(
       `${action}: No school or branch context found. ` +
-      `Ensure your profile is assigned to a school and branch before performing this action.`
+        `Ensure your profile is assigned to a school and branch before performing this action.`,
     )
     this.name = "MissingSchoolContextError"
   }
@@ -23,7 +23,7 @@ interface ProfileLike {
 export function getSchoolId(
   profile: ProfileLike,
   formData?: FormData | null,
-  action = "Action"
+  action = "Action",
 ): string {
   const schoolId =
     profile.role === "SUPER_ADMIN"
@@ -41,7 +41,7 @@ export function getSchoolId(
 export function getBranchId(
   profile: ProfileLike,
   formData?: FormData | null,
-  action = "Action"
+  action = "Action",
 ): string {
   const branchId =
     profile.role === "SUPER_ADMIN"
@@ -57,7 +57,7 @@ export function getBranchId(
  */
 export function getOptionalBranchId(
   profile: ProfileLike,
-  formData?: FormData | null
+  formData?: FormData | null,
 ): string | undefined {
   const branchId =
     profile.role === "SUPER_ADMIN"

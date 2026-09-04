@@ -33,7 +33,7 @@ const recordPaymentSchema = z.object({
 
 export async function createFeeStructure(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
 
@@ -80,7 +80,7 @@ export async function createFeeStructure(
 export async function updateFeeStructure(
   feeStructureId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
 
@@ -148,31 +148,53 @@ export async function deleteFeeStructure(feeStructureId: string) {
 
 export async function assignFeePlan(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
 
   const studentId = formData.get("studentId") as string
   const feeStructureId = formData.get("feeStructureId") as string
   const academicSessionId = formData.get("academicSessionId") as string
-  const discountType = formData.get("discountType") as string || null
-  const discountValue = formData.get("discountValue") as string || null
+  const discountType = (formData.get("discountType") as string) || null
+  const discountValue = (formData.get("discountValue") as string) || null
 
   const parsed = assignFeePlanSchema.safeParse({
-    studentId, feeStructureId, academicSessionId, discountType, discountValue,
+    studentId,
+    feeStructureId,
+    academicSessionId,
+    discountType,
+    discountValue,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
   }
 
+  const student = await prisma.student.findUnique({
+    where: { id: parsed.data.studentId },
+    select: { schoolId: true },
+  })
+  if (!student) return { error: "Student not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && student.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
+  const feeStructure = await prisma.feeStructure.findUnique({
+    where: { id: parsed.data.feeStructureId },
+    select: { schoolId: true },
+  })
+  if (!feeStructure) return { error: "Fee structure not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && feeStructure.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
   try {
     await prisma.studentFeePlan.create({
       data: {
-        studentId,
-        feeStructureId,
-        academicSessionId,
-        discountType,
-        discountValue: discountValue || null,
+        studentId: parsed.data.studentId,
+        feeStructureId: parsed.data.feeStructureId,
+        academicSessionId: parsed.data.academicSessionId,
+        discountType: parsed.data.discountType,
+        discountValue: parsed.data.discountValue || null,
       },
     })
 
@@ -185,14 +207,23 @@ export async function assignFeePlan(
 
 export async function generateInvoice(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
 
   const studentId = formData.get("studentId") as string
   const academicSessionId = formData.get("academicSessionId") as string
   const dueDate = formData.get("dueDate") as string
-  const notes = formData.get("notes") as string || null
+  const notes = (formData.get("notes") as string) || null
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { schoolId: true },
+  })
+  if (!student) return { error: "Student not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && student.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
 
   const feePlans = await prisma.studentFeePlan.findMany({
     where: { studentId, academicSessionId, isActive: true },
@@ -229,7 +260,7 @@ export async function generateInvoice(
       discountAmount: String(totalDiscount),
       notes,
       items: {
-        create: feePlans.map(plan => ({
+        create: feePlans.map((plan) => ({
           feeStructureId: plan.feeStructureId,
           amount: plan.feeStructure.amount,
         })),
@@ -243,7 +274,7 @@ export async function generateInvoice(
 
 export async function recordPayment(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
 
@@ -251,25 +282,41 @@ export async function recordPayment(
   const amount = formData.get("amount") as string
   const paymentDate = formData.get("paymentDate") as string
   const paymentMode = formData.get("paymentMode") as string
-  const referenceNumber = formData.get("referenceNumber") as string || null
-  const notes = formData.get("notes") as string || null
+  const referenceNumber = (formData.get("referenceNumber") as string) || null
+  const notes = (formData.get("notes") as string) || null
 
   const parsed = recordPaymentSchema.safeParse({
-    invoiceId, amount, paymentDate, paymentMode, referenceNumber, notes,
+    invoiceId,
+    amount,
+    paymentDate,
+    paymentMode,
+    referenceNumber,
+    notes,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
   }
 
   try {
-    const invoice = await prisma.feeInvoice.findUnique({ where: { id: invoiceId } })
+    const invoice = await prisma.feeInvoice.findUnique({
+      where: { id: invoiceId },
+      include: { student: { select: { schoolId: true } } },
+    })
     if (!invoice) return { error: "Invoice not found.", success: false }
-    if (invoice.status === "CANCELLED") return { error: "Cannot pay a cancelled invoice.", success: false }
+    if (profile.role !== "SUPER_ADMIN" && invoice.student.schoolId !== profile.schoolId) {
+      return { error: "Forbidden", success: false }
+    }
+    if (invoice.status === "CANCELLED")
+      return { error: "Cannot pay a cancelled invoice.", success: false }
 
     const parsedAmount = Number(amount)
     if (parsedAmount <= 0) return { error: "Payment amount must be positive.", success: false }
 
-    const remaining = Number(invoice.totalAmount) + Number(invoice.lateFee) - Number(invoice.paidAmount) - Number(invoice.discountAmount)
+    const remaining =
+      Number(invoice.totalAmount) +
+      Number(invoice.lateFee) -
+      Number(invoice.paidAmount) -
+      Number(invoice.discountAmount)
     if (parsedAmount > remaining) {
       return { error: "Payment amount exceeds remaining balance.", success: false }
     }
@@ -292,7 +339,8 @@ export async function recordPayment(
       })
 
       const updatedPaidAmount = Number(invoice.paidAmount) + parsedAmount
-      const totalDue = Number(invoice.totalAmount) + Number(invoice.lateFee) - Number(invoice.discountAmount)
+      const totalDue =
+        Number(invoice.totalAmount) + Number(invoice.lateFee) - Number(invoice.discountAmount)
       const newStatus = updatedPaidAmount >= totalDue ? "PAID" : "PARTIAL"
 
       await tx.feeInvoice.update({
@@ -325,8 +373,14 @@ export async function recordPayment(
 export async function cancelInvoice(invoiceId: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
 
-  const invoice = await prisma.feeInvoice.findUnique({ where: { id: invoiceId } })
+  const invoice = await prisma.feeInvoice.findUnique({
+    where: { id: invoiceId },
+    include: { student: { select: { schoolId: true } } },
+  })
   if (!invoice) return { error: "Invoice not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && invoice.student.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
 
   if (invoice.status === "CANCELLED") {
     return { error: "Invoice is already cancelled.", success: false }
@@ -354,17 +408,22 @@ export async function cancelInvoice(invoiceId: string) {
 }
 
 export async function getFeeDefaulters(branchId: string, academicSessionId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
 
   const overdueInvoices = await prisma.feeInvoice.findMany({
     where: {
       dueDate: { lt: new Date() },
       status: { in: ["PENDING", "PARTIAL"] },
-      student: { branchId },
+      student: {
+        branchId,
+        ...(profile.role !== "SUPER_ADMIN" ? { schoolId: profile.schoolId! } : {}),
+      },
       academicSessionId,
     },
     include: {
-      student: { select: { id: true, firstName: true, lastName: true, admissionNo: true, phone: true } },
+      student: {
+        select: { id: true, firstName: true, lastName: true, admissionNo: true, phone: true },
+      },
     },
     orderBy: { dueDate: "asc" },
   })
@@ -372,17 +431,18 @@ export async function getFeeDefaulters(branchId: string, academicSessionId: stri
   return overdueInvoices
 }
 
-export async function getCollectionReport(
-  branchId: string,
-  fromDate: string,
-  toDate: string
-) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
+export async function getCollectionReport(branchId: string, fromDate: string, toDate: string) {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
 
   const payments = await prisma.payment.findMany({
     where: {
       paymentDate: { gte: new Date(fromDate), lte: new Date(toDate) },
-      invoice: { student: { branchId } },
+      invoice: {
+        student: {
+          branchId,
+          ...(profile.role !== "SUPER_ADMIN" ? { schoolId: profile.schoolId! } : {}),
+        },
+      },
     },
     include: {
       invoice: {

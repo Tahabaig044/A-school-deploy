@@ -49,13 +49,13 @@ async function generateAdmissionNumber(schoolId: string): Promise<string> {
 
 export async function createAdmission(
   _prevState: { error?: string; success?: boolean; admissionId?: string } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const schoolId = getSchoolId(profile, formData, "Create Admission")
@@ -81,9 +81,24 @@ export async function createAdmission(
   const reason = formData.get("reason") as string
 
   const parsed = admissionSchema.safeParse({
-    firstName, lastName, dateOfBirth, gender, bloodGroup, religion,
-    nationality, phone, email, address, city, state, postalCode,
-    appliedClassId, academicSessionId, previousSchool, previousClass, reason,
+    firstName,
+    lastName,
+    dateOfBirth,
+    gender,
+    bloodGroup,
+    religion,
+    nationality,
+    phone,
+    email,
+    address,
+    city,
+    state,
+    postalCode,
+    appliedClassId,
+    academicSessionId,
+    previousSchool,
+    previousClass,
+    reason,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -138,13 +153,13 @@ export async function createAdmission(
 export async function updateAdmission(
   admissionId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const existing = await prisma.admission.findUnique({
@@ -176,9 +191,24 @@ export async function updateAdmission(
   const reason = formData.get("reason") as string
 
   const parsed = admissionSchema.safeParse({
-    firstName, lastName, dateOfBirth, gender, bloodGroup, religion,
-    nationality, phone, email, address, city, state, postalCode,
-    appliedClassId, academicSessionId, previousSchool, previousClass, reason,
+    firstName,
+    lastName,
+    dateOfBirth,
+    gender,
+    bloodGroup,
+    religion,
+    nationality,
+    phone,
+    email,
+    address,
+    city,
+    state,
+    postalCode,
+    appliedClassId,
+    academicSessionId,
+    previousSchool,
+    previousClass,
+    reason,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -246,7 +276,7 @@ export async function deleteAdmission(admissionId: string) {
 export async function reviewAdmission(
   admissionId: string,
   action: "APPROVED" | "REJECTED" | "WAITLISTED",
-  rejectionReason?: string
+  rejectionReason?: string,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -426,7 +456,7 @@ export async function getAdmissions(filters?: {
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
     "ADMISSION_OFFICER",
-    "TEACHER"
+    "TEACHER",
   )
 
   const schoolId = profile.schoolId
@@ -477,7 +507,7 @@ export async function getAdmissionById(admissionId: string) {
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
     "ADMISSION_OFFICER",
-    "TEACHER"
+    "TEACHER",
   )
 
   const admission = await prisma.admission.findUnique({
@@ -504,13 +534,13 @@ export async function getAdmissionById(admissionId: string) {
 export async function addGuardian(
   admissionId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const existing = await prisma.admission.findUnique({
@@ -532,7 +562,14 @@ export async function addGuardian(
   const isPrimary = formData.get("isPrimary") === "true"
 
   const parsed = guardianSchema.safeParse({
-    firstName, lastName, relationship, phone, email, occupation, address, isPrimary,
+    firstName,
+    lastName,
+    relationship,
+    phone,
+    email,
+    occupation,
+    address,
+    isPrimary,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -565,7 +602,7 @@ export async function deleteGuardian(guardianId: string, admissionId: string) {
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const existing = await prisma.admissionGuardian.findUnique({
@@ -588,13 +625,13 @@ export async function uploadAdmissionDocument(
   documentType: string,
   documentName: string,
   filePath: string,
-  fileSize?: number
+  fileSize?: number,
 ) {
   const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const existing = await prisma.admission.findUnique({
@@ -629,7 +666,7 @@ export async function deleteAdmissionDocument(documentId: string, admissionId: s
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const existing = await prisma.admissionDocument.findUnique({
@@ -652,26 +689,27 @@ export async function getAdmissionStats() {
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const schoolId = profile.schoolId
   if (!schoolId) return null
 
-  const [total, pending, underReview, approved, rejected, waitlisted, thisMonth] = await Promise.all([
-    prisma.admission.count({ where: { schoolId } }),
-    prisma.admission.count({ where: { schoolId, status: "PENDING" } }),
-    prisma.admission.count({ where: { schoolId, status: "UNDER_REVIEW" } }),
-    prisma.admission.count({ where: { schoolId, status: "APPROVED" } }),
-    prisma.admission.count({ where: { schoolId, status: "REJECTED" } }),
-    prisma.admission.count({ where: { schoolId, status: "WAITLISTED" } }),
-    prisma.admission.count({
-      where: {
-        schoolId,
-        createdAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
-      },
-    }),
-  ])
+  const [total, pending, underReview, approved, rejected, waitlisted, thisMonth] =
+    await Promise.all([
+      prisma.admission.count({ where: { schoolId } }),
+      prisma.admission.count({ where: { schoolId, status: "PENDING" } }),
+      prisma.admission.count({ where: { schoolId, status: "UNDER_REVIEW" } }),
+      prisma.admission.count({ where: { schoolId, status: "APPROVED" } }),
+      prisma.admission.count({ where: { schoolId, status: "REJECTED" } }),
+      prisma.admission.count({ where: { schoolId, status: "WAITLISTED" } }),
+      prisma.admission.count({
+        where: {
+          schoolId,
+          createdAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
+        },
+      }),
+    ])
 
   return { total, pending, underReview, approved, rejected, waitlisted, thisMonth }
 }
@@ -681,7 +719,7 @@ export async function getAdmissionsByClass() {
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const schoolId = profile.schoolId
@@ -706,7 +744,7 @@ export async function getAdmissionsByMonth() {
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const schoolId = profile.schoolId

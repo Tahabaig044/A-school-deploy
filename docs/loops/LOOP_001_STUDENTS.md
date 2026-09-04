@@ -1,11 +1,13 @@
 # Loop 001: Students
 
 ## Overview
+
 Student management is the core module of the School Management System. This loop covers the complete student lifecycle from admission to graduation.
 
 ## User Stories
 
 ### As an Admin
+
 1. I want to add new students with all required information
 2. I want to import students in bulk from CSV/Excel
 3. I want to search and filter students by various criteria
@@ -14,12 +16,14 @@ Student management is the core module of the School Management System. This loop
 6. I want to deactivate/archive students who have left
 
 ### As a Teacher
+
 1. I want to view students in my assigned classes
 2. I want to see student contact information
 3. I want to view student attendance history
 4. I want to view student academic performance
 
 ### As a Parent
+
 1. I want to view my child's profile
 2. I want to update contact information
 3. I want to view my child's attendance
@@ -28,6 +32,7 @@ Student management is the core module of the School Management System. This loop
 ## API Endpoints
 
 ### Student CRUD
+
 ```
 GET    /api/v1/students
        Query: page, limit, search, classId, sectionId, status
@@ -49,6 +54,7 @@ DELETE /api/v1/students/:id
 ```
 
 ### Student Features
+
 ```
 POST   /api/v1/students/import
        Body: CSV/Excel file
@@ -73,6 +79,7 @@ POST   /api/v1/students/:id/archive
 ## Database Schema
 
 ### Students Table
+
 ```sql
 CREATE TABLE students (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -114,6 +121,7 @@ CREATE TABLE students (
 ```
 
 ### Student History Table
+
 ```sql
 CREATE TABLE student_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -128,38 +136,41 @@ CREATE TABLE student_history (
 ## Data Validation
 
 ### CreateStudentDto
+
 ```typescript
 interface CreateStudentDto {
-  firstName: string;          // Required, 2-100 chars
-  lastName: string;           // Required, 2-100 chars
-  middleName?: string;        // Optional, 2-100 chars
-  admissionNumber: string;    // Required, unique
-  dateOfBirth: string;        // Required, valid date, age 3-20
-  gender: 'male' | 'female' | 'other';
-  bloodGroup?: string;        // Optional, valid blood group
-  phone?: string;             // Optional, valid phone format
-  email?: string;             // Optional, valid email
-  address?: Address;
+  firstName: string // Required, 2-100 chars
+  lastName: string // Required, 2-100 chars
+  middleName?: string // Optional, 2-100 chars
+  admissionNumber: string // Required, unique
+  dateOfBirth: string // Required, valid date, age 3-20
+  gender: "male" | "female" | "other"
+  bloodGroup?: string // Optional, valid blood group
+  phone?: string // Optional, valid phone format
+  email?: string // Optional, valid email
+  address?: Address
   emergencyContact: {
-    name: string;
-    phone: string;
-    relation: string;
-  };
-  classId: string;            // Required, valid class
-  sectionId: string;          // Required, valid section
-  parentId?: string;          // Optional, valid parent
+    name: string
+    phone: string
+    relation: string
+  }
+  classId: string // Required, valid class
+  sectionId: string // Required, valid section
+  parentId?: string // Optional, valid parent
 }
 ```
 
 ## Business Rules
 
 ### Admission Number Generation
+
 ```
 Format: {YEAR}{CLASS}{SEQUENCE}
 Example: 202405001 (Year 2024, Class 5, Student 001)
 ```
 
 ### Student Status Transitions
+
 ```
 active → inactive (leave/withdrawal)
 active → graduated (end of year)
@@ -168,6 +179,7 @@ inactive → active (re-enrollment)
 ```
 
 ### Validation Rules
+
 1. Admission number must be unique within school
 2. Date of birth must be valid (age 3-20)
 3. Class and section must belong to same school
@@ -177,6 +189,7 @@ inactive → active (re-enrollment)
 ## UI Components
 
 ### Student List Page
+
 - Search bar with filters
 - Data table with pagination
 - Quick actions (view, edit, delete)
@@ -184,6 +197,7 @@ inactive → active (re-enrollment)
 - Export to Excel/CSV
 
 ### Student Form
+
 - Multi-step form
 - Section-wise fields
 - Photo upload
@@ -191,6 +205,7 @@ inactive → active (re-enrollment)
 - Validation feedback
 
 ### Student Profile
+
 - Tabbed interface
 - Overview tab
 - Attendance tab
@@ -201,6 +216,7 @@ inactive → active (re-enrollment)
 ## Search & Filter
 
 ### Search Fields
+
 - Admission number
 - First name
 - Last name
@@ -208,6 +224,7 @@ inactive → active (re-enrollment)
 - Email
 
 ### Filter Options
+
 - Class
 - Section
 - Status
@@ -215,6 +232,7 @@ inactive → active (re-enrollment)
 - Gender
 
 ## Reports
+
 1. Student list report
 2. Class-wise student list
 3. Gender-wise statistics
@@ -223,6 +241,7 @@ inactive → active (re-enrollment)
 6. Graduation report
 
 ## Acceptance Criteria
+
 - [ ] Student can be created with all required fields
 - [ ] Admission number auto-generated correctly
 - [ ] Bulk import works for CSV/Excel
@@ -235,6 +254,7 @@ inactive → active (re-enrollment)
 - [ ] Photos and documents can be uploaded
 
 ## Dependencies
+
 - Authentication system
 - Class/Section modules
 - Parent module (optional)

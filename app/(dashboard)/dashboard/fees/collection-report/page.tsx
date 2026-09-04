@@ -9,7 +9,9 @@ export default async function CollectionReportPage({
 }) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
   const params = await searchParams
-  const fromDate = params.fromDate || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)
+  const fromDate =
+    params.fromDate ||
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)
   const toDate = params.toDate || new Date().toISOString().slice(0, 10)
 
   const branchId = profile.branchId || ""

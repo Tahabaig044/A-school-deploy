@@ -9,13 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
-export function IncomeExpenseReportView({
-  data,
-  profile,
-}: {
-  data: any
-  profile: any
-}) {
+export function IncomeExpenseReportView({ data, profile }: { data: any; profile: any }) {
   const router = useRouter()
   const [fromDate, setFromDate] = useState("")
   const [toDate, setToDate] = useState("")
@@ -29,14 +23,17 @@ export function IncomeExpenseReportView({
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Income vs Expense Report" description="Monthly income and expense comparison" />
+      <PageHeader
+        title="Income vs Expense Report"
+        description="Monthly income and expense comparison"
+      />
 
       <Card>
         <CardHeader>
           <CardTitle>Filter by Date Range</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 items-end">
+          <div className="flex items-end gap-4">
             <div>
               <Label htmlFor="fromDate">From Date</Label>
               <Input
@@ -66,7 +63,9 @@ export function IncomeExpenseReportView({
             <CardTitle className="text-sm">Total Income</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">${data.totalIncome.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-green-600">
+              ${data.totalIncome.toLocaleString()}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -74,7 +73,9 @@ export function IncomeExpenseReportView({
             <CardTitle className="text-sm">Total Expense</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">${data.totalExpense.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-red-600">
+              ${data.totalExpense.toLocaleString()}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -82,7 +83,9 @@ export function IncomeExpenseReportView({
             <CardTitle className="text-sm">Net Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${data.netBalance >= 0 ? "text-green-600" : "text-red-600"}`}>
+            <div
+              className={`text-2xl font-bold ${data.netBalance >= 0 ? "text-green-600" : "text-red-600"}`}
+            >
               ${data.netBalance.toLocaleString()}
             </div>
           </CardContent>
@@ -94,10 +97,10 @@ export function IncomeExpenseReportView({
           <CardTitle>Monthly Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="rounded-lg border">
             <table className="w-full">
               <thead>
-                <tr className="border-b bg-muted/50">
+                <tr className="bg-muted/50 border-b">
                   <th className="p-3 text-left">Month</th>
                   <th className="p-3 text-right">Income</th>
                   <th className="p-3 text-right">Expense</th>
@@ -110,8 +113,12 @@ export function IncomeExpenseReportView({
                   return (
                     <tr key={item.month} className="border-b">
                       <td className="p-3">{item.month}</td>
-                      <td className="p-3 text-right text-green-600">${item.income.toLocaleString()}</td>
-                      <td className="p-3 text-right text-red-600">${item.expense.toLocaleString()}</td>
+                      <td className="p-3 text-right text-green-600">
+                        ${item.income.toLocaleString()}
+                      </td>
+                      <td className="p-3 text-right text-red-600">
+                        ${item.expense.toLocaleString()}
+                      </td>
                       <td className="p-3 text-right">
                         <Badge variant={net >= 0 ? "default" : "destructive"}>
                           ${net.toLocaleString()}

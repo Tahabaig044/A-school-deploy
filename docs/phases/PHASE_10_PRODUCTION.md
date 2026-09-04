@@ -1,9 +1,11 @@
 # Phase 10: Production
 
 ## Duration
+
 2 weeks
 
 ## Objectives
+
 - Prepare for production deployment
 - Implement monitoring and logging
 - Conduct security audit
@@ -12,6 +14,7 @@
 ## Deliverables
 
 ### Week 1: Pre-Production
+
 1. **Security Hardening**
    - Security audit
    - Penetration testing
@@ -25,6 +28,7 @@
    - CDN setup
 
 ### Week 2: Deployment & Monitoring
+
 1. **Deployment**
    - Production environment setup
    - CI/CD pipeline
@@ -40,10 +44,12 @@
 ## Technical Implementation
 
 ### Security Checklist
+
 ```markdown
 ## Security Audit Checklist
 
 ### Authentication
+
 - [ ] Password hashing (bcrypt)
 - [ ] JWT implementation
 - [ ] Refresh token rotation
@@ -51,12 +57,14 @@
 - [ ] Account lockout
 
 ### Authorization
+
 - [ ] RBAC implementation
 - [ ] Resource-level access
 - [ ] API endpoint protection
 - [ ] CORS configuration
 
 ### Data Protection
+
 - [ ] Input validation
 - [ ] SQL injection prevention
 - [ ] XSS protection
@@ -64,6 +72,7 @@
 - [ ] Data encryption
 
 ### Infrastructure
+
 - [ ] HTTPS enforced
 - [ ] Security headers
 - [ ] Environment variables secured
@@ -72,6 +81,7 @@
 ```
 
 ### Performance Targets
+
 ```yaml
 # Performance Budget
 metrics:
@@ -80,64 +90,64 @@ metrics:
   first_input_delay: < 100ms
   cumulative_layout_shift: < 0.1
   time_to_first_byte: < 600ms
-  
+
 api:
   response_time_p95: < 200ms
   response_time_p99: < 500ms
-  
+
 database:
   query_time_avg: < 50ms
   query_time_p95: < 100ms
 ```
 
 ### Monitoring Setup
+
 ```typescript
 // Application monitoring
-import { Sentry } from '@sentry/node';
+import { Sentry } from "@sentry/node"
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV,
   tracesSampleRate: 1.0,
-});
+})
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   res.json({
-    status: 'healthy',
+    status: "healthy",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     database: checkDatabase(),
     redis: checkRedis(),
-  });
-});
+  })
+})
 ```
 
 ### Logging Configuration
+
 ```typescript
 // Winston logger setup
-import winston from 'winston';
+import winston from "winston"
 
 const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
+  level: "info",
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' }),
+    new winston.transports.File({ filename: "error.log", level: "error" }),
+    new winston.transports.File({ filename: "combined.log" }),
   ],
-});
+})
 
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console());
+if (process.env.NODE_ENV !== "production") {
+  logger.add(new winston.transports.Console())
 }
 ```
 
 ## Deployment Checklist
 
 ### Pre-Deployment
+
 - [ ] All tests passing
 - [ ] Code review completed
 - [ ] Security scan passed
@@ -148,6 +158,7 @@ if (process.env.NODE_ENV !== 'production') {
 - [ ] Environment variables configured
 
 ### Deployment Steps
+
 1. Create release branch
 2. Run full test suite
 3. Build application
@@ -158,6 +169,7 @@ if (process.env.NODE_ENV !== 'production') {
 8. Notify stakeholders
 
 ### Post-Deployment
+
 - [ ] Health checks passing
 - [ ] No error spike
 - [ ] Performance acceptable
@@ -167,9 +179,10 @@ if (process.env.NODE_ENV !== 'production') {
 ## Production Environment
 
 ### Infrastructure
+
 ```yaml
 # docker-compose.prod.yml
-version: '3.8'
+version: "3.8"
 services:
   app:
     image: school-ms:latest
@@ -177,7 +190,7 @@ services:
       replicas: 3
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 512M
     environment:
       - NODE_ENV=production
@@ -214,6 +227,7 @@ services:
 ```
 
 ### Backup Strategy
+
 ```bash
 #!/bin/bash
 # backup.sh
@@ -229,6 +243,7 @@ find . -name "backup_*.sql.gz" -mtime +30 -delete
 ```
 
 ## Acceptance Criteria
+
 - [ ] Security audit passed
 - [ ] Performance targets met
 - [ ] Monitoring configured
@@ -239,13 +254,15 @@ find . -name "backup_*.sql.gz" -mtime +30 -delete
 - [ ] Documentation complete
 
 ## Dependencies
+
 - All previous phases completed
 - Infrastructure ready
 - Security review done
 
 ## Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Production outage | Critical | Rollback plan, redundancy |
-| Data breach | Critical | Security audit, encryption |
-| Performance degradation | High | Monitoring, auto-scaling |
+
+| Risk                    | Impact   | Mitigation                 |
+| ----------------------- | -------- | -------------------------- |
+| Production outage       | Critical | Rollback plan, redundancy  |
+| Data breach             | Critical | Security audit, encryption |
+| Performance degradation | High     | Monitoring, auto-scaling   |

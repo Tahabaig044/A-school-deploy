@@ -5,7 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { returnHomeworkForResubmission } from "@/actions/teacher-portal.actions"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { RotateCcw } from "lucide-react"
 
 export function ReturnForm({ submissionId }: { submissionId: string }) {
@@ -19,8 +25,8 @@ export function ReturnForm({ submissionId }: { submissionId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="text-purple-600 border-purple-200">
-          <RotateCcw className="h-3 w-3 mr-1" />
+        <Button variant="outline" size="sm" className="border-purple-200 text-purple-600">
+          <RotateCcw className="mr-1 h-3 w-3" />
           Return
         </Button>
       </DialogTrigger>
@@ -39,7 +45,7 @@ export function ReturnForm({ submissionId }: { submissionId: string }) {
               required
             />
           </div>
-          {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+          {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
           <Button type="submit" disabled={pending} className="w-full">
             {pending ? "Returning..." : "Return for Resubmission"}
           </Button>

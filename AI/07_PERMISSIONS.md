@@ -6,11 +6,11 @@
 
 ## Permission Stack
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| RBAC | Custom | Role-based access |
-| Context | Server Components | User context |
-| Validation | Server Actions | Permission checks |
+| Component  | Technology        | Purpose           |
+| ---------- | ----------------- | ----------------- |
+| RBAC       | Custom            | Role-based access |
+| Context    | Server Components | User context      |
+| Validation | Server Actions    | Permission checks |
 
 ## Roles Hierarchy
 
@@ -46,6 +46,7 @@ module:action
 ```
 
 ### Modules
+
 - students
 - teachers
 - parents
@@ -61,6 +62,7 @@ module:action
 - users
 
 ### Actions
+
 - create
 - read
 - read_all
@@ -73,17 +75,17 @@ module:action
 
 ## Permission Matrix
 
-| Module | Super Admin | School Admin | Principal | Teacher | Parent | Student |
-|--------|-------------|--------------|-----------|---------|--------|---------|
-| students | CRUD | CRUD | CRU | R (assigned) | R (children) | R (self) |
-| teachers | CRUD | CRUD | CRU | R | - | - |
-| classes | CRUD | CRUD | CRU | R (assigned) | R (children) | R (self) |
-| attendance | CRUD | CRUD | CRU | CRU (assigned) | R (children) | R (self) |
-| exams | CRUD | CRUD | CRU | CRU (subjects) | R (children) | R (self) |
-| results | CRUD | CRUD | CRU | CR (subjects) | R (children) | R (self) |
-| fees | CRUD | CRUD | CRU | R | CRU (children) | R (self) |
-| reports | CRUD | CRUD | CRU | R (assigned) | R (children) | R (self) |
-| settings | CRUD | CRU | R | - | - | - |
+| Module     | Super Admin | School Admin | Principal | Teacher        | Parent         | Student  |
+| ---------- | ----------- | ------------ | --------- | -------------- | -------------- | -------- |
+| students   | CRUD        | CRUD         | CRU       | R (assigned)   | R (children)   | R (self) |
+| teachers   | CRUD        | CRUD         | CRU       | R              | -              | -        |
+| classes    | CRUD        | CRUD         | CRU       | R (assigned)   | R (children)   | R (self) |
+| attendance | CRUD        | CRUD         | CRU       | CRU (assigned) | R (children)   | R (self) |
+| exams      | CRUD        | CRUD         | CRU       | CRU (subjects) | R (children)   | R (self) |
+| results    | CRUD        | CRUD         | CRU       | CR (subjects)  | R (children)   | R (self) |
+| fees       | CRUD        | CRUD         | CRU       | R              | CRU (children) | R (self) |
+| reports    | CRUD        | CRUD         | CRU       | R (assigned)   | R (children)   | R (self) |
+| settings   | CRUD        | CRU          | R         | -              | -              | -        |
 
 ## Core Rules
 
@@ -116,19 +118,20 @@ module:action
 ## Implementation
 
 ### Permission Check Function
+
 ```typescript
 // lib/permissions.ts
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma"
 
 export async function checkPermission(
   userId: string,
   permission: string,
-  resourceId?: string
+  resourceId?: string,
 ): Promise<boolean> {
   // 1. Get user with role
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { role: true }
+    include: { role: true },
   })
 
   if (!user || !user.role) return false
@@ -148,60 +151,57 @@ export async function checkPermission(
 ```
 
 ### Server Action with Permission Check
+
 ```typescript
 // actions/students.ts
-'use server'
+"use server"
 
-import { checkPermission } from '@/lib/permissions'
-import { getUser } from '@/lib/auth'
+import { checkPermission } from "@/lib/permissions"
+import { getUser } from "@/lib/auth"
 
 export async function deleteStudent(studentId: string) {
   // 1. Get current user
   const user = await getUser()
-  if (!user) throw new Error('Unauthorized')
+  if (!user) throw new Error("Unauthorized")
 
   // 2. Check permission
-  const hasPermission = await checkPermission(
-    user.id,
-    'students:delete',
-    studentId
-  )
+  const hasPermission = await checkPermission(user.id, "students:delete", studentId)
   if (!hasPermission) {
     // Log denial
     await prisma.auditLog.create({
       data: {
         userId: user.id,
-        action: 'DELETE_STUDENT',
+        action: "DELETE_STUDENT",
         resourceId: studentId,
         success: false,
-        reason: 'Permission denied'
-      }
+        reason: "Permission denied",
+      },
     })
-    throw new Error('Permission denied')
+    throw new Error("Permission denied")
   }
 
   // 3. Check school context
   const student = await prisma.student.findUnique({
-    where: { id: studentId }
+    where: { id: studentId },
   })
   if (student.schoolId !== user.schoolId) {
-    throw new Error('Access denied')
+    throw new Error("Access denied")
   }
 
   // 4. Perform action
   await prisma.student.update({
     where: { id: studentId },
-    data: { deletedAt: new Date() }
+    data: { deletedAt: new Date() },
   })
 
   // 5. Log audit
   await prisma.auditLog.create({
     data: {
       userId: user.id,
-      action: 'DELETE_STUDENT',
+      action: "DELETE_STUDENT",
       resourceId: studentId,
-      success: true
-    }
+      success: true,
+    },
   })
 
   return { success: true }
@@ -209,14 +209,12 @@ export async function deleteStudent(studentId: string) {
 ```
 
 ### Resource Ownership Check
+
 ```typescript
-async function checkResourceOwnership(
-  userId: string,
-  resourceId: string
-): Promise<boolean> {
+async function checkResourceOwnership(userId: string, resourceId: string): Promise<boolean> {
   // Check if user owns the resource
   const resource = await prisma.student.findUnique({
-    where: { id: resourceId }
+    where: { id: resourceId },
   })
 
   if (!resource) return false
@@ -224,26 +222,26 @@ async function checkResourceOwnership(
   // Teachers can only access their assigned students
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { teacher: true }
+    include: { teacher: true },
   })
 
-  if (user?.role === 'TEACHER') {
+  if (user?.role === "TEACHER") {
     const assignment = await prisma.teacherAssignment.findFirst({
       where: {
         teacherId: user.teacher?.id,
-        classId: resource.classId
-      }
+        classId: resource.classId,
+      },
     })
     return !!assignment
   }
 
   // Parents can only access their children
-  if (user?.role === 'PARENT') {
+  if (user?.role === "PARENT") {
     return resource.parentId === userId
   }
 
   // Students can only access themselves
-  if (user?.role === 'STUDENT') {
+  if (user?.role === "STUDENT") {
     return resource.userId === userId
   }
 
@@ -255,12 +253,9 @@ async function checkResourceOwnership(
 
 ```typescript
 // Every query must include school_id
-export async function verifySchoolContext(
-  userId: string,
-  schoolId: string
-): Promise<boolean> {
+export async function verifySchoolContext(userId: string, schoolId: string): Promise<boolean> {
   const user = await prisma.user.findUnique({
-    where: { id: userId }
+    where: { id: userId },
   })
 
   return user?.schoolId === schoolId
@@ -274,13 +269,13 @@ export async function verifySchoolContext(
 await prisma.auditLog.create({
   data: {
     userId: user.id,
-    action: 'PERMISSION_CHECK',
-    resource: 'students',
+    action: "PERMISSION_CHECK",
+    resource: "students",
     resourceId: studentId,
-    permission: 'students:delete',
+    permission: "students:delete",
     granted: hasPermission,
     ip: getClientIp(),
-  }
+  },
 })
 ```
 
@@ -288,12 +283,12 @@ await prisma.auditLog.create({
 
 Ye files modify karne ke liye approval zaroori hai:
 
-| File | Reason |
-|------|--------|
-| prisma/schema.prisma | Schema change |
-| middleware.ts | Auth change |
-| lib/permissions.ts | Permission logic |
-| lib/auth.ts | Auth logic |
+| File                 | Reason           |
+| -------------------- | ---------------- |
+| prisma/schema.prisma | Schema change    |
+| middleware.ts        | Auth change      |
+| lib/permissions.ts   | Permission logic |
+| lib/auth.ts          | Auth logic       |
 
 ---
 

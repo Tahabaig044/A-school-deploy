@@ -23,9 +23,11 @@ export function AssignmentList({ assignments }: { assignments: AssignmentItem[] 
   if (assignments.length === 0) {
     return (
       <Card>
-        <CardHeader><CardTitle>All Assignments</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>All Assignments</CardTitle>
+        </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No assignments created yet.</p>
+          <p className="text-muted-foreground text-sm">No assignments created yet.</p>
         </CardContent>
       </Card>
     )
@@ -33,7 +35,9 @@ export function AssignmentList({ assignments }: { assignments: AssignmentItem[] 
 
   return (
     <Card>
-      <CardHeader><CardTitle>All Assignments ({assignments.length})</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>All Assignments ({assignments.length})</CardTitle>
+      </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
@@ -54,11 +58,15 @@ export function AssignmentList({ assignments }: { assignments: AssignmentItem[] 
                 </TableCell>
                 <TableCell>{a.class.name}</TableCell>
                 <TableCell>{a.section?.name || "-"}</TableCell>
-                <TableCell>{a.subject.name} ({a.subject.code})</TableCell>
+                <TableCell>
+                  {a.subject.name} ({a.subject.code})
+                </TableCell>
                 <TableCell>{a.academicSession.name}</TableCell>
                 <TableCell>
                   <form action={deleteAssignment.bind(null, a.id)}>
-                    <Button variant="destructive" size="sm" type="submit">Delete</Button>
+                    <Button variant="destructive" size="sm" type="submit">
+                      Delete
+                    </Button>
                   </form>
                 </TableCell>
               </TableRow>

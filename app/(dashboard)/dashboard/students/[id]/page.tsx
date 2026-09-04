@@ -3,18 +3,14 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 import { StudentProfile } from "./student-profile"
 
-export default async function StudentProfilePage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function StudentProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
     "PRINCIPAL",
     "ADMISSION_OFFICER",
-    "TEACHER"
+    "TEACHER",
   )
 
   const { id } = await params
@@ -53,7 +49,5 @@ export default async function StudentProfilePage({
 
   if (!student) notFound()
 
-  return (
-    <StudentProfile student={JSON.parse(JSON.stringify(student))} />
-  )
+  return <StudentProfile student={JSON.parse(JSON.stringify(student))} />
 }

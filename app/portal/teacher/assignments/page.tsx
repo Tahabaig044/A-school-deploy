@@ -15,7 +15,8 @@ async function TeacherAssignmentsContent() {
   const userId = user.id
 
   const teacher = await prisma.teacher.findFirst({ where: { profileId: userId } })
-  if (!teacher) return <div className="text-center py-8 text-muted-foreground">Teacher record not found.</div>
+  if (!teacher)
+    return <div className="text-muted-foreground py-8 text-center">Teacher record not found.</div>
 
   const homework = await prisma.homework.findMany({
     where: { teacherId: teacher.id },
@@ -37,9 +38,11 @@ async function TeacherAssignmentsContent() {
       {homework.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <CalendarClock className="h-12 w-12 text-muted-foreground mb-4" />
+            <CalendarClock className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-lg font-medium">No assignments created</p>
-            <p className="text-sm text-muted-foreground">You haven&apos;t created any assignments yet.</p>
+            <p className="text-muted-foreground text-sm">
+              You haven&apos;t created any assignments yet.
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -54,17 +57,18 @@ async function TeacherAssignmentsContent() {
                   </Badge>
                 </div>
                 <CardDescription>
-                  {hw.class.name}{hw.section ? ` - ${hw.section.name}` : ""} | {hw.subject?.name ?? "General"}
+                  {hw.class.name}
+                  {hw.section ? ` - ${hw.section.name}` : ""} | {hw.subject?.name ?? "General"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Due: {new Date(hw.dueDate).toLocaleDateString()}
                 </p>
                 {hw.totalMarks && (
-                  <p className="text-sm text-muted-foreground">Total Marks: {hw.totalMarks}</p>
+                  <p className="text-muted-foreground text-sm">Total Marks: {hw.totalMarks}</p>
                 )}
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Submissions: {hw._count.submissions}
                 </p>
               </CardContent>

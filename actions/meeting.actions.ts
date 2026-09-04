@@ -20,7 +20,7 @@ async function sendMeetingNotification(
   userId: string,
   title: string,
   content: string,
-  link?: string
+  link?: string,
 ) {
   await prisma.notification.create({
     data: {
@@ -38,24 +38,21 @@ async function notifyAttendees(
   meetingId: string,
   meetingTitle: string,
   actionLabel: string,
-  excludeUserId?: string
+  excludeUserId?: string,
 ) {
   const meeting = await prisma.meeting.findUnique({
     where: { id: meetingId },
     select: { attendees: { select: { profileId: true } }, createdById: true },
   })
   if (!meeting) return
-  const allIds = [...new Set([
-    ...meeting.attendees.map((a) => a.profileId),
-    meeting.createdById,
-  ])]
+  const allIds = [...new Set([...meeting.attendees.map((a) => a.profileId), meeting.createdById])]
   for (const uid of allIds) {
     if (uid === excludeUserId) continue
     await sendMeetingNotification(
       uid,
       `Meeting: ${meetingTitle}`,
       `Meeting "${meetingTitle}" has been ${actionLabel}.`,
-      "/dashboard/meetings"
+      "/dashboard/meetings",
     )
   }
 }
@@ -84,27 +81,70 @@ function generateIcsContent(meeting: {
   ].join("\r\n")
 }
 
+async function assertMeetingAccess(
+  meetingId: string,
+  profile: { id: string; role: string; schoolId: string | null },
+): Promise<{ ok: boolean; error: string }> {
+  const meeting = await prisma.meeting.findUnique({
+    where: { id: meetingId },
+    select: { schoolId: true },
+  })
+  if (!meeting) return { ok: false, error: "Meeting not found." }
+  if (profile.role !== "SUPER_ADMIN" && meeting.schoolId !== profile.schoolId) {
+    return { ok: false, error: "Forbidden" }
+  }
+  if (profile.role === "TEACHER") {
+    const participant = await prisma.meeting.findFirst({
+      where: {
+        id: meetingId,
+        OR: [{ createdById: profile.id }, { attendees: { some: { profileId: profile.id } } }],
+      },
+      select: { id: true },
+    })
+    if (!participant) return { ok: false, error: "Forbidden" }
+  }
+  return { ok: true, error: "" }
+}
+
 export async function createMeeting(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
   const schoolId = getSchoolId(profile, formData, "Create Meeting")
 
   const title = formData.get("title") as string
-  const description = formData.get("description") as string || undefined
+  const description = (formData.get("description") as string) || undefined
   const meetingType = formData.get("meetingType") as string
   const startDateTime = formData.get("startDateTime") as string
   const endDateTime = formData.get("endDateTime") as string
-  const location = formData.get("location") as string || undefined
+  const location = (formData.get("location") as string) || undefined
   const attendeeIds = formData.get("attendeeIds") as string
 
   const parsed = meetingSchema.safeParse({
-    title, description, meetingType, startDateTime, endDateTime, location,
+    title,
+    description,
+    meetingType,
+    startDateTime,
+    endDateTime,
+    location,
     attendeeIds: attendeeIds ? JSON.parse(attendeeIds) : [],
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
+  }
+
+  if (parsed.data.attendeeIds.length > 0) {
+    const validAttendees = await prisma.profile.findMany({
+      where: {
+        id: { in: parsed.data.attendeeIds },
+        schoolId,
+      },
+      select: { id: true },
+    })
+    if (validAttendees.length !== parsed.data.attendeeIds.length) {
+      return { error: "One or more attendees do not belong to this school.", success: false }
+    }
   }
 
   const meeting = await prisma.meeting.create({
@@ -133,6 +173,9 @@ export async function createMeeting(
 export async function approveMeeting(meetingId: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
+  const access = await assertMeetingAccess(meetingId, profile)
+  if (!access.ok) return { error: access.error, success: false }
+
   await prisma.meeting.update({
     where: { id: meetingId },
     data: { status: "APPROVED" },
@@ -147,6 +190,9 @@ export async function approveMeeting(meetingId: string) {
 export async function rejectMeeting(meetingId: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
+  const access = await assertMeetingAccess(meetingId, profile)
+  if (!access.ok) return { error: access.error, success: false }
+
   await prisma.meeting.update({
     where: { id: meetingId },
     data: { status: "REJECTED" },
@@ -159,7 +205,16 @@ export async function rejectMeeting(meetingId: string) {
 }
 
 export async function cancelMeeting(meetingId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
+
+  const access = await assertMeetingAccess(meetingId, profile)
+  if (!access.ok) return { error: access.error, success: false }
 
   await prisma.meeting.update({
     where: { id: meetingId },
@@ -175,9 +230,18 @@ export async function cancelMeeting(meetingId: string) {
 export async function rescheduleMeeting(
   meetingId: string,
   startDateTime: string,
-  endDateTime: string
+  endDateTime: string,
 ) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
+
+  const access = await assertMeetingAccess(meetingId, profile)
+  if (!access.ok) return { error: access.error, success: false }
 
   await prisma.meeting.update({
     where: { id: meetingId },
@@ -198,32 +262,66 @@ export async function rescheduleMeeting(
 export async function editMeeting(
   meetingId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
 
   const title = formData.get("title") as string
-  const description = formData.get("description") as string || undefined
+  const description = (formData.get("description") as string) || undefined
   const meetingType = formData.get("meetingType") as string
-  const location = formData.get("location") as string || undefined
+  const location = (formData.get("location") as string) || undefined
   const startDateTime = formData.get("startDateTime") as string
   const endDateTime = formData.get("endDateTime") as string
   const attendeeIds = formData.get("attendeeIds") as string
 
-  const parsed = z.object({
-    title: z.string().min(1),
-    description: z.string().optional(),
-    meetingType: z.enum(["PARENT_TEACHER", "STAFF", "DEPARTMENT"]),
-    location: z.string().optional(),
-    startDateTime: z.string(),
-    endDateTime: z.string(),
-    attendeeIds: z.array(z.string().uuid()),
-  }).safeParse({
-    title, description, meetingType, location, startDateTime, endDateTime,
-    attendeeIds: attendeeIds ? JSON.parse(attendeeIds) : [],
-  })
+  const parsed = z
+    .object({
+      title: z.string().min(1),
+      description: z.string().optional(),
+      meetingType: z.enum(["PARENT_TEACHER", "STAFF", "DEPARTMENT"]),
+      location: z.string().optional(),
+      startDateTime: z.string(),
+      endDateTime: z.string(),
+      attendeeIds: z.array(z.string().uuid()),
+    })
+    .safeParse({
+      title,
+      description,
+      meetingType,
+      location,
+      startDateTime,
+      endDateTime,
+      attendeeIds: attendeeIds ? JSON.parse(attendeeIds) : [],
+    })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
+  }
+
+  const access = await assertMeetingAccess(meetingId, profile)
+  if (!access.ok) return { error: access.error, success: false }
+
+  if (parsed.data.attendeeIds.length > 0) {
+    const meetingRecord = await prisma.meeting.findUnique({
+      where: { id: meetingId },
+      select: { schoolId: true },
+    })
+    if (!meetingRecord) return { error: "Meeting not found.", success: false }
+    const validAttendees = await prisma.profile.findMany({
+      where: {
+        id: { in: parsed.data.attendeeIds },
+        schoolId: meetingRecord.schoolId,
+      },
+      select: { id: true },
+    })
+    if (validAttendees.length !== parsed.data.attendeeIds.length) {
+      return { error: "One or more attendees do not belong to this school.", success: false }
+    }
   }
 
   const existingMeeting = await prisma.meeting.findUnique({
@@ -258,7 +356,16 @@ export async function editMeeting(
 }
 
 export async function completeMeeting(meetingId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
+
+  const access = await assertMeetingAccess(meetingId, profile)
+  if (!access.ok) return { error: access.error, success: false }
 
   await prisma.meeting.update({
     where: { id: meetingId },
@@ -271,7 +378,16 @@ export async function completeMeeting(meetingId: string) {
 }
 
 export async function updateMeetingStatus(meetingId: string, status: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
+
+  const access = await assertMeetingAccess(meetingId, profile)
+  if (!access.ok) return { error: access.error, success: false }
 
   await prisma.meeting.update({
     where: { id: meetingId },
@@ -284,7 +400,21 @@ export async function updateMeetingStatus(meetingId: string, status: string) {
 }
 
 export async function updateAttendeeStatus(meetingId: string, profileId: string, status: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "PARENT",
+  )
+
+  const access = await assertMeetingAccess(meetingId, profile)
+  if (!access.ok) return { error: access.error, success: false }
+
+  if (profile.role === "PARENT" && profileId !== profile.id) {
+    return { error: "Forbidden", success: false }
+  }
 
   await prisma.meetingAttendee.update({
     where: { meetingId_profileId: { meetingId, profileId } },
@@ -297,7 +427,17 @@ export async function updateAttendeeStatus(meetingId: string, profileId: string,
 }
 
 export async function addMeetingNote(meetingId: string, content: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "PARENT",
+  )
+
+  const access = await assertMeetingAccess(meetingId, profile)
+  if (!access.ok) return { error: access.error, success: false }
 
   await prisma.meetingNote.create({
     data: {
@@ -315,18 +455,23 @@ export async function addMeetingNote(meetingId: string, content: string) {
 const VALID_MEETING_TYPES = ["PARENT_TEACHER", "STAFF", "DEPARTMENT"] as const
 
 export async function getMeetings(meetingType?: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "PARENT",
+  )
 
-  const validType = meetingType && VALID_MEETING_TYPES.includes(meetingType as any) ? meetingType : undefined
+  const validType =
+    meetingType && VALID_MEETING_TYPES.includes(meetingType as any) ? meetingType : undefined
 
   return prisma.meeting.findMany({
     where: {
-      schoolId: profile.schoolId!,
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
       ...(validType ? { meetingType: validType as any } : {}),
-      OR: [
-        { createdById: profile.id },
-        { attendees: { some: { profileId: profile.id } } },
-      ],
+      OR: [{ createdById: profile.id }, { attendees: { some: { profileId: profile.id } } }],
     },
     include: {
       createdBy: { select: { firstName: true, lastName: true, role: true } },
@@ -345,10 +490,28 @@ export async function getMeetings(meetingType?: string) {
 }
 
 export async function getMeetingById(meetingId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "PARENT",
+  )
 
-  return prisma.meeting.findFirst({
-    where: { id: meetingId },
+  const meeting = await prisma.meeting.findFirst({
+    where: {
+      id: meetingId,
+      ...(profile.role === "SUPER_ADMIN"
+        ? {}
+        : {
+            OR: [
+              { schoolId: profile.schoolId! },
+              { createdById: profile.id },
+              { attendees: { some: { profileId: profile.id } } },
+            ],
+          }),
+    },
     include: {
       createdBy: { select: { firstName: true, lastName: true, role: true } },
       attendees: {
@@ -363,10 +526,19 @@ export async function getMeetingById(meetingId: string) {
       attachments: true,
     },
   })
+
+  return meeting
 }
 
 export async function getTeacherAvailability(teacherId: string, date: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "PARENT",
+  )
 
   const startOfDay = new Date(date)
   startOfDay.setHours(0, 0, 0, 0)
@@ -376,6 +548,7 @@ export async function getTeacherAvailability(teacherId: string, date: string) {
   const meetings = await prisma.meeting.findMany({
     where: {
       attendees: { some: { profileId: teacherId } },
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
       startDateTime: { gte: startOfDay },
       endDateTime: { lte: endOfDay },
       status: { notIn: ["CANCELLED", "REJECTED"] },
@@ -386,11 +559,35 @@ export async function getTeacherAvailability(teacherId: string, date: string) {
 }
 
 export async function downloadMeetingIcs(meetingId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "PARENT",
+  )
 
   const meeting = await prisma.meeting.findFirst({
-    where: { id: meetingId },
-    select: { title: true, description: true, startDateTime: true, endDateTime: true, location: true },
+    where: {
+      id: meetingId,
+      ...(profile.role === "SUPER_ADMIN"
+        ? {}
+        : {
+            OR: [
+              { schoolId: profile.schoolId! },
+              { createdById: profile.id },
+              { attendees: { some: { profileId: profile.id } } },
+            ],
+          }),
+    },
+    select: {
+      title: true,
+      description: true,
+      startDateTime: true,
+      endDateTime: true,
+      location: true,
+    },
   })
   if (!meeting) return null
 

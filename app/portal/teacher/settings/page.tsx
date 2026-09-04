@@ -42,12 +42,14 @@ async function TeacherSettingsContent() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Name</p>
-              <p className="text-sm">{profile?.firstName} {profile?.lastName}</p>
+              <p className="text-muted-foreground text-sm font-medium">Name</p>
+              <p className="text-sm">
+                {profile?.firstName} {profile?.lastName}
+              </p>
             </div>
             <Separator />
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Email</p>
+              <p className="text-muted-foreground text-sm font-medium">Email</p>
               <p className="text-sm">{profile?.email}</p>
             </div>
           </CardContent>
@@ -59,7 +61,7 @@ async function TeacherSettingsContent() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Last Login</p>
+              <p className="text-muted-foreground text-sm font-medium">Last Login</p>
               <p className="text-sm">
                 {profile?.lastLoginAt
                   ? new Date(profile.lastLoginAt).toLocaleString()
@@ -68,7 +70,7 @@ async function TeacherSettingsContent() {
             </div>
             <Separator />
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Last Login IP</p>
+              <p className="text-muted-foreground text-sm font-medium">Last Login IP</p>
               <p className="text-sm">{profile?.lastLoginIp || "Not recorded"}</p>
             </div>
           </CardContent>

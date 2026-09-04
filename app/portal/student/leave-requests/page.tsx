@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useActionState } from "react"
-import { getStudentLeaveRequests, createStudentLeaveRequest } from "@/actions/student-portal.actions"
+import {
+  getStudentLeaveRequests,
+  createStudentLeaveRequest,
+} from "@/actions/student-portal.actions"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -82,7 +85,7 @@ export default function LeaveRequestsPage() {
                   <select
                     name="leaveType"
                     required
-                    className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                    className="border-input focus-visible:border-ring focus-visible:ring-ring/50 flex h-8 w-full rounded-lg border bg-transparent px-2.5 py-1 text-base focus-visible:ring-3 md:text-sm"
                   >
                     <option value="">Select type</option>
                     <option value="SICK">Sick Leave</option>
@@ -104,9 +107,7 @@ export default function LeaveRequestsPage() {
                 <label className="text-sm font-medium">Reason</label>
                 <Textarea name="reason" required placeholder="Enter reason for leave" />
               </div>
-              {state?.error && (
-                <p className="text-sm text-destructive">{state.error}</p>
-              )}
+              {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
               <Button type="submit">Submit Request</Button>
             </form>
           </CardContent>
@@ -137,18 +138,16 @@ export default function LeaveRequestsPage() {
                       <span className="font-medium">
                         {leaveTypeLabels[req.leaveType] || req.leaveType}
                       </span>
-                      <Badge variant={statusVariant[req.status] || "secondary"}>
-                        {req.status}
-                      </Badge>
+                      <Badge variant={statusVariant[req.status] || "secondary"}>{req.status}</Badge>
                     </div>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-1 text-sm">
                       <Calendar className="size-3" />
                       {new Date(req.startDate).toLocaleDateString()} -{" "}
                       {new Date(req.endDate).toLocaleDateString()}
                     </div>
-                    <p className="text-sm text-muted-foreground">{req.reason}</p>
+                    <p className="text-muted-foreground text-sm">{req.reason}</p>
                   </div>
-                  <UserCheck className="size-4 text-muted-foreground" />
+                  <UserCheck className="text-muted-foreground size-4" />
                 </div>
               ))}
             </div>

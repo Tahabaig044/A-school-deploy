@@ -7,7 +7,13 @@ import { ROLES, type Role } from "@/lib/constants"
 
 const ALL_ROLES = Object.values(ROLES) as Role[]
 const ADMIN_ROLES: Role[] = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"]
-const VERIFIER_ROLES: Role[] = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER"]
+const VERIFIER_ROLES: Role[] = [
+  "SUPER_ADMIN",
+  "SCHOOL_ADMIN",
+  "BRANCH_ADMIN",
+  "PRINCIPAL",
+  "TEACHER",
+]
 
 export type CardRole =
   | "STUDENT"
@@ -159,7 +165,7 @@ function makeSubject(
   cardRole: CardRole,
   profile: AuthProfile,
   entity: any,
-  photo: string | null
+  photo: string | null,
 ): Subject {
   const schoolId = entity?.schoolId ?? profile.schoolId
   const branchId = entity?.branchId ?? profile.branchId
@@ -210,7 +216,8 @@ async function resolveSubject(profile: AuthProfile): Promise<Subject | null> {
     if (parent) return makeSubject("PARENT", profile, parent, profile.avatarUrl ?? null)
   }
   const staff = await prisma.staff.findFirst({ where: { profileId: profile.id } })
-  if (staff) return makeSubject("STAFF", profile, staff, staff.photoUrl ?? profile.avatarUrl ?? null)
+  if (staff)
+    return makeSubject("STAFF", profile, staff, staff.photoUrl ?? profile.avatarUrl ?? null)
   if (ADMIN_ROLES.includes(profile.role)) {
     return makeSubject(profile.role as CardRole, profile, null, profile.avatarUrl ?? null)
   }
@@ -242,7 +249,9 @@ async function getOrCreateIdCard(subject: Subject): Promise<CardRow | null> {
     })
   } catch (e: any) {
     if (e?.code === "P2002") {
-      const nowExisting = await prisma.idCard.findUnique({ where: { profileId: subject.profile.id } })
+      const nowExisting = await prisma.idCard.findUnique({
+        where: { profileId: subject.profile.id },
+      })
       if (nowExisting) return nowExisting
     }
     throw e
@@ -292,7 +301,7 @@ function identityFor(subject: Subject): { label: string; value: string } {
 
 async function detailsFor(
   subject: Subject,
-  preloadedEnrollment?: StudentEnrollmentLike | null
+  preloadedEnrollment?: StudentEnrollmentLike | null,
 ): Promise<IdCardDetailRow[]> {
   const e = subject.entity
   switch (subject.cardRole) {
@@ -358,7 +367,7 @@ async function buildCardData(
   subject: Subject,
   card: CardRow | null,
   policy: IdCardPolicy,
-  preloadedEnrollment?: StudentEnrollmentLike | null
+  preloadedEnrollment?: StudentEnrollmentLike | null,
 ): Promise<IdCardData> {
   const school = subject.schoolId
     ? await prisma.school.findUnique({
@@ -411,7 +420,12 @@ async function checkProfileAccess(actor: AuthProfile, target: AuthProfile): Prom
   if (actor.role === "SUPER_ADMIN") return true
   if (ADMIN_ROLES.includes(actor.role)) {
     if (!target.schoolId || target.schoolId !== actor.schoolId) return false
-    if (actor.role === "BRANCH_ADMIN" && actor.branchId && target.branchId && target.branchId !== actor.branchId) {
+    if (
+      actor.role === "BRANCH_ADMIN" &&
+      actor.branchId &&
+      target.branchId &&
+      target.branchId !== actor.branchId
+    ) {
       return false
     }
     return true
@@ -463,7 +477,7 @@ export async function getIdCardDataForUser(targetProfileId: string): Promise<IdC
 /** Cookie-free variant used by the mobile API. */
 export async function getIdCardDataForUserForProfile(
   actor: AuthProfile,
-  targetProfileId: string
+  targetProfileId: string,
 ): Promise<IdCardData | null> {
   const target = await prisma.profile.findUnique({ where: { id: targetProfileId } })
   if (!target) return null
@@ -490,7 +504,7 @@ export async function getStudentIdCardData(studentId: string): Promise<IdCardDat
 /** Cookie-free variant used by the mobile API. */
 export async function getStudentIdCardDataForProfile(
   actor: AuthProfile,
-  studentId: string
+  studentId: string,
 ): Promise<IdCardData | null> {
   const student = await prisma.student.findUnique({ where: { id: studentId } })
   if (!student) return null
@@ -514,7 +528,9 @@ export async function getStudentIdCardDataForProfile(
         : null
       if (!link) return null
     } else if (actor.role === "STUDENT") {
-      const own = await prisma.student.findFirst({ where: { id: studentId, email: actor.email ?? "" } })
+      const own = await prisma.student.findFirst({
+        where: { id: studentId, email: actor.email ?? "" },
+      })
       if (!own) return null
     }
   }
@@ -532,14 +548,14 @@ export async function getBulkStudentIdCardData(
   schoolId: string,
   classId: string,
   sectionId?: string,
-  sessionId?: string
+  sessionId?: string,
 ): Promise<IdCardData[]> {
   const { profile: actor } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
     "PRINCIPAL",
-    "TEACHER"
+    "TEACHER",
   )
   return getBulkStudentIdCardDataForProfile(actor, schoolId, classId, sectionId, sessionId)
 }
@@ -550,7 +566,7 @@ export async function getBulkStudentIdCardDataForProfile(
   schoolId: string,
   classId: string,
   sectionId?: string,
-  sessionId?: string
+  sessionId?: string,
 ): Promise<IdCardData[]> {
   if (actor.role !== "SUPER_ADMIN" && actor.schoolId !== schoolId) return []
   if (actor.role === "BRANCH_ADMIN" && actor.branchId) {
@@ -620,7 +636,7 @@ export async function requireIdCardVerifierForProfile(profile: AuthProfile): Pro
 
 export async function verifyIdCardToken(
   token: string,
-  verifier?: { role: Role; schoolId: string | null; id: string }
+  verifier?: { role: Role; schoolId: string | null; id: string },
 ): Promise<IdCardVerification> {
   const hash = hashQrToken(token)
   const card = await prisma.idCard.findUnique({
@@ -652,7 +668,7 @@ export async function verifyIdCardToken(
   const name =
     card.profile.firstName && card.profile.lastName
       ? `${card.profile.firstName} ${card.profile.lastName}`.trim()
-      : card.profile.email ?? card.profile.id
+      : (card.profile.email ?? card.profile.id)
 
   return {
     verified: true,
@@ -675,7 +691,7 @@ export async function verifyIdCardToken(
 
 export async function updateIdCardStatus(
   profileId: string,
-  status: CardStatusValue
+  status: CardStatusValue,
 ): Promise<{ success?: boolean; error?: string }> {
   const { profile: actor } = await requireRole(...ADMIN_ROLES)
   const card = await prisma.idCard.findUnique({ where: { profileId } })

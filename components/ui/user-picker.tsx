@@ -47,7 +47,9 @@ export function UserPicker({
   const [loading, setLoading] = useState(false)
   const [selectedRole, setSelectedRole] = useState<string>("")
   const [showRoleDropdown, setShowRoleDropdown] = useState(false)
-  const [selectedUsers, setSelectedUsers] = useState<Map<string, { name: string; role: string }>>(new Map())
+  const [selectedUsers, setSelectedUsers] = useState<Map<string, { name: string; role: string }>>(
+    new Map(),
+  )
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const roleRef = useRef<HTMLDivElement>(null)
@@ -67,43 +69,50 @@ export function UserPicker({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const search = useCallback(async (q: string) => {
-    if (q.length < 2) {
-      setResults([])
-      return
-    }
-    const fetchId = ++lastFetchRef.current
-    setLoading(true)
-    try {
-      const filters: { roles?: string[] } = {}
-      if (selectedRole) {
-        filters.roles = [selectedRole]
+  const search = useCallback(
+    async (q: string) => {
+      if (q.length < 2) {
+        setResults([])
+        return
       }
-      const data = await searchUsers(q, filters)
-      if (fetchId !== lastFetchRef.current) return
-      const filtered = excludeIds ? data.filter((u) => !excludeIds.includes(u.profileId || u.id)) : data
-      setResults(filtered)
-      const cacheUpdates: [string, { name: string; role: string }][] = []
-      for (const u of filtered) {
-        const uid = u.profileId || u.id
-        if (!userCache.has(uid)) {
-          cacheUpdates.push([uid, { name: u.name, role: u.role }])
+      const fetchId = ++lastFetchRef.current
+      setLoading(true)
+      try {
+        const filters: { roles?: string[] } = {}
+        if (selectedRole) {
+          filters.roles = [selectedRole]
         }
+        const data = await searchUsers(q, filters)
+        if (fetchId !== lastFetchRef.current) return
+        const filtered = excludeIds
+          ? data.filter((u) => !excludeIds.includes(u.profileId || u.id))
+          : data
+        setResults(filtered)
+        const cacheUpdates: [string, { name: string; role: string }][] = []
+        for (const u of filtered) {
+          const uid = u.profileId || u.id
+          if (!userCache.has(uid)) {
+            cacheUpdates.push([uid, { name: u.name, role: u.role }])
+          }
+        }
+        if (cacheUpdates.length > 0) {
+          userCache = new Map([...userCache, ...cacheUpdates])
+        }
+      } catch {
+        setResults([])
+      } finally {
+        if (fetchId === lastFetchRef.current) setLoading(false)
       }
-      if (cacheUpdates.length > 0) {
-        userCache = new Map([...userCache, ...cacheUpdates])
-      }
-    } catch {
-      setResults([])
-    } finally {
-      if (fetchId === lastFetchRef.current) setLoading(false)
-    }
-  }, [selectedRole, excludeIds])
+    },
+    [selectedRole, excludeIds],
+  )
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => search(query), 300)
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
   }, [query, search])
 
   useEffect(() => {
@@ -148,15 +157,21 @@ export function UserPicker({
       <input type="hidden" name={name} value={JSON.stringify(selected)} />
 
       {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-2">
+        <div className="mb-2 flex flex-wrap gap-1.5">
           {selected.map((id) => {
             const info = selectedUsers.get(id) || userCache.get(id)
             return (
-              <Badge key={id} variant="secondary" className="gap-1 max-w-full">
+              <Badge key={id} variant="secondary" className="max-w-full gap-1">
                 <User className="h-3 w-3 shrink-0" />
                 <span className="truncate">{info?.name || id.slice(0, 8) + "..."}</span>
-                <span className="text-[10px] opacity-60 shrink-0">{info?.role?.replace("_", " ")}</span>
-                <button type="button" onClick={() => handleRemove(id)} className="ml-0.5 hover:text-destructive shrink-0">
+                <span className="shrink-0 text-[10px] opacity-60">
+                  {info?.role?.replace("_", " ")}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleRemove(id)}
+                  className="hover:text-destructive ml-0.5 shrink-0"
+                >
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
@@ -171,17 +186,22 @@ export function UserPicker({
             <button
               type="button"
               onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-              className="flex items-center gap-1 border rounded px-3 py-2 text-sm hover:bg-muted whitespace-nowrap"
+              className="hover:bg-muted flex items-center gap-1 rounded border px-3 py-2 text-sm whitespace-nowrap"
             >
-              {selectedRole ? ROLE_OPTIONS.find((r) => r.value === selectedRole)?.label || selectedRole : "All Roles"}
+              {selectedRole
+                ? ROLE_OPTIONS.find((r) => r.value === selectedRole)?.label || selectedRole
+                : "All Roles"}
               <ChevronDown className="h-3 w-3" />
             </button>
             {showRoleDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-44 bg-popover border rounded shadow-lg z-50 max-h-60 overflow-y-auto">
+              <div className="bg-popover absolute top-full left-0 z-50 mt-1 max-h-60 w-44 overflow-y-auto rounded border shadow-lg">
                 <button
                   type="button"
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
-                  onClick={() => { setSelectedRole(""); setShowRoleDropdown(false) }}
+                  className="hover:bg-muted w-full px-3 py-2 text-left text-sm"
+                  onClick={() => {
+                    setSelectedRole("")
+                    setShowRoleDropdown(false)
+                  }}
                 >
                   All Roles
                 </button>
@@ -189,8 +209,11 @@ export function UserPicker({
                   <button
                     key={role.value}
                     type="button"
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-muted ${selectedRole === role.value ? "bg-muted font-medium" : ""}`}
-                    onClick={() => { setSelectedRole(role.value); setShowRoleDropdown(false) }}
+                    className={`hover:bg-muted w-full px-3 py-2 text-left text-sm ${selectedRole === role.value ? "bg-muted font-medium" : ""}`}
+                    onClick={() => {
+                      setSelectedRole(role.value)
+                      setShowRoleDropdown(false)
+                    }}
                   >
                     {role.label}
                   </button>
@@ -201,7 +224,7 @@ export function UserPicker({
         )}
 
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             ref={inputRef}
             placeholder={placeholder}
@@ -214,11 +237,11 @@ export function UserPicker({
       </div>
 
       {open && query.length >= 2 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-popover border rounded shadow-lg z-50 max-h-60 overflow-y-auto">
+        <div className="bg-popover absolute top-full right-0 left-0 z-50 mt-1 max-h-60 overflow-y-auto rounded border shadow-lg">
           {loading ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">Searching...</div>
+            <div className="text-muted-foreground p-4 text-center text-sm">Searching...</div>
           ) : results.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">No users found</div>
+            <div className="text-muted-foreground p-4 text-center text-sm">No users found</div>
           ) : (
             results.map((user) => {
               const userId = user.profileId || user.id
@@ -227,24 +250,29 @@ export function UserPicker({
                 <button
                   key={userId}
                   type="button"
-                  className={`w-full text-left px-3 py-2.5 flex items-center gap-3 hover:bg-muted text-sm ${isSelected ? "bg-muted/50" : ""}`}
+                  className={`hover:bg-muted flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm ${isSelected ? "bg-muted/50" : ""}`}
                   onClick={() => handleSelect(user)}
                 >
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium truncate">{user.name}</span>
-                      <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0">
+                      <span className="truncate font-medium">{user.name}</span>
+                      <Badge variant="outline" className="shrink-0 px-1.5 py-0 text-[10px]">
                         {user.role.replace("_", " ")}
                       </Badge>
                     </div>
-                    <div className="text-xs text-muted-foreground truncate mt-0.5">
+                    <div className="text-muted-foreground mt-0.5 truncate text-xs">
                       {user.identifier && <span className="mr-2">{user.identifier}</span>}
                       {user.email && <span>{user.email}</span>}
-                      {user.class && <span className="ml-2">Class: {user.class}{user.section ? ` - ${user.section}` : ""}</span>}
+                      {user.class && (
+                        <span className="ml-2">
+                          Class: {user.class}
+                          {user.section ? ` - ${user.section}` : ""}
+                        </span>
+                      )}
                       {user.department && <span className="ml-2">Dept: {user.department}</span>}
                     </div>
                   </div>
-                  {isSelected && <Check className="h-4 w-4 shrink-0 text-primary" />}
+                  {isSelected && <Check className="text-primary h-4 w-4 shrink-0" />}
                 </button>
               )
             })

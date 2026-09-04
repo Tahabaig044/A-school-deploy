@@ -7,9 +7,15 @@ import { getSchoolId, getBranchId } from "@/lib/school-context"
 
 export async function markAttendance(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
 
   const teacher = await prisma.teacher.findFirst({ where: { profileId: profile.id } })
   if (!teacher && !["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN"].includes(profile.role)) {
@@ -38,7 +44,9 @@ export async function markAttendance(
   }
 
   const existing = await prisma.studentAttendance.findUnique({
-    where: { studentId_date_academicSessionId: { studentId, date: new Date(date), academicSessionId } },
+    where: {
+      studentId_date_academicSessionId: { studentId, date: new Date(date), academicSessionId },
+    },
   })
 
   if (existing) {
@@ -72,7 +80,13 @@ export async function markAttendance(
 }
 
 export async function bulkMarkAttendance(formData: FormData) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
 
   const teacher = await prisma.teacher.findFirst({ where: { profileId: profile.id } })
   const classId = formData.get("classId") as string
@@ -121,7 +135,15 @@ export async function bulkMarkAttendance(formData: FormData) {
 
   const existingMap = new Map(existingRecords.map((r) => [r.studentId, r.id]))
 
-  const toCreate: { studentId: string; classId: string; sectionId: string | null; academicSessionId: string; date: Date; status: any; markedById: string }[] = []
+  const toCreate: {
+    studentId: string
+    classId: string
+    sectionId: string | null
+    academicSessionId: string
+    date: Date
+    status: any
+    markedById: string
+  }[] = []
   const toUpdate: { id: string; status: any; markedById: string }[] = []
 
   for (const student of students) {
@@ -153,8 +175,8 @@ export async function bulkMarkAttendance(formData: FormData) {
           tx.studentAttendance.update({
             where: { id: item.id },
             data: { status: item.status, markedById: item.markedById },
-          })
-        )
+          }),
+        ),
       )
     }
   })
@@ -166,7 +188,7 @@ export async function bulkMarkAttendance(formData: FormData) {
 
 export async function markStaffAttendance(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 

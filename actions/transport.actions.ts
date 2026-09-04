@@ -40,7 +40,7 @@ const studentTransportSchema = z.object({
 
 export async function createVehicle(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -49,11 +49,17 @@ export async function createVehicle(
   const plateNumber = formData.get("plateNumber") as string
   const vehicleType = formData.get("vehicleType") as string
   const capacity = Number(formData.get("capacity") as string)
-  const driverName = formData.get("driverName") as string || undefined
-  const driverPhone = formData.get("driverPhone") as string || undefined
+  const driverName = (formData.get("driverName") as string) || undefined
+  const driverPhone = (formData.get("driverPhone") as string) || undefined
 
   const parsed = vehicleSchema.safeParse({
-    schoolId, branchId, plateNumber, vehicleType, capacity, driverName, driverPhone,
+    schoolId,
+    branchId,
+    plateNumber,
+    vehicleType,
+    capacity,
+    driverName,
+    driverPhone,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -63,7 +69,11 @@ export async function createVehicle(
     data: {
       school: { connect: { id: schoolId } },
       branch: { connect: { id: branchId } },
-      plateNumber, vehicleType, capacity, driverName, driverPhone,
+      plateNumber,
+      vehicleType,
+      capacity,
+      driverName,
+      driverPhone,
     },
   })
 
@@ -74,15 +84,24 @@ export async function createVehicle(
 export async function updateVehicle(
   vehicleId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const vehicle = await prisma.vehicle.findUnique({
+    where: { id: vehicleId },
+    select: { schoolId: true },
+  })
+  if (!vehicle) return { error: "Vehicle not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && vehicle.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
 
   const plateNumber = formData.get("plateNumber") as string
   const vehicleType = formData.get("vehicleType") as string
   const capacity = Number(formData.get("capacity") as string)
-  const driverName = formData.get("driverName") as string || undefined
-  const driverPhone = formData.get("driverPhone") as string || undefined
+  const driverName = (formData.get("driverName") as string) || undefined
+  const driverPhone = (formData.get("driverPhone") as string) || undefined
   const isActive = formData.get("isActive") === "true"
 
   await prisma.vehicle.update({
@@ -95,17 +114,32 @@ export async function updateVehicle(
 }
 
 export async function deleteVehicle(vehicleId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const vehicle = await prisma.vehicle.findUnique({
+    where: { id: vehicleId },
+    select: { schoolId: true },
+  })
+  if (!vehicle) return { error: "Vehicle not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && vehicle.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
   await prisma.vehicle.delete({ where: { id: vehicleId } })
   revalidatePath("/dashboard/transport/vehicles")
   return { success: true }
 }
 
 export async function getVehicles(schoolId: string, branchId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
   return prisma.vehicle.findMany({
-    where: { schoolId, branchId },
+    where: {
+      schoolId: effectiveSchoolId,
+      ...(profile.role === "SUPER_ADMIN" ? { branchId } : {}),
+    },
     include: {
       _count: { select: { routes: true, assignments: true } },
     },
@@ -114,9 +148,9 @@ export async function getVehicles(schoolId: string, branchId: string) {
 }
 
 export async function getVehicleById(vehicleId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
-  return prisma.vehicle.findUnique({
+  const vehicle = await prisma.vehicle.findUnique({
     where: { id: vehicleId },
     include: {
       routes: true,
@@ -128,11 +162,15 @@ export async function getVehicleById(vehicleId: string) {
       },
     },
   })
+  if (!vehicle) return null
+  if (profile.role !== "SUPER_ADMIN" && vehicle.schoolId !== profile.schoolId) return null
+
+  return vehicle
 }
 
 export async function createTransportRoute(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -142,15 +180,23 @@ export async function createTransportRoute(
   const name = formData.get("name") as string
   const startLocation = formData.get("startLocation") as string
   const endLocation = formData.get("endLocation") as string
-  const stops = formData.get("stops") as string || undefined
-  const pickupTime = formData.get("pickupTime") as string || undefined
-  const dropTime = formData.get("dropTime") as string || undefined
+  const stops = (formData.get("stops") as string) || undefined
+  const pickupTime = (formData.get("pickupTime") as string) || undefined
+  const dropTime = (formData.get("dropTime") as string) || undefined
   const monthlyFeeStr = formData.get("monthlyFee") as string
   const monthlyFee = monthlyFeeStr ? Number(monthlyFeeStr) : undefined
 
   const parsed = transportRouteSchema.safeParse({
-    schoolId, branchId, vehicleId, name, startLocation, endLocation,
-    stops, pickupTime, dropTime, monthlyFee,
+    schoolId,
+    branchId,
+    vehicleId,
+    name,
+    startLocation,
+    endLocation,
+    stops,
+    pickupTime,
+    dropTime,
+    monthlyFee,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -161,8 +207,13 @@ export async function createTransportRoute(
       school: { connect: { id: schoolId } },
       branch: { connect: { id: branchId } },
       vehicle: { connect: { id: vehicleId } },
-      name, startLocation, endLocation,
-      stops, pickupTime, dropTime, monthlyFee,
+      name,
+      startLocation,
+      endLocation,
+      stops,
+      pickupTime,
+      dropTime,
+      monthlyFee,
     },
   })
 
@@ -173,16 +224,25 @@ export async function createTransportRoute(
 export async function updateTransportRoute(
   routeId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const route = await prisma.transportRoute.findUnique({
+    where: { id: routeId },
+    select: { schoolId: true },
+  })
+  if (!route) return { error: "Route not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && route.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
 
   const name = formData.get("name") as string
   const startLocation = formData.get("startLocation") as string
   const endLocation = formData.get("endLocation") as string
-  const stops = formData.get("stops") as string || undefined
-  const pickupTime = formData.get("pickupTime") as string || undefined
-  const dropTime = formData.get("dropTime") as string || undefined
+  const stops = (formData.get("stops") as string) || undefined
+  const pickupTime = (formData.get("pickupTime") as string) || undefined
+  const dropTime = (formData.get("dropTime") as string) || undefined
   const monthlyFeeStr = formData.get("monthlyFee") as string
   const monthlyFee = monthlyFeeStr ? Number(monthlyFeeStr) : undefined
   const isActive = formData.get("isActive") === "true"
@@ -197,17 +257,32 @@ export async function updateTransportRoute(
 }
 
 export async function deleteTransportRoute(routeId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const route = await prisma.transportRoute.findUnique({
+    where: { id: routeId },
+    select: { schoolId: true },
+  })
+  if (!route) return { error: "Route not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && route.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
   await prisma.transportRoute.delete({ where: { id: routeId } })
   revalidatePath("/dashboard/transport/routes")
   return { success: true }
 }
 
 export async function getTransportRoutes(schoolId: string, branchId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
   return prisma.transportRoute.findMany({
-    where: { schoolId, branchId },
+    where: {
+      schoolId: effectiveSchoolId,
+      ...(profile.role === "SUPER_ADMIN" ? { branchId } : {}),
+    },
     include: {
       vehicle: { select: { id: true, plateNumber: true, vehicleType: true } },
       _count: { select: { assignments: true } },
@@ -218,7 +293,7 @@ export async function getTransportRoutes(schoolId: string, branchId: string) {
 
 export async function assignStudentTransport(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -227,13 +302,45 @@ export async function assignStudentTransport(
   const vehicleId = formData.get("vehicleId") as string
   const academicSessionId = formData.get("academicSessionId") as string
   const startDate = formData.get("startDate") as string
-  const endDate = formData.get("endDate") as string || undefined
+  const endDate = (formData.get("endDate") as string) || undefined
 
   const parsed = studentTransportSchema.safeParse({
-    studentId, routeId, vehicleId, academicSessionId, startDate, endDate,
+    studentId,
+    routeId,
+    vehicleId,
+    academicSessionId,
+    startDate,
+    endDate,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
+  }
+
+  const student = await prisma.student.findUnique({
+    where: { id: parsed.data.studentId },
+    select: { schoolId: true },
+  })
+  if (!student) return { error: "Student not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && student.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
+  const route = await prisma.transportRoute.findUnique({
+    where: { id: parsed.data.routeId },
+    select: { schoolId: true },
+  })
+  if (!route) return { error: "Route not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && route.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
+  const vehicle = await prisma.vehicle.findUnique({
+    where: { id: parsed.data.vehicleId },
+    select: { schoolId: true },
+  })
+  if (!vehicle) return { error: "Vehicle not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && vehicle.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
   }
 
   const existing = await prisma.studentTransport.findUnique({
@@ -246,7 +353,10 @@ export async function assignStudentTransport(
 
   await prisma.studentTransport.create({
     data: {
-      studentId, routeId, vehicleId, academicSessionId,
+      studentId,
+      routeId,
+      vehicleId,
+      academicSessionId,
       startDate: new Date(startDate),
       endDate: endDate ? new Date(endDate) : undefined,
     },
@@ -257,7 +367,24 @@ export async function assignStudentTransport(
 }
 
 export async function removeStudentTransport(assignmentId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const assignment = await prisma.studentTransport.findUnique({
+    where: { id: assignmentId },
+    select: {
+      student: { select: { schoolId: true } },
+      route: { select: { schoolId: true } },
+    },
+  })
+  if (!assignment) return { error: "Assignment not found.", success: false }
+  if (
+    profile.role !== "SUPER_ADMIN" &&
+    assignment.student.schoolId !== profile.schoolId &&
+    assignment.route.schoolId !== profile.schoolId
+  ) {
+    return { error: "Forbidden", success: false }
+  }
+
   await prisma.studentTransport.delete({ where: { id: assignmentId } })
   revalidatePath("/dashboard/transport/assignments")
   return { success: true }
@@ -266,13 +393,16 @@ export async function removeStudentTransport(assignmentId: string) {
 export async function getStudentTransportAssignments(
   schoolId: string,
   branchId: string,
-  academicSessionId: string
+  academicSessionId: string,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
   return prisma.studentTransport.findMany({
     where: {
-      route: { schoolId, branchId },
+      route: {
+        schoolId: profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!,
+        ...(profile.role === "SUPER_ADMIN" ? { branchId } : {}),
+      },
       academicSessionId,
       isActive: true,
     },
@@ -286,14 +416,40 @@ export async function getStudentTransportAssignments(
 }
 
 export async function getTransportStats(schoolId: string, branchId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
+  const effectiveBranchId = profile.role === "SUPER_ADMIN" ? branchId : profile.branchId || undefined
 
   const [totalVehicles, activeVehicles, totalRoutes, totalStudents] = await Promise.all([
-    prisma.vehicle.count({ where: { schoolId, branchId } }),
-    prisma.vehicle.count({ where: { schoolId, branchId, isActive: true } }),
-    prisma.transportRoute.count({ where: { schoolId, branchId, isActive: true } }),
+    prisma.vehicle.count({
+      where: {
+        schoolId: effectiveSchoolId,
+        ...(effectiveBranchId ? { branchId: effectiveBranchId } : {}),
+      },
+    }),
+    prisma.vehicle.count({
+      where: {
+        schoolId: effectiveSchoolId,
+        ...(effectiveBranchId ? { branchId: effectiveBranchId } : {}),
+        isActive: true,
+      },
+    }),
+    prisma.transportRoute.count({
+      where: {
+        schoolId: effectiveSchoolId,
+        ...(effectiveBranchId ? { branchId: effectiveBranchId } : {}),
+        isActive: true,
+      },
+    }),
     prisma.studentTransport.count({
-      where: { route: { schoolId, branchId }, isActive: true },
+      where: {
+        route: {
+          schoolId: effectiveSchoolId,
+          ...(effectiveBranchId ? { branchId: effectiveBranchId } : {}),
+        },
+        isActive: true,
+      },
     }),
   ])
 

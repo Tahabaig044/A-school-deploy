@@ -41,7 +41,9 @@ export function UserDropdown({ email, name, role }: UserDropdownProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" className="relative h-8 w-8 rounded-full" />}>
+      <DropdownMenuTrigger
+        render={<Button variant="ghost" className="relative h-8 w-8 rounded-full" />}
+      >
         <Avatar className="h-8 w-8">
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
@@ -49,21 +51,17 @@ export function UserDropdown({ email, name, role }: UserDropdownProps) {
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{name || "User"}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {email}
-            </p>
+            <p className="text-sm leading-none font-medium">{name || "User"}</p>
+            <p className="text-muted-foreground text-xs leading-none">{email}</p>
             {role && (
-              <p className="text-xs leading-none text-muted-foreground pt-1">
-                {formatRole(role)}
-              </p>
+              <p className="text-muted-foreground pt-1 text-xs leading-none">{formatRole(role)}</p>
             )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <Link href="/dashboard/settings" className="flex items-center gap-2 w-full">
+            <Link href="/dashboard/settings" className="flex w-full items-center gap-2">
               <Settings className="h-4 w-4" />
               Settings
             </Link>

@@ -62,15 +62,15 @@ export default async function ReportsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {reports.map((report) => (
           <Link key={report.href} href={report.href}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card className="cursor-pointer transition-shadow hover:shadow-md">
               <CardHeader className="flex flex-row items-center gap-4">
-                <report.icon className="h-8 w-8 text-primary" />
+                <report.icon className="text-primary h-8 w-8" />
                 <div>
                   <CardTitle className="text-lg">{report.title}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">{report.description}</p>
+                <p className="text-muted-foreground text-sm">{report.description}</p>
               </CardContent>
             </Card>
           </Link>

@@ -27,9 +27,19 @@ export async function createNotification(
   type: string,
   link?: string,
   category: string = "GENERAL",
-  priority: string = "NORMAL"
+  priority: string = "NORMAL",
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  if (profile.role !== "SUPER_ADMIN") {
+    const receiver = await prisma.profile.findUnique({
+      where: { id: userId },
+      select: { schoolId: true },
+    })
+    if (!receiver || receiver.schoolId !== profile.schoolId) {
+      return { error: "Receiver not found.", success: false }
+    }
+  }
 
   await prisma.notification.create({
     data: { userId, title, content, type, link, category, priority },
@@ -39,7 +49,14 @@ export async function createNotification(
 }
 
 export async function markNotificationAsRead(notificationId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   await prisma.notification.update({
     where: { id: notificationId, userId: profile.id },
@@ -51,7 +68,14 @@ export async function markNotificationAsRead(notificationId: string) {
 }
 
 export async function markAllNotificationsAsRead() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   await prisma.notification.updateMany({
     where: { userId: profile.id, isRead: false },
@@ -63,7 +87,14 @@ export async function markAllNotificationsAsRead() {
 }
 
 export async function getNotifications(limit?: number, category?: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.notification.findMany({
     where: {
@@ -76,7 +107,14 @@ export async function getNotifications(limit?: number, category?: string) {
 }
 
 export async function getNotificationHistory(page: number = 1, pageSize: number = 20) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   const skip = (page - 1) * pageSize
 
@@ -101,7 +139,14 @@ export async function getNotificationHistory(page: number = 1, pageSize: number 
 }
 
 export async function getUnreadNotificationCount() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.notification.count({
     where: { userId: profile.id, isRead: false },
@@ -109,7 +154,14 @@ export async function getUnreadNotificationCount() {
 }
 
 export async function deleteNotification(notificationId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   await prisma.notification.delete({
     where: { id: notificationId, userId: profile.id },

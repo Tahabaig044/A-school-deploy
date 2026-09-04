@@ -59,7 +59,7 @@ export default function TeacherProfilePage() {
                 lastName: (formData.get("lastName") as string) || prev.lastName,
                 phone: (formData.get("phone") as string) || prev.phone,
               }
-            : prev
+            : prev,
         )
       }
     }
@@ -67,7 +67,7 @@ export default function TeacherProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <p className="text-muted-foreground">Loading profile...</p>
       </div>
     )
@@ -75,7 +75,7 @@ export default function TeacherProfilePage() {
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <p className="text-destructive">Failed to load profile data.</p>
       </div>
     )
@@ -98,44 +98,44 @@ export default function TeacherProfilePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
-              <Mail className="h-4 w-4 text-muted-foreground" />
+              <Mail className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-muted-foreground text-sm">Email</p>
                 <p className="font-medium">{profile.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
+              <Briefcase className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-sm text-muted-foreground">Role</p>
+                <p className="text-muted-foreground text-sm">Role</p>
                 <p className="font-medium">{profile.role}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <User className="h-4 w-4 text-muted-foreground" />
+              <User className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-sm text-muted-foreground">Employee Code</p>
+                <p className="text-muted-foreground text-sm">Employee Code</p>
                 <p className="font-medium">{profile.teacher?.employeeCode || "N/A"}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
+              <Briefcase className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-sm text-muted-foreground">Specialization</p>
+                <p className="text-muted-foreground text-sm">Specialization</p>
                 <p className="font-medium">{profile.teacher?.specialization || "N/A"}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <User className="h-4 w-4 text-muted-foreground" />
+              <User className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-sm text-muted-foreground">Qualification</p>
+                <p className="text-muted-foreground text-sm">Qualification</p>
                 <p className="font-medium">{profile.teacher?.qualification || "N/A"}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-sm text-muted-foreground">Member Since</p>
+                <p className="text-muted-foreground text-sm">Member Since</p>
                 <p className="font-medium">
                   {new Date(profile.createdAt).toLocaleDateString("en-US", {
                     year: "numeric",
@@ -177,28 +177,17 @@ export default function TeacherProfilePage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  defaultValue={profile.phone ?? ""}
-                />
+                <Input id="phone" name="phone" type="tel" defaultValue={profile.phone ?? ""} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" value={profile.email ?? ""} disabled />
-                <p className="text-xs text-muted-foreground">
-                  Email cannot be changed
-                </p>
+                <p className="text-muted-foreground text-xs">Email cannot be changed</p>
               </div>
 
-              {state.error && (
-                <p className="text-sm text-destructive">{state.error}</p>
-              )}
+              {state.error && <p className="text-destructive text-sm">{state.error}</p>}
               {state.success && (
-                <p className="text-sm text-green-600">
-                  Profile updated successfully
-                </p>
+                <p className="text-sm text-green-600">Profile updated successfully</p>
               )}
 
               <Button type="submit" className="w-full">

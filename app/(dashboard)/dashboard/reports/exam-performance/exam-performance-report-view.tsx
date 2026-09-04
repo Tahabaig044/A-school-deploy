@@ -4,13 +4,7 @@ import { PageHeader } from "@/components/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-export function ExamPerformanceReportView({
-  data,
-  profile,
-}: {
-  data: any[]
-  profile: any
-}) {
+export function ExamPerformanceReportView({ data, profile }: { data: any[]; profile: any }) {
   const totalExams = data.length
   const totalStudents = data.reduce((sum, d) => sum + d.totalStudents, 0)
   const totalPassed = data.reduce((sum, d) => sum + d.passed, 0)
@@ -60,10 +54,10 @@ export function ExamPerformanceReportView({
           <CardTitle>Exam Results</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="rounded-lg border">
             <table className="w-full">
               <thead>
-                <tr className="border-b bg-muted/50">
+                <tr className="bg-muted/50 border-b">
                   <th className="p-3 text-left">Exam</th>
                   <th className="p-3 text-left">Type</th>
                   <th className="p-3 text-left">Class</th>
@@ -81,7 +75,9 @@ export function ExamPerformanceReportView({
                 {data.map((exam) => (
                   <tr key={exam.id} className="border-b">
                     <td className="p-3">{exam.name}</td>
-                    <td className="p-3"><Badge>{exam.examType}</Badge></td>
+                    <td className="p-3">
+                      <Badge>{exam.examType}</Badge>
+                    </td>
                     <td className="p-3">{exam.className}</td>
                     <td className="p-3">{exam.subject}</td>
                     <td className="p-3 text-right">{exam.totalMarks}</td>

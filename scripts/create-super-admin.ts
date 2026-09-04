@@ -12,11 +12,9 @@ envContent.split("\n").forEach((line) => {
   }
 })
 
-const supabase = createClient(
-  envVars.NEXT_PUBLIC_SUPABASE_URL,
-  envVars.SUPABASE_SERVICE_ROLE_KEY,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-)
+const supabase = createClient(envVars.NEXT_PUBLIC_SUPABASE_URL, envVars.SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { autoRefreshToken: false, persistSession: false },
+})
 
 const SUPER_ADMIN_ID = "41c3b981-2e39-4539-b0b4-8b87bc9750ae"
 const SUPER_ADMIN_EMAIL = "superadmin@school.com"

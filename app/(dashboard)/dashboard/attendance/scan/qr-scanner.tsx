@@ -4,7 +4,13 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { markAttendanceByQr } from "@/actions/attendance-qr.actions"
 import { Camera, CameraOff, CheckCircle2, XCircle, Loader2, ScanLine } from "lucide-react"
@@ -48,12 +54,26 @@ export function QrScanner({
           processingRef.current = true
 
           try {
-            const result = await markAttendanceByQr(decodedText, classId, sectionId || null, sessionId)
+            const result = await markAttendanceByQr(
+              decodedText,
+              classId,
+              sectionId || null,
+              sessionId,
+            )
 
             if (result.success) {
-              setLastResult({ success: true, message: result.studentName ? `Marked: ${result.studentName}` : "Attendance marked!" })
+              setLastResult({
+                success: true,
+                message: result.studentName
+                  ? `Marked: ${result.studentName}`
+                  : "Attendance marked!",
+              })
               setRecentScans((prev) => [
-                { id: decodedText.slice(0, 10), time: new Date().toLocaleTimeString(), status: "PRESENT" },
+                {
+                  id: decodedText.slice(0, 10),
+                  time: new Date().toLocaleTimeString(),
+                  status: "PRESENT",
+                },
                 ...prev.slice(0, 19),
               ])
             } else {
@@ -63,9 +83,11 @@ export function QrScanner({
             setLastResult({ success: false, message: "Invalid QR code" })
           }
 
-          setTimeout(() => { processingRef.current = false }, 1500)
+          setTimeout(() => {
+            processingRef.current = false
+          }, 1500)
         },
-        () => {}
+        () => {},
       )
 
       setScanning(true)
@@ -87,12 +109,14 @@ export function QrScanner({
   }, [scanner])
 
   useEffect(() => {
-    return () => { stopScanner() }
+    return () => {
+      stopScanner()
+    }
   }, [stopScanner])
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
-      <div className="lg:col-span-2 space-y-4">
+      <div className="space-y-4 lg:col-span-2">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -101,8 +125,15 @@ export function QrScanner({
                 <CardDescription>Position QR code in front of camera</CardDescription>
               </div>
               {lastResult && (
-                <Badge variant={lastResult.success ? "success" : "destructive"} className="text-sm px-3 py-1">
-                  {lastResult.success ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <XCircle className="h-3 w-3 mr-1" />}
+                <Badge
+                  variant={lastResult.success ? "success" : "destructive"}
+                  className="px-3 py-1 text-sm"
+                >
+                  {lastResult.success ? (
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                  ) : (
+                    <XCircle className="mr-1 h-3 w-3" />
+                  )}
                   {lastResult.message}
                 </Badge>
               )}
@@ -113,11 +144,21 @@ export function QrScanner({
               <div className="flex flex-wrap items-end gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="scan-class">Class</Label>
-                  <Select value={classId} onValueChange={(v) => { setClassId(v ?? ""); if (scanning) stopScanner() }}>
-                    <SelectTrigger id="scan-class" className="w-44"><SelectValue placeholder="Select class" /></SelectTrigger>
+                  <Select
+                    value={classId}
+                    onValueChange={(v) => {
+                      setClassId(v ?? "")
+                      if (scanning) stopScanner()
+                    }}
+                  >
+                    <SelectTrigger id="scan-class" className="w-44">
+                      <SelectValue placeholder="Select class" />
+                    </SelectTrigger>
                     <SelectContent>
                       {classes.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -125,12 +166,22 @@ export function QrScanner({
                 {selectedClass?.sections?.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="scan-section">Section</Label>
-                    <Select value={sectionId} onValueChange={(v) => { setSectionId(v ?? ""); if (scanning) stopScanner() }}>
-                      <SelectTrigger id="scan-section" className="w-36"><SelectValue placeholder="All" /></SelectTrigger>
+                    <Select
+                      value={sectionId}
+                      onValueChange={(v) => {
+                        setSectionId(v ?? "")
+                        if (scanning) stopScanner()
+                      }}
+                    >
+                      <SelectTrigger id="scan-section" className="w-36">
+                        <SelectValue placeholder="All" />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Sections</SelectItem>
                         {selectedClass.sections.map((s: any) => (
-                          <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -138,11 +189,21 @@ export function QrScanner({
                 )}
                 <div className="space-y-2">
                   <Label htmlFor="scan-session">Session</Label>
-                  <Select value={sessionId} onValueChange={(v) => { setSessionId(v ?? ""); if (scanning) stopScanner() }}>
-                    <SelectTrigger id="scan-session" className="w-44"><SelectValue /></SelectTrigger>
+                  <Select
+                    value={sessionId}
+                    onValueChange={(v) => {
+                      setSessionId(v ?? "")
+                      if (scanning) stopScanner()
+                    }}
+                  >
+                    <SelectTrigger id="scan-session" className="w-44">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {sessions.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -152,14 +213,14 @@ export function QrScanner({
               <div
                 id="qr-reader"
                 ref={readerRef}
-                className={`w-full max-w-md mx-auto overflow-hidden rounded-lg border bg-muted ${
+                className={`bg-muted mx-auto w-full max-w-md overflow-hidden rounded-lg border ${
                   scanning ? "" : "flex items-center justify-center"
                 }`}
                 style={{ minHeight: scanning ? "auto" : "200px" }}
               >
                 {!scanning && (
-                  <div className="text-center text-muted-foreground p-8">
-                    <ScanLine className="h-12 w-12 mx-auto mb-3 opacity-40" />
+                  <div className="text-muted-foreground p-8 text-center">
+                    <ScanLine className="mx-auto mb-3 h-12 w-12 opacity-40" />
                     <p>Select class and start scanner</p>
                   </div>
                 )}
@@ -168,11 +229,13 @@ export function QrScanner({
               <div className="flex justify-center">
                 {scanning ? (
                   <Button variant="destructive" onClick={stopScanner}>
-                    <CameraOff className="h-4 w-4 mr-2" />Stop Scanner
+                    <CameraOff className="mr-2 h-4 w-4" />
+                    Stop Scanner
                   </Button>
                 ) : (
                   <Button onClick={startScanner} disabled={!classId || !sessionId}>
-                    <Camera className="h-4 w-4 mr-2" />Start Scanner
+                    <Camera className="mr-2 h-4 w-4" />
+                    Start Scanner
                   </Button>
                 )}
               </div>
@@ -189,14 +252,19 @@ export function QrScanner({
           </CardHeader>
           <CardContent className="p-0">
             {recentScans.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8 text-sm">No scans yet</div>
+              <div className="text-muted-foreground py-8 text-center text-sm">No scans yet</div>
             ) : (
               <div className="divide-y">
                 {recentScans.map((scan, i) => (
-                  <div key={`${scan.id}-${i}`} className="flex items-center justify-between px-4 py-2 text-sm">
+                  <div
+                    key={`${scan.id}-${i}`}
+                    className="flex items-center justify-between px-4 py-2 text-sm"
+                  >
                     <span className="font-mono text-xs">{scan.id}</span>
                     <span className="text-muted-foreground text-xs">{scan.time}</span>
-                    <Badge variant="success" className="text-[10px] px-1.5 py-0">PRESENT</Badge>
+                    <Badge variant="success" className="px-1.5 py-0 text-[10px]">
+                      PRESENT
+                    </Badge>
                   </div>
                 ))}
               </div>

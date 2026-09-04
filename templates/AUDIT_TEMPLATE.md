@@ -2,12 +2,12 @@
 
 ## Audit Information
 
-| Field | Value |
-|-------|-------|
+| Field      | Value                                  |
+| ---------- | -------------------------------------- |
 | Audit Type | Security/Performance/Database/UI/Final |
-| Date | [Date] |
-| Auditor | [Name] |
-| Scope | [What was audited] |
+| Date       | [Date]                                 |
+| Auditor    | [Name]                                 |
+| Scope      | [What was audited]                     |
 
 ## Summary
 
@@ -17,26 +17,26 @@
 
 ### Critical Issues
 
-| ID | Description | Status |
-|----|-------------|--------|
-| | None found | |
+| ID  | Description | Status |
+| --- | ----------- | ------ |
+|     | None found  |        |
 
 ### High Issues
 
-| ID | Description | Status |
-|----|-------------|--------|
+| ID   | Description   | Status   |
+| ---- | ------------- | -------- |
 | [ID] | [Description] | [Status] |
 
 ### Medium Issues
 
-| ID | Description | Status |
-|----|-------------|--------|
+| ID   | Description   | Status   |
+| ---- | ------------- | -------- |
 | [ID] | [Description] | [Status] |
 
 ### Low Issues
 
-| ID | Description | Status |
-|----|-------------|--------|
+| ID   | Description   | Status   |
+| ---- | ------------- | -------- |
 | [ID] | [Description] | [Status] |
 
 ## Recommendations

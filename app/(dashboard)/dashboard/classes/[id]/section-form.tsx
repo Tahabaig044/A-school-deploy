@@ -16,7 +16,7 @@ export function SectionForm({ classId }: { classId: string }) {
         <CardTitle>Add Section</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4 max-w-sm">
+        <form action={formAction} className="grid max-w-sm gap-4">
           <input type="hidden" name="classId" value={classId} />
           <div className="grid gap-2">
             <Label htmlFor="name">Section Name</Label>
@@ -29,9 +29,7 @@ export function SectionForm({ classId }: { classId: string }) {
           <Button type="submit" disabled={pending}>
             {pending ? "Adding..." : "Add Section"}
           </Button>
-          {state?.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
-          )}
+          {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
         </form>
       </CardContent>
     </Card>

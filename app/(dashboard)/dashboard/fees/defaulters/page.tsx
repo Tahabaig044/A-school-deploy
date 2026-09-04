@@ -31,7 +31,9 @@ export default async function DefaultersPage({
           academicSessionId: sessionId,
         },
         include: {
-          student: { select: { id: true, firstName: true, lastName: true, admissionNo: true, phone: true } },
+          student: {
+            select: { id: true, firstName: true, lastName: true, admissionNo: true, phone: true },
+          },
           academicSession: { select: { name: true } },
         },
         orderBy: { dueDate: "asc" },

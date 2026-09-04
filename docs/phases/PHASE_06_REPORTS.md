@@ -1,9 +1,11 @@
 # Phase 6: Reports
 
 ## Duration
+
 2 weeks
 
 ## Objectives
+
 - Implement Results management
 - Build Report Card generation
 - Create Analytics dashboard
@@ -12,6 +14,7 @@
 ## Deliverables
 
 ### Week 1: Results & Grading
+
 1. **Results Management**
    - Enter exam results
    - Bulk marks entry
@@ -25,6 +28,7 @@
    - Custom grading rules
 
 ### Week 2: Reports & Analytics
+
 1. **Report Cards**
    - Generate report cards
    - Custom report templates
@@ -40,6 +44,7 @@
 ## Technical Implementation
 
 ### API Endpoints
+
 ```
 # Results
 GET    /api/v1/results?exam_id=&class_id=
@@ -67,6 +72,7 @@ GET    /api/v1/exports/students
 ```
 
 ### Database Schema
+
 ```sql
 -- Results
 CREATE TABLE results (
@@ -113,6 +119,7 @@ CREATE TABLE report_templates (
 ```
 
 ### UI Pages
+
 - /results - Results dashboard
 - /results/enter - Marks entry
 - /results/bulk-entry - Bulk marks entry
@@ -123,6 +130,7 @@ CREATE TABLE report_templates (
 ## Features
 
 ### Results
+
 - Excel-like marks entry
 - Auto-grade calculation
 - Validation rules
@@ -130,6 +138,7 @@ CREATE TABLE report_templates (
 - Result locking
 
 ### Report Cards
+
 - Multiple templates
 - Customizable sections
 - School branding
@@ -137,6 +146,7 @@ CREATE TABLE report_templates (
 - Bulk generation
 
 ### Analytics
+
 - Interactive charts
 - Drill-down capability
 - Date range filtering
@@ -144,12 +154,14 @@ CREATE TABLE report_templates (
 - Scheduled reports
 
 ### Export Formats
+
 - PDF
 - Excel (XLSX)
 - CSV
 - Print-friendly
 
 ## Report Card Sections
+
 1. Student Information
 2. Attendance Summary
 3. Exam Results Table
@@ -159,6 +171,7 @@ CREATE TABLE report_templates (
 7. School Stamp
 
 ## Acceptance Criteria
+
 - [ ] Results can be entered and saved
 - [ ] Bulk entry works correctly
 - [ ] Grades calculated automatically
@@ -169,13 +182,15 @@ CREATE TABLE report_templates (
 - [ ] Grading scales configurable
 
 ## Dependencies
+
 - Phase 3 completed
 - Exams module ready
 - Attendance data available
 
 ## Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
+
+| Risk                       | Impact | Mitigation             |
+| -------------------------- | ------ | ---------------------- |
 | PDF generation performance | Medium | Queue-based generation |
-| Large dataset exports | Medium | Streaming exports |
-| Grade calculation errors | High | Comprehensive testing |
+| Large dataset exports      | Medium | Streaming exports      |
+| Grade calculation errors   | High   | Comprehensive testing  |

@@ -10,7 +10,7 @@ function timeOverlaps(start1: string, end1: string, start2: string, end2: string
 
 export async function createTimetableSlot(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
@@ -51,7 +51,7 @@ export async function createTimetableSlot(
           dayOfWeek: dayOfWeek as any,
           academicSessionId,
         },
-      })
+      }),
     )
   } else {
     conflictChecks.push(Promise.resolve(null))
@@ -63,10 +63,7 @@ export async function createTimetableSlot(
     academicSessionId,
   }
   if (sectionId) {
-    classWhere.OR = [
-      { sectionId },
-      { sectionId: null },
-    ]
+    classWhere.OR = [{ sectionId }, { sectionId: null }]
   }
   conflictChecks.push(prisma.timetable.findFirst({ where: classWhere }))
 
@@ -79,30 +76,56 @@ export async function createTimetableSlot(
             academicSessionId,
           },
         })
-      : Promise.resolve(null)
+      : Promise.resolve(null),
   )
 
   const [teacherConflict, classConflict, roomConflict] = await Promise.all(conflictChecks)
 
-  if (!isFree && teacherConflict && timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, startTime, endTime)) {
-    return { error: `Teacher already has a class at ${teacherConflict.startTime}-${teacherConflict.endTime}.`, success: false }
+  if (
+    !isFree &&
+    teacherConflict &&
+    timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, startTime, endTime)
+  ) {
+    return {
+      error: `Teacher already has a class at ${teacherConflict.startTime}-${teacherConflict.endTime}.`,
+      success: false,
+    }
   }
 
-  if (classConflict && timeOverlaps(classConflict.startTime, classConflict.endTime, startTime, endTime)) {
-    return { error: `Class already has a slot at ${classConflict.startTime}-${classConflict.endTime}.`, success: false }
+  if (
+    classConflict &&
+    timeOverlaps(classConflict.startTime, classConflict.endTime, startTime, endTime)
+  ) {
+    return {
+      error: `Class already has a slot at ${classConflict.startTime}-${classConflict.endTime}.`,
+      success: false,
+    }
   }
 
-  if (roomConflict && timeOverlaps(roomConflict.startTime, roomConflict.endTime, startTime, endTime)) {
-    return { error: `Room "${room}" is already booked at ${roomConflict.startTime}-${roomConflict.endTime}.`, success: false }
+  if (
+    roomConflict &&
+    timeOverlaps(roomConflict.startTime, roomConflict.endTime, startTime, endTime)
+  ) {
+    return {
+      error: `Room "${room}" is already booked at ${roomConflict.startTime}-${roomConflict.endTime}.`,
+      success: false,
+    }
   }
 
   if (!isFree) {
     const overrideWorkload = formData.get("overrideWorkload") === "true"
     if (!overrideWorkload) {
       const { checkWorkloadBeforeAssign } = await import("./workload.actions")
-      const workloadCheck = await checkWorkloadBeforeAssign(teacherId!, dayOfWeek, academicSessionId)
+      const workloadCheck = await checkWorkloadBeforeAssign(
+        teacherId!,
+        dayOfWeek,
+        academicSessionId,
+      )
       if (!workloadCheck.allowed) {
-        return { error: `${workloadCheck.reason} Check "Override workload limits" to force assign.`, success: false }
+        return {
+          error: `${workloadCheck.reason} Check "Override workload limits" to force assign.`,
+          success: false,
+        }
       }
     }
   }
@@ -146,12 +169,15 @@ export async function deleteTimetableSlot(slotId: string) {
 export async function updateTimetableSlot(
   slotId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
   const slot = await prisma.timetable.findUnique({ where: { id: slotId } })
   if (!slot) return { error: "Timetable slot not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && slot.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
 
   const isFree = formData.get("isFree") === "true"
   const freePeriodReason = (formData.get("freePeriodReason") as string) || undefined
@@ -181,7 +207,7 @@ export async function updateTimetableSlot(
           dayOfWeek: dayOfWeek as any,
           academicSessionId: slot.academicSessionId,
         },
-      })
+      }),
     )
   } else {
     conflictChecks.push(Promise.resolve(null))
@@ -194,10 +220,7 @@ export async function updateTimetableSlot(
     academicSessionId: slot.academicSessionId,
   }
   if (slot.sectionId) {
-    classWhere.OR = [
-      { sectionId: slot.sectionId },
-      { sectionId: null },
-    ]
+    classWhere.OR = [{ sectionId: slot.sectionId }, { sectionId: null }]
   }
   conflictChecks.push(prisma.timetable.findFirst({ where: classWhere }))
 
@@ -211,28 +234,51 @@ export async function updateTimetableSlot(
             academicSessionId: slot.academicSessionId,
           },
         })
-      : Promise.resolve(null)
+      : Promise.resolve(null),
   )
 
   const [teacherConflict, classConflict, roomConflict] = await Promise.all(conflictChecks)
 
-  if (!isFree && teacherConflict && timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, startTime, endTime)) {
-    return { error: `Teacher already has a class at ${teacherConflict.startTime}-${teacherConflict.endTime}.`, success: false }
+  if (
+    !isFree &&
+    teacherConflict &&
+    timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, startTime, endTime)
+  ) {
+    return {
+      error: `Teacher already has a class at ${teacherConflict.startTime}-${teacherConflict.endTime}.`,
+      success: false,
+    }
   }
 
-  if (classConflict && timeOverlaps(classConflict.startTime, classConflict.endTime, startTime, endTime)) {
-    return { error: `Class already has a slot at ${classConflict.startTime}-${classConflict.endTime}.`, success: false }
+  if (
+    classConflict &&
+    timeOverlaps(classConflict.startTime, classConflict.endTime, startTime, endTime)
+  ) {
+    return {
+      error: `Class already has a slot at ${classConflict.startTime}-${classConflict.endTime}.`,
+      success: false,
+    }
   }
 
-  if (roomConflict && timeOverlaps(roomConflict.startTime, roomConflict.endTime, startTime, endTime)) {
-    return { error: `Room "${room}" is already booked at ${roomConflict.startTime}-${roomConflict.endTime}.`, success: false }
+  if (
+    roomConflict &&
+    timeOverlaps(roomConflict.startTime, roomConflict.endTime, startTime, endTime)
+  ) {
+    return {
+      error: `Room "${room}" is already booked at ${roomConflict.startTime}-${roomConflict.endTime}.`,
+      success: false,
+    }
   }
 
   await prisma.timetable.update({
     where: { id: slotId },
     data: {
-      ...(subjectId ? { subject: { connect: { id: subjectId } } } : { subject: { disconnect: true } }),
-      ...(teacherId ? { teacher: { connect: { id: teacherId } } } : { teacher: { disconnect: true } }),
+      ...(subjectId
+        ? { subject: { connect: { id: subjectId } } }
+        : { subject: { disconnect: true } }),
+      ...(teacherId
+        ? { teacher: { connect: { id: teacherId } } }
+        : { teacher: { disconnect: true } }),
       dayOfWeek: dayOfWeek as any,
       startTime,
       endTime,
@@ -247,10 +293,13 @@ export async function updateTimetableSlot(
 }
 
 export async function getAllConflicts(academicSessionId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
   const slots = await prisma.timetable.findMany({
-    where: { academicSessionId },
+    where: {
+      academicSessionId,
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
+    },
     include: {
       class: true,
       section: true,
@@ -303,10 +352,14 @@ export async function getAllConflicts(academicSessionId: string) {
 }
 
 export async function getRoomUtilization(academicSessionId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
   const slots = await prisma.timetable.findMany({
-    where: { academicSessionId, room: { not: null } },
+    where: {
+      academicSessionId,
+      room: { not: null },
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
+    },
     include: { class: true, section: true, subject: true, teacher: true },
     orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
   })
@@ -325,8 +378,16 @@ export async function getRoomUtilization(academicSessionId: string) {
   }))
 }
 
-export async function getTimetableForClass(classId: string, sectionId?: string, academicSessionId?: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+export async function getTimetableForClass(
+  classId: string,
+  sectionId?: string,
+  academicSessionId?: string,
+) {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+
+  const cls = await prisma.class.findUnique({ where: { id: classId }, select: { schoolId: true } })
+  if (!cls) return []
+  if (profile.role !== "SUPER_ADMIN" && cls.schoolId !== profile.schoolId) return []
 
   return prisma.timetable.findMany({
     where: {
@@ -346,17 +407,25 @@ export async function getTimetableForClass(classId: string, sectionId?: string, 
 export async function assignSubstitute(
   slotId: string,
   substituteTeacherId: string,
-  subjectId: string
+  subjectId: string,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
   const slot = await prisma.timetable.findUnique({
     where: { id: slotId },
-    select: { schoolId: true, isFree: true, dayOfWeek: true, academicSessionId: true, startTime: true, endTime: true },
+    select: {
+      schoolId: true,
+      isFree: true,
+      dayOfWeek: true,
+      academicSessionId: true,
+      startTime: true,
+      endTime: true,
+    },
   })
   if (!slot) return { error: "Timetable slot not found." }
 
-  if (profile.role !== "SUPER_ADMIN" && slot.schoolId !== profile.schoolId) return { error: "Unauthorized." }
+  if (profile.role !== "SUPER_ADMIN" && slot.schoolId !== profile.schoolId)
+    return { error: "Unauthorized." }
 
   if (!slot.isFree) return { error: "Only free periods can have substitutes assigned." }
 
@@ -370,8 +439,13 @@ export async function assignSubstitute(
     },
   })
 
-  if (teacherConflict && timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, slot.startTime, slot.endTime)) {
-    return { error: `Substitute teacher already has a class at ${teacherConflict.startTime}-${teacherConflict.endTime}.` }
+  if (
+    teacherConflict &&
+    timeOverlaps(teacherConflict.startTime, teacherConflict.endTime, slot.startTime, slot.endTime)
+  ) {
+    return {
+      error: `Substitute teacher already has a class at ${teacherConflict.startTime}-${teacherConflict.endTime}.`,
+    }
   }
 
   await prisma.timetable.update({

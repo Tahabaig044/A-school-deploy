@@ -21,10 +21,7 @@ type AssignmentItem = {
 export default function EditHomeworkPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
-  const [state, formAction, pending] = useActionState(
-    updateTeacherHomework.bind(null, id),
-    null
-  )
+  const [state, formAction, pending] = useActionState(updateTeacherHomework.bind(null, id), null)
   const [homework, setHomework] = useState<any>(null)
   const [assignments, setAssignments] = useState<AssignmentItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -54,8 +51,8 @@ export default function EditHomeworkPage({ params }: { params: Promise<{ id: str
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     )
   }
@@ -63,9 +60,11 @@ export default function EditHomeworkPage({ params }: { params: Promise<{ id: str
   if (notFound) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-destructive">Homework Not Found</h1>
-          <p className="text-muted-foreground">The homework assignment you are looking for does not exist.</p>
+        <div className="space-y-4 text-center">
+          <h1 className="text-destructive text-2xl font-bold">Homework Not Found</h1>
+          <p className="text-muted-foreground">
+            The homework assignment you are looking for does not exist.
+          </p>
           <Button asChild>
             <a href="/portal/teacher/homework">Back to Homework</a>
           </Button>
@@ -74,9 +73,7 @@ export default function EditHomeworkPage({ params }: { params: Promise<{ id: str
     )
   }
 
-  const dueDateStr = homework.dueDate
-    ? new Date(homework.dueDate).toISOString().split("T")[0]
-    : ""
+  const dueDateStr = homework.dueDate ? new Date(homework.dueDate).toISOString().split("T")[0] : ""
 
   return (
     <div className="space-y-6">
@@ -99,24 +96,40 @@ export default function EditHomeworkPage({ params }: { params: Promise<{ id: str
           <form action={formAction} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="title">Title *</Label>
-              <Input id="title" name="title" placeholder="e.g. Chapter 5 Exercise" defaultValue={homework.title} required />
+              <Input
+                id="title"
+                name="title"
+                placeholder="e.g. Chapter 5 Exercise"
+                defaultValue={homework.title}
+                required
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Description</Label>
-              <textarea id="description" name="description" rows={4}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              <textarea
+                id="description"
+                name="description"
+                rows={4}
+                className="border-input bg-background flex w-full rounded-md border px-3 py-2 text-sm"
                 placeholder="Describe the homework tasks..."
-                defaultValue={homework.description || ""} />
+                defaultValue={homework.description || ""}
+              />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="dueDate">Due Date *</Label>
                 <Input id="dueDate" name="dueDate" type="date" defaultValue={dueDateStr} required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="totalMarks">Total Marks</Label>
-                <Input id="totalMarks" name="totalMarks" type="number" min="0" placeholder="Optional"
-                  defaultValue={homework.totalMarks ?? ""} />
+                <Input
+                  id="totalMarks"
+                  name="totalMarks"
+                  type="number"
+                  min="0"
+                  placeholder="Optional"
+                  defaultValue={homework.totalMarks ?? ""}
+                />
               </div>
             </div>
             <div className="flex gap-2">
@@ -127,7 +140,7 @@ export default function EditHomeworkPage({ params }: { params: Promise<{ id: str
                 Cancel
               </Button>
             </div>
-            {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+            {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
           </form>
         </CardContent>
       </Card>

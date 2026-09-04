@@ -7,10 +7,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { updateAttendancePolicy } from "@/actions/attendance-settings.actions"
 
 const POLICIES = [
-  { value: "first_period_teacher", label: "First Period Teacher", desc: "The teacher of the first period marks attendance" },
-  { value: "class_teacher", label: "Class Teacher", desc: "The assigned class teacher marks attendance" },
-  { value: "subject_teacher", label: "Subject Teacher", desc: "Each subject teacher marks attendance for their period" },
-  { value: "admin_only", label: "Admin Only", desc: "Only school administrators can mark attendance" },
+  {
+    value: "first_period_teacher",
+    label: "First Period Teacher",
+    desc: "The teacher of the first period marks attendance",
+  },
+  {
+    value: "class_teacher",
+    label: "Class Teacher",
+    desc: "The assigned class teacher marks attendance",
+  },
+  {
+    value: "subject_teacher",
+    label: "Subject Teacher",
+    desc: "Each subject teacher marks attendance for their period",
+  },
+  {
+    value: "admin_only",
+    label: "Admin Only",
+    desc: "Only school administrators can mark attendance",
+  },
 ] as const
 
 export function AttendancePolicyForm({ currentPolicy }: { currentPolicy: string }) {
@@ -23,10 +39,13 @@ export function AttendancePolicyForm({ currentPolicy }: { currentPolicy: string 
         <CardDescription>Choose who is responsible for marking student attendance</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4 max-w-lg">
+        <form action={formAction} className="grid max-w-lg gap-4">
           <div className="grid gap-3">
             {POLICIES.map((policy) => (
-              <label key={policy.value} className="flex items-start gap-3 p-3 rounded-md border cursor-pointer hover:bg-muted/50 has-[:checked]:border-primary">
+              <label
+                key={policy.value}
+                className="hover:bg-muted/50 has-[:checked]:border-primary flex cursor-pointer items-start gap-3 rounded-md border p-3"
+              >
                 <input
                   type="radio"
                   name="policy"
@@ -35,8 +54,8 @@ export function AttendancePolicyForm({ currentPolicy }: { currentPolicy: string 
                   className="mt-0.5"
                 />
                 <div>
-                  <div className="font-medium text-sm">{policy.label}</div>
-                  <div className="text-xs text-muted-foreground">{policy.desc}</div>
+                  <div className="text-sm font-medium">{policy.label}</div>
+                  <div className="text-muted-foreground text-xs">{policy.desc}</div>
                 </div>
               </label>
             ))}
@@ -44,7 +63,7 @@ export function AttendancePolicyForm({ currentPolicy }: { currentPolicy: string 
           <Button type="submit" disabled={pending} className="w-fit">
             {pending ? "Saving..." : "Save Policy"}
           </Button>
-          {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+          {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
           {state?.success && <p className="text-sm text-green-600">Attendance policy updated!</p>}
         </form>
       </CardContent>

@@ -12,14 +12,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { CalendarDays, Mail, Phone, MapPin, Briefcase, GraduationCap, Award, Clock } from "lucide-react"
+import {
+  CalendarDays,
+  Mail,
+  Phone,
+  MapPin,
+  Briefcase,
+  GraduationCap,
+  Award,
+  Clock,
+} from "lucide-react"
 import Link from "next/link"
 
-export default async function TeacherProfilePage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function TeacherProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
   const { id } = await params
 
@@ -61,7 +66,9 @@ export default async function TeacherProfilePage({
 
   if (!teacher) notFound()
 
-  const timetableByDay = teacher.timetableSlots.reduce<Record<string, typeof teacher.timetableSlots>>((acc, slot) => {
+  const timetableByDay = teacher.timetableSlots.reduce<
+    Record<string, typeof teacher.timetableSlots>
+  >((acc, slot) => {
     const day = slot.dayOfWeek
     if (!acc[day]) acc[day] = []
     acc[day].push(slot)
@@ -75,7 +82,9 @@ export default async function TeacherProfilePage({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Teacher Profile</h2>
-          <p className="text-muted-foreground">{teacher.school.name} — {teacher.branch.name}</p>
+          <p className="text-muted-foreground">
+            {teacher.school.name} — {teacher.branch.name}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
@@ -90,13 +99,16 @@ export default async function TeacherProfilePage({
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle>{teacher.firstName} {teacher.lastName}</CardTitle>
+            <CardTitle>
+              {teacher.firstName} {teacher.lastName}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col items-center text-center">
-              <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                <span className="text-3xl font-bold text-primary">
-                  {teacher.firstName[0]}{teacher.lastName[0]}
+              <div className="bg-primary/10 mb-3 flex h-24 w-24 items-center justify-center rounded-full">
+                <span className="text-primary text-3xl font-bold">
+                  {teacher.firstName[0]}
+                  {teacher.lastName[0]}
                 </span>
               </div>
               <Badge variant={teacher.status === "ACTIVE" ? "default" : "secondary"}>
@@ -106,82 +118,94 @@ export default async function TeacherProfilePage({
 
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
-                <span>Employee Code: <strong>{teacher.employeeCode}</strong></span>
+                <Briefcase className="text-muted-foreground h-4 w-4" />
+                <span>
+                  Employee Code: <strong>{teacher.employeeCode}</strong>
+                </span>
               </div>
               {teacher.designation && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Award className="h-4 w-4 text-muted-foreground" />
-                  <span>Designation: <strong>{teacher.designation}</strong></span>
+                  <Award className="text-muted-foreground h-4 w-4" />
+                  <span>
+                    Designation: <strong>{teacher.designation}</strong>
+                  </span>
                 </div>
               )}
               {teacher.department && (
                 <div className="flex items-center gap-2 text-sm">
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                  <span>Department: <strong>{teacher.department}</strong></span>
+                  <GraduationCap className="text-muted-foreground h-4 w-4" />
+                  <span>
+                    Department: <strong>{teacher.department}</strong>
+                  </span>
                 </div>
               )}
               {teacher.qualification && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Award className="h-4 w-4 text-muted-foreground" />
-                  <span>Qualification: <strong>{teacher.qualification}</strong></span>
+                  <Award className="text-muted-foreground h-4 w-4" />
+                  <span>
+                    Qualification: <strong>{teacher.qualification}</strong>
+                  </span>
                 </div>
               )}
               {teacher.experience != null && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>Experience: <strong>{teacher.experience} years</strong></span>
+                  <Clock className="text-muted-foreground h-4 w-4" />
+                  <span>
+                    Experience: <strong>{teacher.experience} years</strong>
+                  </span>
                 </div>
               )}
               {teacher.joiningDate && (
                 <div className="flex items-center gap-2 text-sm">
-                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                  <span>Joined: <strong>{new Date(teacher.joiningDate).toLocaleDateString()}</strong></span>
+                  <CalendarDays className="text-muted-foreground h-4 w-4" />
+                  <span>
+                    Joined: <strong>{new Date(teacher.joiningDate).toLocaleDateString()}</strong>
+                  </span>
                 </div>
               )}
               {teacher.email && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <Mail className="text-muted-foreground h-4 w-4" />
                   <span>{teacher.email}</span>
                 </div>
               )}
               {teacher.phone && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <Phone className="text-muted-foreground h-4 w-4" />
                   <span>{teacher.phone}</span>
                 </div>
               )}
               {teacher.address && (
                 <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <MapPin className="text-muted-foreground h-4 w-4" />
                   <span>{teacher.address}</span>
                 </div>
               )}
             </div>
 
-            <div className="pt-4 border-t">
+            <div className="border-t pt-4">
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold">{teacher._count.assignments}</div>
-                  <div className="text-xs text-muted-foreground">Assignments</div>
+                  <div className="text-muted-foreground text-xs">Assignments</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{teacher._count.timetableSlots}</div>
-                  <div className="text-xs text-muted-foreground">Weekly Periods</div>
+                  <div className="text-muted-foreground text-xs">Weekly Periods</div>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="md:col-span-2 space-y-6">
+        <div className="space-y-6 md:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Subject Assignments</CardTitle>
             </CardHeader>
             <CardContent>
               {teacher.assignments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No assignments yet.</p>
+                <p className="text-muted-foreground text-sm">No assignments yet.</p>
               ) : (
                 <Table>
                   <TableHeader>
@@ -197,7 +221,9 @@ export default async function TeacherProfilePage({
                       <TableRow key={a.id}>
                         <TableCell className="font-medium">{a.class.name}</TableCell>
                         <TableCell>{a.section?.name || "All"}</TableCell>
-                        <TableCell>{a.subject.name} ({a.subject.code})</TableCell>
+                        <TableCell>
+                          {a.subject.name} ({a.subject.code})
+                        </TableCell>
                         <TableCell>{a.academicSession.name}</TableCell>
                       </TableRow>
                     ))}
@@ -213,7 +239,7 @@ export default async function TeacherProfilePage({
             </CardHeader>
             <CardContent>
               {teacher.timetableSlots.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No timetable slots.</p>
+                <p className="text-muted-foreground text-sm">No timetable slots.</p>
               ) : (
                 <div className="space-y-4">
                   {days.map((day) => {
@@ -221,16 +247,26 @@ export default async function TeacherProfilePage({
                     if (slots.length === 0) return null
                     return (
                       <div key={day}>
-                        <h4 className="text-sm font-semibold mb-2 capitalize">{day.toLowerCase()}</h4>
+                        <h4 className="mb-2 text-sm font-semibold capitalize">
+                          {day.toLowerCase()}
+                        </h4>
                         <div className="grid gap-2">
                           {slots.map((slot) => (
-                            <div key={slot.id} className="flex items-center justify-between p-2 bg-muted rounded-md text-sm">
+                            <div
+                              key={slot.id}
+                              className="bg-muted flex items-center justify-between rounded-md p-2 text-sm"
+                            >
                               <div>
-                                <span className="font-medium">{slot.startTime} - {slot.endTime}</span>
-                                <span className="ml-2 text-muted-foreground">{slot.isFree ? "Free Period" : slot.subject?.name}</span>
+                                <span className="font-medium">
+                                  {slot.startTime} - {slot.endTime}
+                                </span>
+                                <span className="text-muted-foreground ml-2">
+                                  {slot.isFree ? "Free Period" : slot.subject?.name}
+                                </span>
                               </div>
                               <div className="text-muted-foreground">
-                                {slot.class.name}{slot.section ? ` - ${slot.section.name}` : ""}
+                                {slot.class.name}
+                                {slot.section ? ` - ${slot.section.name}` : ""}
                                 {slot.room ? ` | ${slot.room}` : ""}
                               </div>
                             </div>

@@ -7,6 +7,7 @@
 ## Vision
 
 School Management System ek comprehensive ERP hai jo:
+
 - Students, Teachers, Parents manage karta hai
 - Attendance, Exams, Results track karta hai
 - Fees aur Finance handle karta hai
@@ -38,13 +39,14 @@ Phase 7: Production
 
 **Objective:** Basic setup aur authentication
 
-| Loop | Module | Tasks | Status |
-|------|--------|-------|--------|
-| LOOP_001 | Authentication | Login, Register, JWT | 🔄 |
-| LOOP_002 | Permissions | RBAC, Roles | ⏳ |
-| LOOP_003 | Dashboard | Admin Dashboard | ⏳ |
+| Loop     | Module         | Tasks                | Status |
+| -------- | -------------- | -------------------- | ------ |
+| LOOP_001 | Authentication | Login, Register, JWT | 🔄     |
+| LOOP_002 | Permissions    | RBAC, Roles          | ⏳     |
+| LOOP_003 | Dashboard      | Admin Dashboard      | ⏳     |
 
 **Deliverables:**
+
 - [ ] Next.js project setup
 - [ ] Supabase configuration
 - [ ] Prisma schema
@@ -58,16 +60,17 @@ Phase 7: Production
 
 **Objective:** Student, Teacher, Parent management
 
-| Loop | Module | Tasks | Status |
-|------|--------|-------|--------|
-| LOOP_004 | Students | CRUD, Search, Import | ⏳ |
-| LOOP_005 | Parents | CRUD, Link Students | ⏳ |
-| LOOP_006 | Teachers | CRUD, Assignments | ⏳ |
-| LOOP_007 | Classes | CRUD, Sections | ⏳ |
-| LOOP_008 | Sections | CRUD, Assignments | ⏳ |
-| LOOP_009 | Subjects | CRUD, Categories | ⏳ |
+| Loop     | Module   | Tasks                | Status |
+| -------- | -------- | -------------------- | ------ |
+| LOOP_004 | Students | CRUD, Search, Import | ⏳     |
+| LOOP_005 | Parents  | CRUD, Link Students  | ⏳     |
+| LOOP_006 | Teachers | CRUD, Assignments    | ⏳     |
+| LOOP_007 | Classes  | CRUD, Sections       | ⏳     |
+| LOOP_008 | Sections | CRUD, Assignments    | ⏳     |
+| LOOP_009 | Subjects | CRUD, Categories     | ⏳     |
 
 **Deliverables:**
+
 - [ ] Student management
 - [ ] Parent management
 - [ ] Teacher management
@@ -82,14 +85,15 @@ Phase 7: Production
 
 **Objective:** Attendance, Exams, Results
 
-| Loop | Module | Tasks | Status |
-|------|--------|-------|--------|
-| LOOP_010 | Attendance | Mark, Report | ⏳ |
-| LOOP_011 | Exams | CRUD, Schedule | ⏳ |
-| LOOP_012 | Results | Marks, Grades | ⏳ |
-| LOOP_013 | Timetable | Schedule | ⏳ |
+| Loop     | Module     | Tasks          | Status |
+| -------- | ---------- | -------------- | ------ |
+| LOOP_010 | Attendance | Mark, Report   | ⏳     |
+| LOOP_011 | Exams      | CRUD, Schedule | ⏳     |
+| LOOP_012 | Results    | Marks, Grades  | ⏳     |
+| LOOP_013 | Timetable  | Schedule       | ⏳     |
 
 **Deliverables:**
+
 - [ ] Attendance system
 - [ ] Exam management
 - [ ] Result processing
@@ -102,13 +106,14 @@ Phase 7: Production
 
 **Objective:** Fees, Payments, Invoices
 
-| Loop | Module | Tasks | Status |
-|------|--------|-------|--------|
-| LOOP_014 | Fees | Structure, Invoices | ⏳ |
-| LOOP_015 | Payments | Record, Receipts | ⏳ |
-| LOOP_016 | Reports | Financial Reports | ⏳ |
+| Loop     | Module   | Tasks               | Status |
+| -------- | -------- | ------------------- | ------ |
+| LOOP_014 | Fees     | Structure, Invoices | ⏳     |
+| LOOP_015 | Payments | Record, Receipts    | ⏳     |
+| LOOP_016 | Reports  | Financial Reports   | ⏳     |
 
 **Deliverables:**
+
 - [ ] Fee structures
 - [ ] Invoice generation
 - [ ] Payment recording
@@ -121,13 +126,14 @@ Phase 7: Production
 
 **Objective:** Notifications, Messaging
 
-| Loop | Module | Tasks | Status |
-|------|--------|-------|--------|
-| LOOP_017 | Notifications | In-app, Push | ⏳ |
-| LOOP_018 | Messaging | Teacher-Parent | ⏳ |
-| LOOP_019 | Announcements | School-wide | ⏳ |
+| Loop     | Module        | Tasks          | Status |
+| -------- | ------------- | -------------- | ------ |
+| LOOP_017 | Notifications | In-app, Push   | ⏳     |
+| LOOP_018 | Messaging     | Teacher-Parent | ⏳     |
+| LOOP_019 | Announcements | School-wide    | ⏳     |
 
 **Deliverables:**
+
 - [ ] Notification system
 - [ ] Internal messaging
 - [ ] Announcements
@@ -140,13 +146,14 @@ Phase 7: Production
 
 **Objective:** Analytics, Dashboards
 
-| Loop | Module | Tasks | Status |
-|------|--------|-------|--------|
-| LOOP_020 | Analytics | Dashboards | ⏳ |
-| LOOP_021 | Reports | Custom Reports | ⏳ |
-| LOOP_022 | Export | PDF, Excel | ⏳ |
+| Loop     | Module    | Tasks          | Status |
+| -------- | --------- | -------------- | ------ |
+| LOOP_020 | Analytics | Dashboards     | ⏳     |
+| LOOP_021 | Reports   | Custom Reports | ⏳     |
+| LOOP_022 | Export    | PDF, Excel     | ⏳     |
 
 **Deliverables:**
+
 - [ ] Analytics dashboards
 - [ ] Custom report builder
 - [ ] Export functionality
@@ -159,13 +166,14 @@ Phase 7: Production
 
 **Objective:** Deployment, Monitoring
 
-| Loop | Module | Tasks | Status |
-|------|--------|-------|--------|
-| LOOP_023 | Security | Audit, Hardening | ⏳ |
-| LOOP_024 | Performance | Optimization | ⏳ |
-| LOOP_025 | Deployment | CI/CD, Monitoring | ⏳ |
+| Loop     | Module      | Tasks             | Status |
+| -------- | ----------- | ----------------- | ------ |
+| LOOP_023 | Security    | Audit, Hardening  | ⏳     |
+| LOOP_024 | Performance | Optimization      | ⏳     |
+| LOOP_025 | Deployment  | CI/CD, Monitoring | ⏳     |
 
 **Deliverables:**
+
 - [ ] Security audit
 - [ ] Performance optimization
 - [ ] CI/CD pipeline
@@ -177,15 +185,15 @@ Phase 7: Production
 
 ## Version History
 
-| Version | Phase | Features | Date |
-|---------|-------|----------|------|
-| v0.1.0 | Phase 1 | Authentication | [Date] |
-| v0.2.0 | Phase 2 | Core Modules | [Date] |
-| v0.3.0 | Phase 3 | Academics | [Date] |
-| v0.4.0 | Phase 4 | Finance | [Date] |
-| v0.5.0 | Phase 5 | Communication | [Date] |
-| v0.6.0 | Phase 6 | Reports | [Date] |
-| v1.0.0 | Phase 7 | Production | [Date] |
+| Version | Phase   | Features       | Date   |
+| ------- | ------- | -------------- | ------ |
+| v0.1.0  | Phase 1 | Authentication | [Date] |
+| v0.2.0  | Phase 2 | Core Modules   | [Date] |
+| v0.3.0  | Phase 3 | Academics      | [Date] |
+| v0.4.0  | Phase 4 | Finance        | [Date] |
+| v0.5.0  | Phase 5 | Communication  | [Date] |
+| v0.6.0  | Phase 6 | Reports        | [Date] |
+| v1.0.0  | Phase 7 | Production     | [Date] |
 
 ---
 

@@ -21,10 +21,15 @@ type StaffItem = {
   employeeCode: string
 }
 
-type RecordEntry = [string, { id: string; checkIn: string | null; checkOut: string | null; status: string }]
+type RecordEntry = [
+  string,
+  { id: string; checkIn: string | null; checkOut: string | null; status: string },
+]
 
 export function StaffAttendanceView({
-  staff, recordMap, todayStr,
+  staff,
+  recordMap,
+  todayStr,
 }: {
   staff: StaffItem[]
   recordMap: RecordEntry[]
@@ -59,7 +64,7 @@ export function StaffAttendanceView({
       </CardHeader>
       <CardContent>
         {staff.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No staff found.</p>
+          <p className="text-muted-foreground text-sm">No staff found.</p>
         ) : (
           <Table>
             <TableHeader>
@@ -78,7 +83,9 @@ export function StaffAttendanceView({
                 const record = records.get(s.id)
                 return (
                   <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.firstName} {s.lastName}</TableCell>
+                    <TableCell className="font-medium">
+                      {s.firstName} {s.lastName}
+                    </TableCell>
                     <TableCell>{s.department}</TableCell>
                     <TableCell>{s.employeeCode}</TableCell>
                     <TableCell>
@@ -86,7 +93,7 @@ export function StaffAttendanceView({
                         type="time"
                         name="checkIn"
                         defaultValue={record?.checkIn?.split("T")[1]?.substring(0, 5) || "09:00"}
-                        className="flex h-8 w-24 rounded-md border border-input bg-background px-2 text-xs"
+                        className="border-input bg-background flex h-8 w-24 rounded-md border px-2 text-xs"
                       />
                     </TableCell>
                     <TableCell>
@@ -94,14 +101,14 @@ export function StaffAttendanceView({
                         type="time"
                         name="checkOut"
                         defaultValue={record?.checkOut?.split("T")[1]?.substring(0, 5) || "17:00"}
-                        className="flex h-8 w-24 rounded-md border border-input bg-background px-2 text-xs"
+                        className="border-input bg-background flex h-8 w-24 rounded-md border px-2 text-xs"
                       />
                     </TableCell>
                     <TableCell>
                       <select
                         name="status"
                         defaultValue={record?.status || "PRESENT"}
-                        className="flex h-8 w-28 rounded-md border border-input bg-background px-2 text-xs"
+                        className="border-input bg-background flex h-8 w-28 rounded-md border px-2 text-xs"
                       >
                         <option value="PRESENT">Present</option>
                         <option value="ABSENT">Absent</option>
@@ -122,7 +129,7 @@ export function StaffAttendanceView({
             </TableBody>
           </Table>
         )}
-        {state?.error && <p className="text-sm text-destructive mt-2">{state.error}</p>}
+        {state?.error && <p className="text-destructive mt-2 text-sm">{state.error}</p>}
       </CardContent>
     </Card>
   )

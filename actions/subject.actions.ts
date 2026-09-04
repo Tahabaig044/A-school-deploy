@@ -19,7 +19,7 @@ const classSubjectSchema = z.object({
 
 export async function createSubject(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
@@ -55,7 +55,7 @@ export async function createSubject(
 export async function updateSubject(
   subjectId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
@@ -112,9 +112,9 @@ export async function deleteSubject(subjectId: string) {
 
 export async function assignSubjectToClass(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
   const classId = formData.get("classId") as string
   const subjectId = formData.get("subjectId") as string
@@ -122,6 +122,24 @@ export async function assignSubjectToClass(
   const parsed = classSubjectSchema.safeParse({ classId, subjectId })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
+  }
+
+  const cls = await prisma.class.findUnique({
+    where: { id: classId },
+    select: { schoolId: true },
+  })
+  if (!cls) return { error: "Class not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && cls.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
+  const subject = await prisma.subject.findUnique({
+    where: { id: subjectId },
+    select: { schoolId: true },
+  })
+  if (!subject) return { error: "Subject not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && subject.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
   }
 
   try {
@@ -137,7 +155,15 @@ export async function assignSubjectToClass(
 }
 
 export async function removeSubjectFromClass(classSubjectId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const link = await prisma.classSubject.findUnique({
+    where: { id: classSubjectId },
+    include: { class: { select: { schoolId: true } } },
+  })
+  if (!link) return
+  if (profile.role !== "SUPER_ADMIN" && link.class.schoolId !== profile.schoolId) return
+
   try {
     await prisma.classSubject.delete({ where: { id: classSubjectId } })
     revalidatePath("/dashboard/subjects")

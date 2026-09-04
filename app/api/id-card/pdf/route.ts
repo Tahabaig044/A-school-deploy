@@ -83,7 +83,8 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (err) {
-    if (err instanceof Error && err.message === "Unauthorized") return jsonError("Unauthorized", 401)
+    if (err instanceof Error && err.message === "Unauthorized")
+      return jsonError("Unauthorized", 401)
     if (err instanceof Error && err.message === "Forbidden") return jsonError("Forbidden", 403)
     return jsonError("Failed to generate PDF", 500)
   }

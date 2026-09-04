@@ -7,7 +7,7 @@ import { logAuditEvent } from "@/lib/audit"
 
 export async function assignClassTeacher(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<{ error?: string; success?: boolean }> {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
@@ -32,7 +32,8 @@ export async function assignClassTeacher(
     select: { schoolId: true, status: true },
   })
   if (!teacher) return { error: "Teacher not found.", success: false }
-  if (teacher.status !== "ACTIVE") return { error: "Cannot assign inactive teacher as class teacher.", success: false }
+  if (teacher.status !== "ACTIVE")
+    return { error: "Cannot assign inactive teacher as class teacher.", success: false }
   if (profile.role !== "SUPER_ADMIN" && teacher.schoolId !== profile.schoolId) {
     return { error: "Teacher does not belong to this school.", success: false }
   }
@@ -65,7 +66,7 @@ export async function assignClassTeacher(
 }
 
 export async function removeClassTeacher(
-  classId: string
+  classId: string,
 ): Promise<{ error?: string; success?: boolean }> {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 

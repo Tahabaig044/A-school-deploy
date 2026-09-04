@@ -21,11 +21,11 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, { ...cookieOptions, ...options })
+            cookieStore.set(name, value, { ...cookieOptions, ...options }),
           )
         },
       },
-    }
+    },
   )
 }
 
@@ -42,10 +42,10 @@ export async function createServiceClient() {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, { ...cookieOptions, ...options })
+            cookieStore.set(name, value, { ...cookieOptions, ...options }),
           )
         },
       },
-    }
+    },
   )
 }

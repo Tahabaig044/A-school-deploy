@@ -153,15 +153,15 @@ AI ko rukna hai jab:
 
 ## File Modification Rules
 
-| File Type | Allowed | Approval Needed |
-|-----------|---------|-----------------|
-| AI/*.md | Only current session | No |
-| src/**/*.tsx | Allowed | No |
-| src/**/*.ts | Allowed | No |
-| prisma/schema.prisma | FORBIDDEN | Yes |
-| package.json | FORBIDDEN | Yes |
-| .env | FORBIDDEN | Yes |
-| next.config.js | FORBIDDEN | Yes |
+| File Type            | Allowed              | Approval Needed |
+| -------------------- | -------------------- | --------------- |
+| AI/*.md              | Only current session | No              |
+| src/**/*.tsx         | Allowed              | No              |
+| src/**/*.ts          | Allowed              | No              |
+| prisma/schema.prisma | FORBIDDEN            | Yes             |
+| package.json         | FORBIDDEN            | Yes             |
+| .env                 | FORBIDDEN            | Yes             |
+| next.config.js       | FORBIDDEN            | Yes             |
 
 ---
 

@@ -1,6 +1,7 @@
 # Master Rules
 
 ## Code Quality
+
 - Write clean, readable, maintainable code
 - Follow DRY (Don't Repeat Yourself) principle
 - Follow KISS (Keep It Simple, Stupid) principle
@@ -10,6 +11,7 @@
 - Maximum cyclomatic complexity: 10
 
 ## Naming Conventions
+
 - Variables: camelCase
 - Functions: camelCase
 - Classes: PascalCase
@@ -19,6 +21,7 @@
 - Database columns: snake_case
 
 ## Git Workflow
+
 - Branch naming: feature/, bugfix/, hotfix/, release/
 - Commit messages: conventional commits format
 - No direct commits to main/develop
@@ -26,12 +29,14 @@
 - Minimum 1 review required
 
 ## Documentation
+
 - All functions must have JSDoc/docstring comments
 - All APIs must have OpenAPI/Swagger documentation
 - README required for each module
 - Changelog must be updated for every release
 
 ## Security
+
 - Never commit secrets or API keys
 - Use environment variables for configuration
 - Implement input validation on all endpoints
@@ -42,6 +47,7 @@
 - Implement CSRF protection
 
 ## Performance
+
 - Database queries must use indexes
 - Implement pagination for list endpoints
 - Use caching for frequently accessed data
@@ -49,6 +55,7 @@
 - Implement lazy loading where appropriate
 
 ## Testing
+
 - Minimum 80% code coverage
 - Unit tests for all business logic
 - Integration tests for all API endpoints
@@ -56,6 +63,7 @@
 - Tests must run in CI/CD pipeline
 
 ## Accessibility
+
 - WCAG 2.1 AA compliance minimum
 - Semantic HTML elements
 - ARIA labels where needed
@@ -63,6 +71,7 @@
 - Color contrast ratio minimum 4.5:1
 
 ## Error Handling
+
 - Use custom error classes
 - Return appropriate HTTP status codes
 - Log errors with context

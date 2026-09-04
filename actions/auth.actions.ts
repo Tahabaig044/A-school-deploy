@@ -43,14 +43,20 @@ const RESTRICTED_ROLES_FOR_SCHOOL_ADMIN: Role[] = ["SUPER_ADMIN", "SCHOOL_ADMIN"
 
 // System-level roles only - academic roles (Teacher, Student, Parent) must be created from their modules
 const USERS_MODULE_ALLOWED_ROLES: Role[] = [
-  "SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL",
-  "ACCOUNTANT", "ADMISSION_OFFICER", "LIBRARIAN", "TRANSPORT_MANAGER",
+  "SUPER_ADMIN",
+  "SCHOOL_ADMIN",
+  "BRANCH_ADMIN",
+  "PRINCIPAL",
+  "ACCOUNTANT",
+  "ADMISSION_OFFICER",
+  "LIBRARIAN",
+  "TRANSPORT_MANAGER",
 ]
 
 // ─── Invite User ───────────────────────────────────────────────
 export async function inviteUser(
   _prevState: ActionResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const { profile, user } = await requireInvitePermission()
 
@@ -66,7 +72,9 @@ export async function inviteUser(
 
   // Academic roles must be created from their respective modules
   if (["TEACHER", "STUDENT", "PARENT"].includes(role)) {
-    return { error: "Teachers, Students, and Parents must be created from their respective modules." }
+    return {
+      error: "Teachers, Students, and Parents must be created from their respective modules.",
+    }
   }
 
   // Validate role is allowed for Users module
@@ -115,7 +123,7 @@ export async function inviteUser(
         role,
       },
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/setup-password?token=${rawToken}`,
-    }
+    },
   )
 
   if (authError) {
@@ -243,7 +251,7 @@ export async function getInvitationByToken(token: string) {
 // ─── Accept Invitation (Set Password) ──────────────────────────
 export async function acceptInvitation(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<{ error?: string; success?: boolean }> {
   const token = formData.get("token") as string
   const password = formData.get("password") as string
@@ -272,10 +280,9 @@ export async function acceptInvitation(
 
   // Set password via Supabase admin
   const serviceClient = await createServiceClient()
-  const { error: updateError } = await serviceClient.auth.admin.updateUserById(
-    profile.id,
-    { password }
-  )
+  const { error: updateError } = await serviceClient.auth.admin.updateUserById(profile.id, {
+    password,
+  })
 
   if (updateError) {
     return { error: "Failed to set password. Please try again." }
@@ -308,9 +315,9 @@ export async function acceptInvitation(
 
 // ─── Sign In with Lockout ──────────────────────────────────────
 export async function signin(
-  _prevState: { error?: string } | null,
-  formData: FormData
-): Promise<{ error?: string }> {
+  _prevState: { error?: string; twoFactorRequired?: boolean; userId?: string } | null,
+  formData: FormData,
+): Promise<{ error?: string; twoFactorRequired?: boolean; userId?: string }> {
   const email = (formData.get("email") as string)?.trim().toLowerCase()
   const password = formData.get("password") as string
   const ipAddress = formData.get("ipAddress") as string | null
@@ -332,14 +339,13 @@ export async function signin(
       lockedUntil: true,
       schoolId: true,
       branchId: true,
+      twoFactorEnabled: true,
     },
   })
 
   // Requirement 6: Check lockout
   if (profile?.lockedUntil && new Date() < profile.lockedUntil) {
-    const minutesLeft = Math.ceil(
-      (profile.lockedUntil.getTime() - Date.now()) / (1000 * 60)
-    )
+    const minutesLeft = Math.ceil((profile.lockedUntil.getTime() - Date.now()) / (1000 * 60))
     return {
       error: `Account is locked. Try again in ${minutesLeft} minute${minutesLeft > 1 ? "s" : ""}.`,
     }
@@ -403,10 +409,16 @@ export async function signin(
   if (user) {
     const loginProfile = await prisma.profile.findUnique({
       where: { id: user.id },
-      select: { role: true, schoolId: true, branchId: true },
+      select: { role: true, schoolId: true, branchId: true, twoFactorEnabled: true },
     })
 
     if (loginProfile) {
+      // Check if 2FA is enabled
+      if (loginProfile.twoFactorEnabled) {
+        // Don't redirect - return 2FA required flag
+        return { twoFactorRequired: true, userId: user.id }
+      }
+
       // Requirement 5: Update login activity
       await prisma.profile.update({
         where: { id: user.id },
@@ -472,7 +484,7 @@ export async function signout() {
 // ─── Forgot Password ───────────────────────────────────────────
 export async function forgotPassword(
   _prevState: ActionResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const supabase = await createClient()
   const email = (formData.get("email") as string)?.trim().toLowerCase()
@@ -509,7 +521,7 @@ export async function forgotPassword(
 // ─── Reset Password ────────────────────────────────────────────
 export async function resetPassword(
   _prevState: { error?: string } | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
   const password = formData.get("password") as string
@@ -549,7 +561,7 @@ export async function resetPassword(
 // ─── Signup (Legacy) ──────────────────────────────────────────
 export async function signup(
   _prevState: ActionResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const supabase = await createClient()
 
@@ -586,7 +598,15 @@ export async function signup(
 
   if (data.user) {
     await prisma.profile.create({
-      data: { id: data.user.id, email, firstName, lastName, role, status: "ACTIVE", isActive: true },
+      data: {
+        id: data.user.id,
+        email,
+        firstName,
+        lastName,
+        role,
+        status: "ACTIVE",
+        isActive: true,
+      },
     })
   }
 
@@ -608,7 +628,7 @@ export async function signup(
 export async function updateUser(
   userId: string,
   _prevState: ActionResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const { profile: currentProfile } = await requireInvitePermission()
 

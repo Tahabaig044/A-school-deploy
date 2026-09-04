@@ -53,19 +53,26 @@ export function StudentForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
-            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-            <code className="text-sm break-all flex-1">{state.invitationLink}</code>
+          <div className="bg-muted flex items-center gap-2 rounded-md p-3">
+            <Mail className="text-muted-foreground h-4 w-4 shrink-0" />
+            <code className="flex-1 text-sm break-all">{state.invitationLink}</code>
             <Button variant="outline" size="sm" onClick={handleCopyLink} className="shrink-0">
               {copied ? (
-                <><CheckCircle className="h-4 w-4 mr-1" />Copied!</>
+                <>
+                  <CheckCircle className="mr-1 h-4 w-4" />
+                  Copied!
+                </>
               ) : (
-                <><Copy className="h-4 w-4 mr-1" />Copy Link</>
+                <>
+                  <Copy className="mr-1 h-4 w-4" />
+                  Copy Link
+                </>
               )}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            This link expires in 24 hours. The student will set their password and activate their account.
+          <p className="text-muted-foreground text-xs">
+            This link expires in 24 hours. The student will set their password and activate their
+            account.
           </p>
           <Button variant="outline" onClick={() => router.push("/dashboard/students")}>
             View All Students
@@ -100,7 +107,12 @@ export function StudentForm({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="gender">Gender</Label>
-              <select id="gender" name="gender" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" defaultValue="MALE">
+              <select
+                id="gender"
+                name="gender"
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                defaultValue="MALE"
+              >
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
                 <option value="OTHER">Other</option>
@@ -164,33 +176,49 @@ export function StudentForm({
               <div className="grid gap-2">
                 <Label htmlFor="classId">Class *</Label>
                 <select
-                  id="classId" name="classId"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  id="classId"
+                  name="classId"
+                  className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
                   value={selectedClassId}
                   onChange={(e) => setSelectedClassId(e.target.value)}
                   required
                 >
                   <option value="">Select class</option>
                   {classes.map((cls) => (
-                    <option key={cls.id} value={cls.id}>{cls.name}</option>
+                    <option key={cls.id} value={cls.id}>
+                      {cls.name}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="sectionId">Section</Label>
-                <select id="sectionId" name="sectionId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <select
+                  id="sectionId"
+                  name="sectionId"
+                  className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                >
                   <option value="">Select section</option>
                   {sections.map((sec) => (
-                    <option key={sec.id} value={sec.id}>{sec.name}</option>
+                    <option key={sec.id} value={sec.id}>
+                      {sec.name}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="academicSessionId">Academic Session *</Label>
-                <select id="academicSessionId" name="academicSessionId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                <select
+                  id="academicSessionId"
+                  name="academicSessionId"
+                  className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                  required
+                >
                   <option value="">Select session</option>
                   {sessions.map((ses) => (
-                    <option key={ses.id} value={ses.id}>{ses.name}</option>
+                    <option key={ses.id} value={ses.id}>
+                      {ses.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -206,38 +234,66 @@ export function StudentForm({
             <div className="space-y-4">
               <div className="flex flex-wrap gap-4">
                 <label className="flex items-center gap-2">
-                  <input type="radio" name="parentAction" value="skip" checked={parentAction === "skip"} onChange={(e) => setParentAction(e.target.value)} />
+                  <input
+                    type="radio"
+                    name="parentAction"
+                    value="skip"
+                    checked={parentAction === "skip"}
+                    onChange={(e) => setParentAction(e.target.value)}
+                  />
                   <span className="text-sm">Skip (add later)</span>
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="radio" name="parentAction" value="existing" checked={parentAction === "existing"} onChange={(e) => setParentAction(e.target.value)} />
+                  <input
+                    type="radio"
+                    name="parentAction"
+                    value="existing"
+                    checked={parentAction === "existing"}
+                    onChange={(e) => setParentAction(e.target.value)}
+                  />
                   <span className="text-sm">Link existing parent</span>
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="radio" name="parentAction" value="new" checked={parentAction === "new"} onChange={(e) => setParentAction(e.target.value)} />
+                  <input
+                    type="radio"
+                    name="parentAction"
+                    value="new"
+                    checked={parentAction === "new"}
+                    onChange={(e) => setParentAction(e.target.value)}
+                  />
                   <span className="text-sm">Create new parent</span>
                 </label>
               </div>
 
               {parentAction === "existing" && (
-                <div className="grid gap-4 md:grid-cols-2 border rounded-lg p-4 bg-muted/20">
+                <div className="bg-muted/20 grid gap-4 rounded-lg border p-4 md:grid-cols-2">
                   <div className="grid gap-2 md:col-span-2">
                     <Label htmlFor="parentProfileId">Parent Profile ID (email)</Label>
                     <div className="flex gap-2">
-                      <Input id="parentProfileId" name="parentProfileId" placeholder="Enter parent's profile ID or email" className="flex-1" />
+                      <Input
+                        id="parentProfileId"
+                        name="parentProfileId"
+                        placeholder="Enter parent's profile ID or email"
+                        className="flex-1"
+                      />
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Enter the parent&apos;s profile ID. The system will look up their email to find the linked parent record.
+                    <p className="text-muted-foreground text-xs">
+                      Enter the parent&apos;s profile ID. The system will look up their email to
+                      find the linked parent record.
                     </p>
                   </div>
                 </div>
               )}
 
               {parentAction === "new" && (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 border rounded-lg p-4 bg-muted/20">
+                <div className="bg-muted/20 grid gap-4 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3">
                   <div className="grid gap-2">
                     <Label htmlFor="parentFirstName">First Name *</Label>
-                    <Input id="parentFirstName" name="parentFirstName" required={parentAction === "new"} />
+                    <Input
+                      id="parentFirstName"
+                      name="parentFirstName"
+                      required={parentAction === "new"}
+                    />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="parentLastName">Last Name</Label>
@@ -245,7 +301,13 @@ export function StudentForm({
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="parentRelationship">Relationship</Label>
-                    <select id="parentRelationship" name="parentRelationship" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={relType} onChange={(e) => setRelType(e.target.value)}>
+                    <select
+                      id="parentRelationship"
+                      name="parentRelationship"
+                      className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                      value={relType}
+                      onChange={(e) => setRelType(e.target.value)}
+                    >
                       <option value="FATHER">Father</option>
                       <option value="MOTHER">Mother</option>
                       <option value="GUARDIAN">Guardian</option>
@@ -269,9 +331,7 @@ export function StudentForm({
             </div>
           </div>
 
-          {state?.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
-          )}
+          {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
 
           <div className="flex gap-4">
             <Button type="submit" disabled={pending}>

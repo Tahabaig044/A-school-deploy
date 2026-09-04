@@ -6,7 +6,7 @@ import { requireRole, requireAuth } from "@/lib/auth"
 
 export async function createLeaveRequest(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const user = await requireAuth()
 
@@ -29,10 +29,7 @@ export async function createLeaveRequest(
   return { success: true, error: undefined }
 }
 
-export async function approveLeave(
-  leaveId: string,
-  substituteTeacherId?: string | null
-) {
+export async function approveLeave(leaveId: string, substituteTeacherId?: string | null) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
   // School isolation: verify leave request belongs to user's school
@@ -76,7 +73,7 @@ export async function approveLeave(
 
 export async function approveLeaveWithSubstitute(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<{ error?: string; success?: boolean }> {
   const leaveId = formData.get("leaveId") as string
   const substituteTeacherId = formData.get("substituteTeacherId") as string
@@ -106,7 +103,8 @@ export async function approveLeaveWithSubstitute(
       select: { schoolId: true, status: true },
     })
     if (!substitute) return { error: "Substitute teacher not found.", success: false }
-    if (substitute.status !== "ACTIVE") return { error: "Substitute teacher is not active.", success: false }
+    if (substitute.status !== "ACTIVE")
+      return { error: "Substitute teacher is not active.", success: false }
   }
 
   await prisma.leaveRequest.update({

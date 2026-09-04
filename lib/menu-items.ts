@@ -252,7 +252,7 @@ export const menuItems: MenuItem[] = [
 
 export function filterMenuItemsByPermissions(
   items: MenuItem[],
-  userPermissions: string[]
+  userPermissions: string[],
 ): MenuItem[] {
   return items.filter((item) => userPermissions.includes(item.permission))
 }

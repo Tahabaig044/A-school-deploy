@@ -78,7 +78,7 @@ type ActionResult = {
  */
 export async function createTeacher(
   _prevState: ActionResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -97,9 +97,17 @@ export async function createTeacher(
   const joiningDate = formData.get("joiningDate") as string
 
   const parsed = teacherSchema.safeParse({
-    firstName, lastName, phone, email, address,
-    qualification, specialization, designation, department,
-    experience: experience || null, joiningDate,
+    firstName,
+    lastName,
+    phone,
+    email,
+    address,
+    qualification,
+    specialization,
+    designation,
+    department,
+    experience: experience || null,
+    joiningDate,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -229,7 +237,7 @@ export async function createTeacher(
 export async function updateTeacher(
   teacherId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -256,9 +264,18 @@ export async function updateTeacher(
   const status = formData.get("status") as string
 
   const parsed = teacherSchema.safeParse({
-    firstName, lastName, phone, email, address,
-    qualification, specialization, designation, department,
-    experience: experience || null, joiningDate, status,
+    firstName,
+    lastName,
+    phone,
+    email,
+    address,
+    qualification,
+    specialization,
+    designation,
+    department,
+    experience: experience || null,
+    joiningDate,
+    status,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -285,10 +302,12 @@ export async function updateTeacher(
 
     // Sync profile if linked
     if (existing.profileId) {
-      await prisma.profile.update({
-        where: { id: existing.profileId },
-        data: { firstName, lastName, phone: phone || null },
-      }).catch(() => {})
+      await prisma.profile
+        .update({
+          where: { id: existing.profileId },
+          data: { firstName, lastName, phone: phone || null },
+        })
+        .catch(() => {})
     }
 
     revalidatePath("/dashboard/teachers")
@@ -318,10 +337,12 @@ export async function deleteTeacher(teacherId: string) {
 
     // Deactivate linked profile
     if (existing.profileId) {
-      await prisma.profile.update({
-        where: { id: existing.profileId },
-        data: { status: "SUSPENDED", isActive: false },
-      }).catch(() => {})
+      await prisma.profile
+        .update({
+          where: { id: existing.profileId },
+          data: { status: "SUSPENDED", isActive: false },
+        })
+        .catch(() => {})
     }
 
     revalidatePath("/dashboard/teachers")
@@ -346,10 +367,12 @@ export async function suspendTeacher(teacherId: string) {
   })
 
   if (existing.profileId) {
-    await prisma.profile.update({
-      where: { id: existing.profileId },
-      data: { isActive: false, status: "SUSPENDED" },
-    }).catch(() => {})
+    await prisma.profile
+      .update({
+        where: { id: existing.profileId },
+        data: { isActive: false, status: "SUSPENDED" },
+      })
+      .catch(() => {})
   }
 
   revalidatePath("/dashboard/teachers")
@@ -371,10 +394,12 @@ export async function activateTeacher(teacherId: string) {
   })
 
   if (existing.profileId) {
-    await prisma.profile.update({
-      where: { id: existing.profileId },
-      data: { isActive: true, status: "ACTIVE" },
-    }).catch(() => {})
+    await prisma.profile
+      .update({
+        where: { id: existing.profileId },
+        data: { isActive: true, status: "ACTIVE" },
+      })
+      .catch(() => {})
   }
 
   revalidatePath("/dashboard/teachers")

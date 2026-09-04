@@ -1,17 +1,21 @@
 # CRUD_AUDIT
 
 ## Audit Date
+
 [Insert Date]
 
 ## Auditor
+
 [Insert Name]
 
 ## Scope
+
 CRUD operations review
 
 ## Checklist
 
 ### Create
+
 - [ ] Input validation
 - [ ] Permission check
 - [ ] School context check
@@ -19,6 +23,7 @@ CRUD operations review
 - [ ] Error handling
 
 ### Read
+
 - [ ] Permission check
 - [ ] School context check
 - [ ] Pagination
@@ -26,6 +31,7 @@ CRUD operations review
 - [ ] Loading states
 
 ### Update
+
 - [ ] Input validation
 - [ ] Permission check
 - [ ] School context check
@@ -33,6 +39,7 @@ CRUD operations review
 - [ ] Error handling
 
 ### Delete
+
 - [ ] Permission check
 - [ ] School context check
 - [ ] Soft delete
@@ -41,9 +48,9 @@ CRUD operations review
 
 ## Findings
 
-| ID | Description | Severity | Status |
-|----|-------------|----------|--------|
-| | | | |
+| ID  | Description | Severity | Status |
+| --- | ----------- | -------- | ------ |
+|     |             |          |        |
 
 ## Recommendations
 

@@ -34,15 +34,27 @@ export function ParentForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
-            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-            <code className="text-sm break-all flex-1">{state.invitationLink}</code>
+          <div className="bg-muted flex items-center gap-2 rounded-md p-3">
+            <Mail className="text-muted-foreground h-4 w-4 shrink-0" />
+            <code className="flex-1 text-sm break-all">{state.invitationLink}</code>
             <Button variant="outline" size="sm" onClick={handleCopyLink} className="shrink-0">
-              {copied ? <><CheckCircle className="h-4 w-4 mr-1" />Copied!</> : <><Copy className="h-4 w-4 mr-1" />Copy Link</>}
+              {copied ? (
+                <>
+                  <CheckCircle className="mr-1 h-4 w-4" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="mr-1 h-4 w-4" />
+                  Copy Link
+                </>
+              )}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">This link expires in 24 hours.</p>
-          <Button variant="outline" onClick={() => window.location.reload()}>Add Another Parent</Button>
+          <p className="text-muted-foreground text-xs">This link expires in 24 hours.</p>
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Add Another Parent
+          </Button>
         </CardContent>
       </Card>
     )
@@ -58,7 +70,9 @@ export function ParentForm() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Button variant="outline" onClick={() => window.location.reload()}>Add Another Parent</Button>
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Add Another Parent
+          </Button>
         </CardContent>
       </Card>
     )
@@ -71,8 +85,8 @@ export function ParentForm() {
         <CardDescription>Add a parent and optionally link to a student</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4 max-w-lg">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form action={formAction} className="grid max-w-lg gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="firstName">First Name *</Label>
               <Input id="firstName" name="firstName" required />
@@ -84,14 +98,19 @@ export function ParentForm() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="relationship">Relationship *</Label>
-            <select id="relationship" name="relationship" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+            <select
+              id="relationship"
+              name="relationship"
+              className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+              required
+            >
               <option value="FATHER">Father</option>
               <option value="MOTHER">Mother</option>
               <option value="GUARDIAN">Guardian</option>
               <option value="OTHER">Other</option>
             </select>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="phone">Phone</Label>
               <Input id="phone" name="phone" type="tel" />
@@ -101,15 +120,20 @@ export function ParentForm() {
               <Input id="email" name="email" type="email" />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="occupation">Occupation</Label>
               <Input id="occupation" name="occupation" />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="isPrimary">Primary Contact</Label>
-              <div className="flex items-center h-10">
-                <input id="isPrimary" name="isPrimary" type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+              <div className="flex h-10 items-center">
+                <input
+                  id="isPrimary"
+                  name="isPrimary"
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-gray-300"
+                />
               </div>
             </div>
           </div>
@@ -117,11 +141,13 @@ export function ParentForm() {
             <Label htmlFor="address">Address</Label>
             <Input id="address" name="address" />
           </div>
-          <p className="text-xs text-muted-foreground">To link this parent to a student, go to the student's profile page.</p>
+          <p className="text-muted-foreground text-xs">
+            To link this parent to a student, go to the student's profile page.
+          </p>
           <Button type="submit" disabled={pending}>
             {pending ? "Creating..." : "Add Parent"}
           </Button>
-          {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+          {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
         </form>
       </CardContent>
     </Card>

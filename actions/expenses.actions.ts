@@ -16,7 +16,7 @@ const expenseSchema = z.object({
 
 export async function createExpense(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
 
@@ -24,7 +24,7 @@ export async function createExpense(
   const branchId = getBranchId(profile, formData, "Create Expense")
   const category = formData.get("category") as string
   const amount = formData.get("amount") as string
-  const description = formData.get("description") as string || null
+  const description = (formData.get("description") as string) || null
   const expenseDate = formData.get("expenseDate") as string
 
   const parsed = expenseSchema.safeParse({ category, amount, description, expenseDate })
@@ -66,7 +66,7 @@ export async function createExpense(
 export async function updateExpense(
   expenseId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -82,7 +82,7 @@ export async function updateExpense(
 
   const category = formData.get("category") as string
   const amount = formData.get("amount") as string
-  const description = formData.get("description") as string || null
+  const description = (formData.get("description") as string) || null
   const expenseDate = formData.get("expenseDate") as string
 
   const parsed = expenseSchema.safeParse({ category, amount, description, expenseDate })

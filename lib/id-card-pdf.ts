@@ -24,7 +24,11 @@ async function fetchImageData(url: string): Promise<{ dataUrl: string; format: s
     if (!res.ok) return null
     const blob = await res.arrayBuffer()
     const type = res.headers.get("content-type") || ""
-    const format = type.includes("png") ? "PNG" : type.includes("jpeg") || type.includes("jpg") ? "JPEG" : "PNG"
+    const format = type.includes("png")
+      ? "PNG"
+      : type.includes("jpeg") || type.includes("jpg")
+        ? "JPEG"
+        : "PNG"
     const base64 = Buffer.from(blob).toString("base64")
     return { dataUrl: `data:${type || "image/png"};base64,${base64}`, format }
   } catch {
@@ -38,7 +42,7 @@ async function addImageSafe(
   x: number,
   y: number,
   w: number,
-  h: number
+  h: number,
 ): Promise<boolean> {
   if (!url) return false
   const img = await fetchImageData(url)
@@ -66,7 +70,11 @@ function roleLabel(role: IdCardData["role"]): string {
 
 function formatDate(iso: string | null): string {
   if (!iso) return "N/A"
-  return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })
 }
 
 function cardStatusStyle(status: IdCardData["cardStatus"]) {
@@ -88,7 +96,7 @@ function cardStatusStyle(status: IdCardData["cardStatus"]) {
  */
 export async function generateIdCardPdf(
   data: IdCardData,
-  options: IdCardPdfOptions = {}
+  options: IdCardPdfOptions = {},
 ): Promise<{ buffer: Buffer; filename: string }> {
   const { layout = "single" } = options
 
@@ -105,7 +113,7 @@ export async function generateIdCardPdf(
 
 export async function generateIdCardsPdfBulk(
   cards: IdCardData[],
-  options: IdCardPdfOptions = {}
+  options: IdCardPdfOptions = {},
 ): Promise<{ buffer: Buffer; filename: string }> {
   const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" })
 
@@ -130,7 +138,11 @@ export async function generateIdCardsPdfBulk(
 
 // ─── Single (full-page) card ─────────────────────────────────────────────
 
-async function drawSingleCard(pdf: jsPDF, data: IdCardData, options: IdCardPdfOptions): Promise<void> {
+async function drawSingleCard(
+  pdf: jsPDF,
+  data: IdCardData,
+  options: IdCardPdfOptions,
+): Promise<void> {
   const pageWidth = pdf.internal.pageSize.getWidth()
   const pageHeight = pdf.internal.pageSize.getHeight()
   const m = 10
@@ -146,7 +158,9 @@ async function drawSingleCard(pdf: jsPDF, data: IdCardData, options: IdCardPdfOp
     pdf.setTextColor(255, 255, 255)
     pdf.setFontSize(8)
     pdf.setFont("helvetica", "bold")
-    pdf.text(data.school.name.substring(0, 3).toUpperCase(), m + 2 + 7.5, 9 + 9.5, { align: "center" })
+    pdf.text(data.school.name.substring(0, 3).toUpperCase(), m + 2 + 7.5, 9 + 9.5, {
+      align: "center",
+    })
   }
 
   pdf.setTextColor(DARK[0], DARK[1], DARK[2])
@@ -158,7 +172,8 @@ async function drawSingleCard(pdf: jsPDF, data: IdCardData, options: IdCardPdfOp
   pdf.setFont("helvetica", "normal")
   pdf.setTextColor(MUTED[0], MUTED[1], MUTED[2])
   if (data.school.address) pdf.text(data.school.address, pageWidth / 2, 29, { align: "center" })
-  if (data.school.phone) pdf.text(`Phone: ${data.school.phone}`, pageWidth / 2, 36, { align: "center" })
+  if (data.school.phone)
+    pdf.text(`Phone: ${data.school.phone}`, pageWidth / 2, 36, { align: "center" })
 
   pdf.setDrawColor(BORDER[0], BORDER[1], BORDER[2])
   pdf.line(m, 44, pageWidth - m, 44)
@@ -173,7 +188,14 @@ async function drawSingleCard(pdf: jsPDF, data: IdCardData, options: IdCardPdfOp
   pdf.setFillColor(255, 255, 255)
   pdf.setDrawColor(BORDER[0], BORDER[1], BORDER[2])
   pdf.roundedRect(photoX, photoY, photoW, photoH, 3, 3, "FD")
-  const photoDrawn = await addImageSafe(pdf, data.photo, photoX + 1, photoY + 1, photoW - 2, photoH - 2)
+  const photoDrawn = await addImageSafe(
+    pdf,
+    data.photo,
+    photoX + 1,
+    photoY + 1,
+    photoW - 2,
+    photoH - 2,
+  )
   if (!photoDrawn) {
     pdf.setTextColor(MUTED[0], MUTED[1], MUTED[2])
     pdf.setFontSize(10)
@@ -224,7 +246,7 @@ async function drawSingleCard(pdf: jsPDF, data: IdCardData, options: IdCardPdfOp
   pdf.text(
     `Issued: ${formatDate(data.issuedAt)}    Valid: ${formatDate(data.expiresAt)}`,
     textX,
-    bodyY + 36
+    bodyY + 36,
   )
 
   // Divider
@@ -236,7 +258,9 @@ async function drawSingleCard(pdf: jsPDF, data: IdCardData, options: IdCardPdfOp
   pdf.setFontSize(9.5)
   const row: Array<[string, string]> = [
     [data.identity.label, data.identity.value],
-    ...data.details.filter((d): d is { label: string; value: string } => !!d.value).map((d) => [d.label, d.value] as [string, string]),
+    ...data.details
+      .filter((d): d is { label: string; value: string } => !!d.value)
+      .map((d) => [d.label, d.value] as [string, string]),
   ]
   if (data.branch) row.push(["Branch", data.branch.name])
   for (const [label, value] of row) {
@@ -247,7 +271,7 @@ async function drawSingleCard(pdf: jsPDF, data: IdCardData, options: IdCardPdfOp
     pdf.setTextColor(DARK[0], DARK[1], DARK[2])
     const valueLines = pdf.splitTextToSize(value, textW - 60)
     pdf.text(valueLines, textX + 60, dy)
-    dy += (valueLines.length > 1 ? 5 : 8)
+    dy += valueLines.length > 1 ? 5 : 8
   }
 
   // Children (parent cards)
@@ -272,9 +296,11 @@ async function drawSingleCard(pdf: jsPDF, data: IdCardData, options: IdCardPdfOp
   pdf.setFontSize(8.5)
   pdf.setTextColor(MUTED[0], MUTED[1], MUTED[2])
   pdf.text(
-    data.attendanceEligible ? "This card is eligible for attendance" : "This card is not eligible for attendance",
+    data.attendanceEligible
+      ? "This card is eligible for attendance"
+      : "This card is not eligible for attendance",
     textX,
-    pageHeight - 18
+    pageHeight - 18,
   )
 
   // QR code
@@ -307,7 +333,14 @@ async function drawSingleCard(pdf: jsPDF, data: IdCardData, options: IdCardPdfOp
 
 // ─── Mini (bulk) card ────────────────────────────────────────────────────
 
-async function drawMiniCard(pdf: jsPDF, data: IdCardData, x: number, y: number, w: number, h: number): Promise<void> {
+async function drawMiniCard(
+  pdf: jsPDF,
+  data: IdCardData,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): Promise<void> {
   const pad = 5
 
   pdf.setFillColor(255, 255, 255)

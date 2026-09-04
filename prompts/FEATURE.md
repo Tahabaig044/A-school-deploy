@@ -1,6 +1,7 @@
 # FEATURE_PROMPT
 
 ## Usage
+
 When implementing a new feature, use this prompt.
 
 ## Prompt

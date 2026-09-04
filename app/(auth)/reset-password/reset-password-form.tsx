@@ -12,9 +12,7 @@ export function ResetPasswordForm() {
 
   return (
     <form action={formAction} className="grid gap-4">
-      {state?.error && (
-        <p className="text-sm text-destructive">{state.error}</p>
-      )}
+      {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
       <div className="grid gap-2">
         <Label htmlFor="password">New Password</Label>
         <Input id="password" name="password" type="password" required />
@@ -22,11 +20,8 @@ export function ResetPasswordForm() {
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Resetting..." : "Reset Password"}
       </Button>
-      <p className="text-center text-sm text-muted-foreground">
-        <Link
-          href="/login"
-          className="underline underline-offset-4 hover:text-primary"
-        >
+      <p className="text-muted-foreground text-center text-sm">
+        <Link href="/login" className="hover:text-primary underline underline-offset-4">
           Back to sign in
         </Link>
       </p>

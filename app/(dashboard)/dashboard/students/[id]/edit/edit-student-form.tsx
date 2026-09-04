@@ -76,7 +76,7 @@ export function EditStudentForm({
               <select
                 id="gender"
                 name="gender"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
                 defaultValue={student.gender}
               >
                 <option value="MALE">Male</option>
@@ -127,7 +127,11 @@ export function EditStudentForm({
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <div className="grid gap-2">
                 <Label htmlFor="admissionNo">Admission No</Label>
-                <Input id="admissionNo" name="admissionNo" defaultValue={student.admissionNo || ""} />
+                <Input
+                  id="admissionNo"
+                  name="admissionNo"
+                  defaultValue={student.admissionNo || ""}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="admissionDate">Admission Date</Label>
@@ -143,7 +147,7 @@ export function EditStudentForm({
                 <select
                   id="status"
                   name="status"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
                   defaultValue={student.status}
                 >
                   <option value="ACTIVE">Active</option>
@@ -155,9 +159,7 @@ export function EditStudentForm({
             </div>
           </div>
 
-          {state?.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
-          )}
+          {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
 
           <div className="flex gap-4">
             <Button type="submit" disabled={pending}>

@@ -1,9 +1,11 @@
 # LOOP_004 - STUDENTS
 
 ## Objective
+
 Implement student management with CRUD operations, search, and import.
 
 ## Allowed Files
+
 - src/actions/students.ts
 - src/lib/validations/student.ts
 - src/app/(dashboard)/students/*.tsx
@@ -11,10 +13,12 @@ Implement student management with CRUD operations, search, and import.
 - prisma/schema.prisma (with approval)
 
 ## Forbidden Files
+
 - src/app/(auth)/* (do not touch)
 - src/components/ui/* (use existing)
 
 ## Tasks
+
 1. [ ] Create student schema (Prisma)
 2. [ ] Create student validation (Zod)
 3. [ ] Create student server actions
@@ -27,6 +31,7 @@ Implement student management with CRUD operations, search, and import.
 10. [ ] Implement export functionality
 
 ## Acceptance Criteria
+
 - [ ] Student CRUD working
 - [ ] Search by name/admission number
 - [ ] Filter by class/section/status
@@ -39,11 +44,14 @@ Implement student management with CRUD operations, search, and import.
 - [ ] Empty states implemented
 
 ## Stop Condition
+
 Task complete when student management is fully functional.
 
 ## Dependencies
+
 - LOOP_003 (Dashboard) complete
 - Class/Section data available
 
 ## Estimated Time
+
 4 days

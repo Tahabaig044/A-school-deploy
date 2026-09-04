@@ -26,7 +26,11 @@ export function AdmissionForm({ classes, sessions }: AdmissionFormProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
-  const [state, setState] = useState<{ error?: string; success?: boolean; admissionId?: string } | null>(null)
+  const [state, setState] = useState<{
+    error?: string
+    success?: boolean
+    admissionId?: string
+  } | null>(null)
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
@@ -187,9 +191,7 @@ export function AdmissionForm({ classes, sessions }: AdmissionFormProps) {
         </CardContent>
       </Card>
 
-      {state?.error && (
-        <p className="text-sm text-red-500">{state.error}</p>
-      )}
+      {state?.error && <p className="text-sm text-red-500">{state.error}</p>}
 
       <div className="flex gap-4">
         <Button type="submit" disabled={loading}>

@@ -36,7 +36,7 @@ export default async function TeacherAttendancePage({
         }
         return acc
       },
-      [] as typeof assignments
+      [] as typeof assignments,
     )
 
     return (
@@ -48,7 +48,7 @@ export default async function TeacherAttendancePage({
 
         {uniqueClasses.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
+            <CardContent className="text-muted-foreground py-8 text-center">
               No classes assigned to you.
             </CardContent>
           </Card>
@@ -59,15 +59,13 @@ export default async function TeacherAttendancePage({
                 key={assignment.class.id}
                 href={`/portal/teacher/attendance?class=${assignment.class.id}&date=${date}`}
               >
-                <Card className="transition-colors hover:bg-accent cursor-pointer">
+                <Card className="hover:bg-accent cursor-pointer transition-colors">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {assignment.class.name}
-                    </CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-sm font-medium">{assignment.class.name}</CardTitle>
+                    <Users className="text-muted-foreground h-4 w-4" />
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {assignment.section?.name ? `${assignment.section.name} - ` : ""}
                       {assignment.subject.name}
                     </p>

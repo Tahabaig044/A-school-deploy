@@ -12,7 +12,13 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { setCurrentSession, deleteSession, updateSession } from "@/actions/session.actions"
@@ -67,9 +73,7 @@ export function SessionList({ sessions }: { sessions: Session[] }) {
           <CardTitle>All Sessions</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            No academic sessions created yet.
-          </p>
+          <p className="text-muted-foreground text-sm">No academic sessions created yet.</p>
         </CardContent>
       </Card>
     )
@@ -99,15 +103,11 @@ export function SessionList({ sessions }: { sessions: Session[] }) {
               <TableRow key={session.id}>
                 <TableCell className="font-medium">{session.name}</TableCell>
                 <TableCell>{session.school.name}</TableCell>
-                <TableCell>
-                  {session.startDate.toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  {session.endDate.toLocaleDateString()}
-                </TableCell>
+                <TableCell>{session.startDate.toLocaleDateString()}</TableCell>
+                <TableCell>{session.endDate.toLocaleDateString()}</TableCell>
                 <TableCell>
                   {session.isCurrent ? (
-                    <span className="text-green-600 font-medium">Current</span>
+                    <span className="font-medium text-green-600">Current</span>
                   ) : (
                     "Inactive"
                   )}
@@ -121,7 +121,16 @@ export function SessionList({ sessions }: { sessions: Session[] }) {
                         </Button>
                       </form>
                     )}
-                    <Dialog open={open && editItem?.id === session.id} onOpenChange={(o) => { setOpen(o); if (!o) { setEditItem(null); setError(null) } }}>
+                    <Dialog
+                      open={open && editItem?.id === session.id}
+                      onOpenChange={(o) => {
+                        setOpen(o)
+                        if (!o) {
+                          setEditItem(null)
+                          setError(null)
+                        }
+                      }}
+                    >
                       <DialogTrigger render={<Button variant="ghost" size="icon" />}>
                         <Pencil className="h-4 w-4" />
                       </DialogTrigger>
@@ -137,17 +146,35 @@ export function SessionList({ sessions }: { sessions: Session[] }) {
                           </div>
                           <div>
                             <Label htmlFor="startDate">Start Date</Label>
-                            <Input id="startDate" name="startDate" type="date" defaultValue={session.startDate.toISOString().split("T")[0]} required />
+                            <Input
+                              id="startDate"
+                              name="startDate"
+                              type="date"
+                              defaultValue={session.startDate.toISOString().split("T")[0]}
+                              required
+                            />
                           </div>
                           <div>
                             <Label htmlFor="endDate">End Date</Label>
-                            <Input id="endDate" name="endDate" type="date" defaultValue={session.endDate.toISOString().split("T")[0]} required />
+                            <Input
+                              id="endDate"
+                              name="endDate"
+                              type="date"
+                              defaultValue={session.endDate.toISOString().split("T")[0]}
+                              required
+                            />
                           </div>
-                          <Button type="submit" className="w-full">Update</Button>
+                          <Button type="submit" className="w-full">
+                            Update
+                          </Button>
                         </form>
                       </DialogContent>
                     </Dialog>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(session.id, session.name)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(session.id, session.name)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

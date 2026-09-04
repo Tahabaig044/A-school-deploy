@@ -5,8 +5,12 @@ import { Printer } from "lucide-react"
 
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]
 const DAY_LABELS: Record<string, string> = {
-  MONDAY: "Monday", TUESDAY: "Tuesday", WEDNESDAY: "Wednesday",
-  THURSDAY: "Thursday", FRIDAY: "Friday", SATURDAY: "Saturday",
+  MONDAY: "Monday",
+  TUESDAY: "Tuesday",
+  WEDNESDAY: "Wednesday",
+  THURSDAY: "Thursday",
+  FRIDAY: "Friday",
+  SATURDAY: "Saturday",
 }
 
 type Slot = {
@@ -46,14 +50,14 @@ export function TimetablePrintButton({ slots, title }: { slots: Slot[]; title?: 
                 (s) => `
               <div style="padding:6px 8px;border-bottom:1px solid #eee;display:flex;gap:12px;align-items:center">
                 <span style="font-weight:500;min-width:100px">${s.startTime} - ${s.endTime}</span>
-                <span style="min-width:120px">${s.isFree ? "FREE" : (s.subject?.name || "-")}${s.freePeriodReason ? ` (${s.freePeriodReason})` : ""}</span>
+                <span style="min-width:120px">${s.isFree ? "FREE" : s.subject?.name || "-"}${s.freePeriodReason ? ` (${s.freePeriodReason})` : ""}</span>
                 <span style="min-width:120px">${s.isFree ? "-" : `${s.teacher?.firstName || ""} ${s.teacher?.lastName || ""}`}</span>
                 <span style="min-width:80px">${s.room || "-"}</span>
-              </div>`
+              </div>`,
               )
               .join("")}
           </td>
-        </tr>`
+        </tr>`,
       )
       .join("")
 
@@ -96,7 +100,7 @@ export function TimetablePrintButton({ slots, title }: { slots: Slot[]; title?: 
 
   return (
     <Button variant="outline" size="sm" onClick={handlePrint} type="button">
-      <Printer className="h-4 w-4 mr-1" />
+      <Printer className="mr-1 h-4 w-4" />
       Print
     </Button>
   )

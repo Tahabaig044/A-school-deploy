@@ -69,6 +69,7 @@ school-management-system/
 ```
 
 ## Design Patterns
+
 - **Repository Pattern**: Data access abstraction
 - **Service Layer Pattern**: Business logic encapsulation
 - **DTO Pattern**: Data transfer objects for API
@@ -77,6 +78,7 @@ school-management-system/
 - **Observer Pattern**: Event handling
 
 ## API Design
+
 - RESTful API design
 - Versioned endpoints (api/v1/)
 - Consistent response format
@@ -85,6 +87,7 @@ school-management-system/
 - Filtering and sorting
 
 ## Security Architecture
+
 - JWT-based authentication
 - Role-Based Access Control (RBAC)
 - API key authentication for external services
@@ -95,6 +98,7 @@ school-management-system/
 - XSS protection
 
 ## Scalability Considerations
+
 - Horizontal scaling with load balancer
 - Database read replicas
 - Redis caching layer

@@ -7,7 +7,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { getMeetings, updateAttendeeStatus, addMeetingNote, downloadMeetingIcs } from "@/actions/meeting.actions"
+import {
+  getMeetings,
+  updateAttendeeStatus,
+  addMeetingNote,
+  downloadMeetingIcs,
+} from "@/actions/meeting.actions"
 import { useToast } from "@/hooks/use-toast"
 
 const STATUS_COLORS: Record<string, string> = {
@@ -27,7 +32,12 @@ const ATTENDEE_STATUS_COLORS: Record<string, string> = {
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
 }
 
 function formatTime(dateStr: string) {
@@ -41,7 +51,9 @@ export default function ParentMeetingsPage() {
   const [noteText, setNoteText] = useState("")
   const [noteMeetingId, setNoteMeetingId] = useState<string | null>(null)
 
-  useEffect(() => { loadMeetings() }, [])
+  useEffect(() => {
+    loadMeetings()
+  }, [])
 
   async function loadMeetings() {
     setLoading(true)
@@ -88,13 +100,13 @@ export default function ParentMeetingsPage() {
 
       <div className="space-y-4">
         {loading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading meetings...</div>
+          <div className="text-muted-foreground py-8 text-center">Loading meetings...</div>
         ) : meetings.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+              <Calendar className="text-muted-foreground mb-4 h-12 w-12" />
               <p className="text-lg font-medium">No meetings</p>
-              <p className="text-sm text-muted-foreground">You have no scheduled meetings.</p>
+              <p className="text-muted-foreground text-sm">You have no scheduled meetings.</p>
             </CardContent>
           </Card>
         ) : (
@@ -107,16 +119,18 @@ export default function ParentMeetingsPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-lg">{meeting.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{meeting.meetingType.replace(/_/g, " ")}</p>
+                      <p className="text-muted-foreground text-sm">
+                        {meeting.meetingType.replace(/_/g, " ")}
+                      </p>
                     </div>
                     <Badge className={STATUS_COLORS[meeting.status] || ""}>{meeting.status}</Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {meeting.description && (
-                    <p className="text-sm text-muted-foreground">{meeting.description}</p>
+                    <p className="text-muted-foreground text-sm">{meeting.description}</p>
                   )}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex flex-wrap items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
                       {formatDate(meeting.startDateTime)}
@@ -140,33 +154,54 @@ export default function ParentMeetingsPage() {
                   {myAttendance && (
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium">My Status:</span>
-                      <Badge variant="outline" className={ATTENDEE_STATUS_COLORS[myAttendance.status] || ""}>
+                      <Badge
+                        variant="outline"
+                        className={ATTENDEE_STATUS_COLORS[myAttendance.status] || ""}
+                      >
                         {myAttendance.status}
                       </Badge>
-                      {meeting.status !== "CANCELLED" && meeting.status !== "REJECTED" && meeting.status !== "COMPLETED" && (
-                        <>
-                          <Button variant="outline" size="sm" onClick={() => handleAttendeeStatus(meeting.id, myAttendance.profileId, "ACCEPTED")}>
-                            <Check className="h-3 w-3 mr-1" />
-                            Accept
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => handleAttendeeStatus(meeting.id, myAttendance.profileId, "DECLINED")}>
-                            <X className="h-3 w-3 mr-1" />
-                            Decline
-                          </Button>
-                        </>
-                      )}
+                      {meeting.status !== "CANCELLED" &&
+                        meeting.status !== "REJECTED" &&
+                        meeting.status !== "COMPLETED" && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleAttendeeStatus(meeting.id, myAttendance.profileId, "ACCEPTED")
+                              }
+                            >
+                              <Check className="mr-1 h-3 w-3" />
+                              Accept
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleAttendeeStatus(meeting.id, myAttendance.profileId, "DECLINED")
+                              }
+                            >
+                              <X className="mr-1 h-3 w-3" />
+                              Decline
+                            </Button>
+                          </>
+                        )}
                     </div>
                   )}
 
                   {meeting.notes && meeting.notes.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="font-medium text-sm">Notes</h4>
+                      <h4 className="text-sm font-medium">Notes</h4>
                       <div className="space-y-2">
                         {meeting.notes.map((note: any) => (
-                          <div key={note.id} className="border rounded p-3 bg-muted/30">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium">{note.author?.firstName} {note.author?.lastName}</span>
-                              <span className="text-xs text-muted-foreground">{new Date(note.createdAt).toLocaleString()}</span>
+                          <div key={note.id} className="bg-muted/30 rounded border p-3">
+                            <div className="mb-1 flex items-center justify-between">
+                              <span className="text-sm font-medium">
+                                {note.author?.firstName} {note.author?.lastName}
+                              </span>
+                              <span className="text-muted-foreground text-xs">
+                                {new Date(note.createdAt).toLocaleString()}
+                              </span>
                             </div>
                             <p className="text-sm">{note.content}</p>
                           </div>
@@ -178,12 +213,20 @@ export default function ParentMeetingsPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     {meeting.status !== "CANCELLED" && meeting.status !== "REJECTED" && (
                       <>
-                        <Button variant="outline" size="sm" onClick={() => setNoteMeetingId(meeting.id)}>
-                          <MessageSquare className="h-4 w-4 mr-1" />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setNoteMeetingId(meeting.id)}
+                        >
+                          <MessageSquare className="mr-1 h-4 w-4" />
                           Add Note
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDownloadIcs(meeting.id)}>
-                          <Download className="h-4 w-4 mr-1" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDownloadIcs(meeting.id)}
+                        >
+                          <Download className="mr-1 h-4 w-4" />
                           Calendar
                         </Button>
                       </>
@@ -197,7 +240,9 @@ export default function ParentMeetingsPage() {
                         value={noteText}
                         onChange={(e) => setNoteText(e.target.value)}
                       />
-                      <Button size="sm" onClick={() => handleAddNote(meeting.id)}>Add</Button>
+                      <Button size="sm" onClick={() => handleAddNote(meeting.id)}>
+                        Add
+                      </Button>
                     </div>
                   )}
                 </CardContent>

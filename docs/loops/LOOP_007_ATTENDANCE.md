@@ -1,23 +1,27 @@
 # Loop 007: Attendance
 
 ## Overview
+
 Attendance module handles daily student attendance marking, tracking, and reporting. This is critical for student monitoring and compliance.
 
 ## User Stories
 
 ### As a Teacher
+
 1. I want to mark attendance for my class
 2. I want to mark students as present/absent/late
 3. I want to add remarks for absent students
 4. I want to view attendance history
 
 ### As an Admin
+
 1. I want to view attendance reports
 2. I want to see class-wise attendance
 3. I want to track attendance patterns
 4. I want to generate attendance certificates
 
 ### As a Parent
+
 1. I want to see my child's attendance
 2. I want to receive absence notifications
 3. I want to view monthly attendance
@@ -92,12 +96,14 @@ CREATE TABLE attendance_notifications (
 ## Business Rules
 
 ### Marking Rules
+
 - Attendance can be marked for current day only (or previous day with permission)
 - Once marked, changes are logged
 - Class teacher marks attendance for their section
 - Bulk marking supported
 
 ### Status Definitions
+
 - **Present**: Student attended full day
 - **Absent**: Student did not attend
 - **Late**: Student arrived after grace period
@@ -105,11 +111,13 @@ CREATE TABLE attendance_notifications (
 - **Half Day**: Student attended half day
 
 ### Time-based Rules
+
 - Late arrival: After configurable minutes (default 15)
 - Half day: After configurable minutes (default 60)
 - Auto-mark absent: After configurable threshold
 
 ### Notification Rules
+
 - Parent notified on absence (configurable)
 - Daily summary to parents (optional)
 - Weekly report available
@@ -117,6 +125,7 @@ CREATE TABLE attendance_notifications (
 ## UI Components
 
 ### Attendance Marking
+
 - Date selector
 - Class/Section selector
 - Student list with status buttons
@@ -125,18 +134,21 @@ CREATE TABLE attendance_notifications (
 - Save button
 
 ### Attendance Report
+
 - Calendar view
 - Student-wise view
 - Class-wise view
 - Export options
 
 ### Attendance Summary
+
 - Monthly summary cards
 - Percentage calculation
 - Trend charts
 - Comparison views
 
 ## Acceptance Criteria
+
 - [ ] Attendance can be marked for entire class
 - [ ] Status options work correctly
 - [ ] Late time calculation works

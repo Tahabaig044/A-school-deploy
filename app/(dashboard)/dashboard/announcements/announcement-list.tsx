@@ -6,15 +6,36 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { createAnnouncement, updateAnnouncement, deleteAnnouncement, addAnnouncementAttachment, deleteAnnouncementAttachment } from "@/actions/announcement.actions"
+import {
+  createAnnouncement,
+  updateAnnouncement,
+  deleteAnnouncement,
+  addAnnouncementAttachment,
+  deleteAnnouncementAttachment,
+} from "@/actions/announcement.actions"
 import { useToast } from "@/hooks/use-toast"
 import { Pencil, Trash2, Plus, Paperclip, ExternalLink } from "lucide-react"
 
-const audiences = ["ALL", "SCHOOL", "BRANCH", "CLASS", "SECTION", "TEACHERS", "STUDENTS", "PARENTS"] as const
+const audiences = [
+  "ALL",
+  "SCHOOL",
+  "BRANCH",
+  "CLASS",
+  "SECTION",
+  "TEACHERS",
+  "STUDENTS",
+  "PARENTS",
+] as const
 
 export function AnnouncementList({
   announcements,
@@ -83,11 +104,23 @@ export function AnnouncementList({
   return (
     <div className="space-y-6">
       <PageHeader title="Announcements" description="Manage school announcements">
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditItem(null); setError(null) } }}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o)
+            if (!o) {
+              setEditItem(null)
+              setError(null)
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Add Announcement</Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Announcement
+            </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editItem ? "Edit Announcement" : "Add Announcement"}</DialogTitle>
             </DialogHeader>
@@ -99,49 +132,93 @@ export function AnnouncementList({
               </div>
               <div>
                 <Label htmlFor="content">Content</Label>
-                <Textarea id="content" name="content" defaultValue={editItem?.content || ""} required rows={5} />
+                <Textarea
+                  id="content"
+                  name="content"
+                  defaultValue={editItem?.content || ""}
+                  required
+                  rows={5}
+                />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="audience">Audience</Label>
-                  <select name="audience" defaultValue={editItem?.audience || "ALL"} className="w-full border rounded p-2">
-                    {audiences.map(a => (
-                      <option key={a} value={a}>{a.replace(/_/g, " ")}</option>
+                  <select
+                    name="audience"
+                    defaultValue={editItem?.audience || "ALL"}
+                    className="w-full rounded border p-2"
+                  >
+                    {audiences.map((a) => (
+                      <option key={a} value={a}>
+                        {a.replace(/_/g, " ")}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
                   <Label htmlFor="isPublished">Status</Label>
-                  <select name="isPublished" defaultValue={editItem?.isPublished ? "true" : "false"} className="w-full border rounded p-2">
+                  <select
+                    name="isPublished"
+                    defaultValue={editItem?.isPublished ? "true" : "false"}
+                    className="w-full rounded border p-2"
+                  >
                     <option value="true">Published</option>
                     <option value="false">Draft</option>
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="classId">Class (optional)</Label>
-                  <Input id="classId" name="classId" defaultValue={editItem?.classId || ""} placeholder="UUID" />
+                  <Input
+                    id="classId"
+                    name="classId"
+                    defaultValue={editItem?.classId || ""}
+                    placeholder="UUID"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="sectionId">Section (optional)</Label>
-                  <Input id="sectionId" name="sectionId" defaultValue={editItem?.sectionId || ""} placeholder="UUID" />
+                  <Input
+                    id="sectionId"
+                    name="sectionId"
+                    defaultValue={editItem?.sectionId || ""}
+                    placeholder="UUID"
+                  />
                 </div>
               </div>
               <div>
                 <Label htmlFor="scheduledAt">Schedule Publish (optional)</Label>
-                <Input id="scheduledAt" name="scheduledAt" type="datetime-local" defaultValue={editItem?.scheduledAt ? new Date(editItem.scheduledAt).toISOString().slice(0, 16) : ""} />
-                <p className="text-xs text-muted-foreground mt-1">Leave empty for immediate publishing</p>
+                <Input
+                  id="scheduledAt"
+                  name="scheduledAt"
+                  type="datetime-local"
+                  defaultValue={
+                    editItem?.scheduledAt
+                      ? new Date(editItem.scheduledAt).toISOString().slice(0, 16)
+                      : ""
+                  }
+                />
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Leave empty for immediate publishing
+                </p>
               </div>
-              <Button type="submit" className="w-full">{editItem ? "Update" : "Create"}</Button>
+              <Button type="submit" className="w-full">
+                {editItem ? "Update" : "Create"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
       </PageHeader>
 
       {/* View Detail Dialog */}
-      <Dialog open={!!viewItem} onOpenChange={(o) => { if (!o) setViewItem(null) }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Dialog
+        open={!!viewItem}
+        onOpenChange={(o) => {
+          if (!o) setViewItem(null)
+        }}
+      >
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{viewItem?.title}</DialogTitle>
           </DialogHeader>
@@ -153,32 +230,47 @@ export function AnnouncementList({
                   {viewItem.isPublished ? "Published" : "Draft"}
                 </Badge>
                 {viewItem.scheduledAt && (
-                  <Badge variant="outline">Scheduled: {new Date(viewItem.scheduledAt).toLocaleString()}</Badge>
+                  <Badge variant="outline">
+                    Scheduled: {new Date(viewItem.scheduledAt).toLocaleString()}
+                  </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">
-                By {viewItem.author?.firstName} {viewItem.author?.lastName} on {new Date(viewItem.createdAt).toLocaleDateString()}
+              <p className="text-muted-foreground text-sm">
+                By {viewItem.author?.firstName} {viewItem.author?.lastName} on{" "}
+                {new Date(viewItem.createdAt).toLocaleDateString()}
               </p>
-              <div className="prose prose-sm max-w-none whitespace-pre-wrap">{viewItem.content}</div>
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+                {viewItem.content}
+              </div>
               {viewItem.class && (
-                <p className="text-sm"><span className="font-medium">Class:</span> {viewItem.class.name}</p>
+                <p className="text-sm">
+                  <span className="font-medium">Class:</span> {viewItem.class.name}
+                </p>
               )}
               {viewItem.section && (
-                <p className="text-sm"><span className="font-medium">Section:</span> {viewItem.section.name}</p>
+                <p className="text-sm">
+                  <span className="font-medium">Section:</span> {viewItem.section.name}
+                </p>
               )}
               {viewItem.attachments?.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Attachments</h4>
+                  <h4 className="mb-2 text-sm font-medium">Attachments</h4>
                   <div className="space-y-2">
                     {viewItem.attachments.map((att: any) => (
-                      <div key={att.id} className="flex items-center gap-2 p-2 border rounded">
-                        <Paperclip className="h-4 w-4 text-muted-foreground" />
-                        <a href={att.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline flex items-center gap-1">
+                      <div key={att.id} className="flex items-center gap-2 rounded border p-2">
+                        <Paperclip className="text-muted-foreground h-4 w-4" />
+                        <a
+                          href={att.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                        >
                           {att.fileName}
                           <ExternalLink className="h-3 w-3" />
                         </a>
-                        <span className="text-xs text-muted-foreground ml-auto">
-                          {att.fileType} {att.fileSize ? `(${Math.round(att.fileSize / 1024)}KB)` : ""}
+                        <span className="text-muted-foreground ml-auto text-xs">
+                          {att.fileType}{" "}
+                          {att.fileSize ? `(${Math.round(att.fileSize / 1024)}KB)` : ""}
                         </span>
                       </div>
                     ))}
@@ -195,29 +287,65 @@ export function AnnouncementList({
 
       <DataTable
         columns={[
-          { header: "Title", accessorKey: "title", cell: ({ row }: any) => (
-            <button onClick={() => setViewItem(row)} className="text-left font-medium hover:underline">{row.title}</button>
-          )},
-          { header: "Author", accessorKey: "author", cell: ({ row }: any) => `${row.author?.firstName} ${row.author?.lastName}` },
-          { header: "Audience", accessorKey: "audience", cell: ({ row }: any) => (
-            <Badge>{row.audience.replace(/_/g, " ")}</Badge>
-          )},
-          { header: "Status", accessorKey: "isPublished", cell: ({ row }: any) => (
-            <Badge variant={row.isPublished ? "default" : "secondary"}>
-              {row.isPublished ? "Published" : "Draft"}
-            </Badge>
-          )},
-          { header: "Attachments", accessorKey: "attachments", cell: ({ row }: any) => (
-            row.attachments?.length > 0 ? (
-              <Badge variant="outline"><Paperclip className="h-3 w-3 mr-1" />{row.attachments.length}</Badge>
-            ) : null
-          )},
-          { header: "Date", accessorKey: "createdAt", cell: ({ row }: any) => new Date(row.createdAt).toLocaleDateString() },
+          {
+            header: "Title",
+            accessorKey: "title",
+            cell: ({ row }: any) => (
+              <button
+                onClick={() => setViewItem(row)}
+                className="text-left font-medium hover:underline"
+              >
+                {row.title}
+              </button>
+            ),
+          },
+          {
+            header: "Author",
+            accessorKey: "author",
+            cell: ({ row }: any) => `${row.author?.firstName} ${row.author?.lastName}`,
+          },
+          {
+            header: "Audience",
+            accessorKey: "audience",
+            cell: ({ row }: any) => <Badge>{row.audience.replace(/_/g, " ")}</Badge>,
+          },
+          {
+            header: "Status",
+            accessorKey: "isPublished",
+            cell: ({ row }: any) => (
+              <Badge variant={row.isPublished ? "default" : "secondary"}>
+                {row.isPublished ? "Published" : "Draft"}
+              </Badge>
+            ),
+          },
+          {
+            header: "Attachments",
+            accessorKey: "attachments",
+            cell: ({ row }: any) =>
+              row.attachments?.length > 0 ? (
+                <Badge variant="outline">
+                  <Paperclip className="mr-1 h-3 w-3" />
+                  {row.attachments.length}
+                </Badge>
+              ) : null,
+          },
+          {
+            header: "Date",
+            accessorKey: "createdAt",
+            cell: ({ row }: any) => new Date(row.createdAt).toLocaleDateString(),
+          },
           {
             header: "Actions",
             cell: ({ row }: any) => (
               <div className="flex gap-2">
-                <Button variant="ghost" size="icon" onClick={() => { setEditItem(row); setOpen(true) }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setEditItem(row)
+                    setOpen(true)
+                  }}
+                >
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)}>

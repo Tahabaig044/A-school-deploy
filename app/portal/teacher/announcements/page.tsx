@@ -14,17 +14,14 @@ async function TeacherAnnouncementsContent() {
 
   const userId = user.id
 
-  if (!profile?.schoolId) return <div className="text-center py-8 text-muted-foreground">School not found.</div>
+  if (!profile?.schoolId)
+    return <div className="text-muted-foreground py-8 text-center">School not found.</div>
 
   const announcements = await prisma.announcement.findMany({
     where: {
       schoolId: profile.schoolId,
       isPublished: true,
-      OR: [
-        { audience: "ALL" },
-        { audience: "TEACHER" },
-        { audience: "TEACHERS" },
-      ],
+      OR: [{ audience: "ALL" }, { audience: "TEACHER" }, { audience: "TEACHERS" }],
     },
     include: {
       author: { select: { firstName: true, lastName: true } },
@@ -41,9 +38,9 @@ async function TeacherAnnouncementsContent() {
       {announcements.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Megaphone className="h-12 w-12 text-muted-foreground mb-4" />
+            <Megaphone className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-lg font-medium">No announcements</p>
-            <p className="text-sm text-muted-foreground">No announcements found.</p>
+            <p className="text-muted-foreground text-sm">No announcements found.</p>
           </CardContent>
         </Card>
       ) : (
@@ -56,11 +53,12 @@ async function TeacherAnnouncementsContent() {
                   <Badge variant="outline">{a.audience}</Badge>
                 </div>
                 <CardDescription>
-                  By {a.author.firstName} {a.author.lastName} | {new Date(a.createdAt).toLocaleDateString()}
+                  By {a.author.firstName} {a.author.lastName} |{" "}
+                  {new Date(a.createdAt).toLocaleDateString()}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{a.content}</p>
+                <p className="text-muted-foreground text-sm whitespace-pre-wrap">{a.content}</p>
               </CardContent>
             </Card>
           ))}

@@ -58,19 +58,19 @@
 
 **Redirect map (`lib/auth-helpers.ts:3-15`):**
 
-| Role | Redirect Path |
-|------|---------------|
-| SUPER_ADMIN | `/dashboard` |
-| SCHOOL_ADMIN | `/dashboard` |
-| BRANCH_ADMIN | `/dashboard` |
-| PRINCIPAL | `/dashboard` |
-| ACCOUNTANT | `/dashboard` |
-| ADMISSION_OFFICER | `/dashboard` |
-| LIBRARIAN | `/dashboard` |
-| TRANSPORT_MANAGER | `/dashboard` |
-| TEACHER | `/portal/teacher` |
-| STUDENT | `/portal/student` |
-| PARENT | `/portal/parent` |
+| Role              | Redirect Path     |
+| ----------------- | ----------------- |
+| SUPER_ADMIN       | `/dashboard`      |
+| SCHOOL_ADMIN      | `/dashboard`      |
+| BRANCH_ADMIN      | `/dashboard`      |
+| PRINCIPAL         | `/dashboard`      |
+| ACCOUNTANT        | `/dashboard`      |
+| ADMISSION_OFFICER | `/dashboard`      |
+| LIBRARIAN         | `/dashboard`      |
+| TRANSPORT_MANAGER | `/dashboard`      |
+| TEACHER           | `/portal/teacher` |
+| STUDENT           | `/portal/student` |
+| PARENT            | `/portal/parent`  |
 
 ### 1.2 Logout
 
@@ -87,11 +87,13 @@
 ### 1.3 Invitation Flow
 
 **Step 1: Admin invites user**
+
 - Page: `app/(dashboard)/dashboard/users/page.tsx` - requires `SUPER_ADMIN` or `SCHOOL_ADMIN` role
 - Form: `app/(dashboard)/dashboard/users/invite-user-form.tsx`
 - Action: `actions/auth.actions.ts:45-190` - `inviteUser()`
 
 **Detailed flow:**
+
 1. Calls `requireInvitePermission()` to verify caller is SUPER_ADMIN or SCHOOL_ADMIN (line 49)
 2. Extracts: email, firstName, lastName, role, phone from formData (line 51-55)
 3. Checks School Admin cannot invite SUPER_ADMIN or SCHOOL_ADMIN (line 62-64)
@@ -114,10 +116,12 @@
 14. Returns `{ success: true, invitationLink }`
 
 **Step 2: Invited user sets password**
+
 - Page: `app/(auth)/setup-password/page.tsx`
 - Form: `app/(auth)/setup-password/setup-password-form.tsx`
 
 **Detailed flow:**
+
 1. Reads `token` from URL search params (line 15-16)
 2. On mount, calls `getInvitationByToken(token)` to validate (line 25-39)
 3. `getInvitationByToken()` (auth.actions.ts:193-225):
@@ -154,10 +158,12 @@ See Section 1.3, Step 2 above. The setup password page is exclusively for accept
 Profiles are created in two scenarios:
 
 **A. During Invitation (primary flow):**
+
 - `actions/auth.actions.ts:122-138` or `157-173`
 - `prisma.profile.create()` with: id (Supabase user ID), email, firstName, lastName, role, phone, schoolId, branchId, status: "INVITED", invitationToken, invitationExpiresAt, invitedById
 
 **B. During Self-Registration (legacy):**
+
 - `actions/auth.actions.ts:571-574`
 - `prisma.profile.create()` with: id (Supabase user ID), email, firstName, lastName, role, status: "ACTIVE", isActive: true
 - Note: No schoolId/branchId assigned during self-registration
@@ -182,22 +188,22 @@ Profiles are created in two scenarios:
 
 ### What happens when an Admin creates a new User:
 
-| Step | Detail |
-|------|--------|
-| **1. Starting Page** | `app/(dashboard)/dashboard/users/page.tsx` - Users list page (requires SUPER_ADMIN or SCHOOL_ADMIN) |
-| **2. Form** | `app/(dashboard)/dashboard/users/invite-user-form.tsx` - Collects firstName, lastName, email, role, phone |
-| **3. Server Action** | `actions/auth.actions.ts:45-190` - `inviteUser()` |
-| **4. Supabase Auth API** | `serviceClient.auth.admin.inviteUserByEmail(email, { redirectTo, data })` (line 93) |
-| **4b. Fallback** | `serviceClient.auth.admin.createUser({ email, password: random, email_confirm: true })` (line 107) |
-| **5. Prisma Models Updated** | `Profile` - `prisma.profile.create()` (line 122 or 157) |
-| **6. Database Tables Written** | `profiles` table |
-| **7. Profile Created** | Yes - Profile is created with status "INVITED", invitation token, expiry, and invitedBy reference |
-| **8. Role Assigned** | From formData `role` field - stored in `Profile.role` |
-| **9. schoolId Assigned** | From inviter's `profile.schoolId` (line 131/166) |
-| **10. branchId Assigned** | From inviter's `profile.branchId` (line 132/167) |
-| **11. Status Assigned** | `"INVITED"` (line 133/168) |
-| **12. Audit Log** | `logAuditEvent({ action: "CREATE", entityType: "INVITATION" })` (line 143/178) |
-| **13. Invitation Link** | Returned to admin: `${APP_URL}/setup-password?token=${rawToken}` |
+| Step                           | Detail                                                                                                    |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| **1. Starting Page**           | `app/(dashboard)/dashboard/users/page.tsx` - Users list page (requires SUPER_ADMIN or SCHOOL_ADMIN)       |
+| **2. Form**                    | `app/(dashboard)/dashboard/users/invite-user-form.tsx` - Collects firstName, lastName, email, role, phone |
+| **3. Server Action**           | `actions/auth.actions.ts:45-190` - `inviteUser()`                                                         |
+| **4. Supabase Auth API**       | `serviceClient.auth.admin.inviteUserByEmail(email, { redirectTo, data })` (line 93)                       |
+| **4b. Fallback**               | `serviceClient.auth.admin.createUser({ email, password: random, email_confirm: true })` (line 107)        |
+| **5. Prisma Models Updated**   | `Profile` - `prisma.profile.create()` (line 122 or 157)                                                   |
+| **6. Database Tables Written** | `profiles` table                                                                                          |
+| **7. Profile Created**         | Yes - Profile is created with status "INVITED", invitation token, expiry, and invitedBy reference         |
+| **8. Role Assigned**           | From formData `role` field - stored in `Profile.role`                                                     |
+| **9. schoolId Assigned**       | From inviter's `profile.schoolId` (line 131/166)                                                          |
+| **10. branchId Assigned**      | From inviter's `profile.branchId` (line 132/167)                                                          |
+| **11. Status Assigned**        | `"INVITED"` (line 133/168)                                                                                |
+| **12. Audit Log**              | `logAuditEvent({ action: "CREATE", entityType: "INVITATION" })` (line 143/178)                            |
+| **13. Invitation Link**        | Returned to admin: `${APP_URL}/setup-password?token=${rawToken}`                                          |
 
 ### Complete File Chain:
 
@@ -252,6 +258,7 @@ app/(dashboard)/dashboard/users/page.tsx          (Server Component - requires r
 ### 3.2 The Critical Gap: Teacher <-> Profile Linking
 
 The Teacher model has an optional `profileId` field (schema.prisma:429):
+
 ```
 profileId String? @unique @map("profile_id") @db.Uuid
 ```
@@ -259,22 +266,24 @@ profileId String? @unique @map("profile_id") @db.Uuid
 **There is NO automatic mechanism that links a Teacher record to a Profile.** The two must be manually or externally linked. The `createTeacher` action does not set `profileId`. The `inviteUser` action does not create a Teacher record.
 
 **Consequence:** After creating both a Teacher record and inviting a user with TEACHER role, the teacher portal dashboard cannot find the Teacher record (`teacher-portal.actions.ts:14-16`):
+
 ```typescript
 const teacher = await prisma.teacher.findFirst({
   where: { profileId: user.id },
 })
 ```
+
 This returns `null` because `profileId` was never set.
 
 ### 3.3 Tables Updated When Teacher is Created
 
-| Table | Action | Created By |
-|-------|--------|------------|
-| `teachers` | `INSERT` | `createTeacher()` in `teacher.actions.ts:50` |
-| `audit_logs` | `INSERT` | `logAuditEvent()` in `teacher.actions.ts:66` |
-| `profiles` | `INSERT` | `inviteUser()` in `auth.actions.ts:122/157` |
-| `auth.users` (Supabase) | `INSERT` | `inviteUser()` in `auth.actions.ts:93/107` |
-| `audit_logs` | `INSERT` | `logAuditEvent()` in `auth.actions.ts:143/178` |
+| Table                   | Action   | Created By                                     |
+| ----------------------- | -------- | ---------------------------------------------- |
+| `teachers`              | `INSERT` | `createTeacher()` in `teacher.actions.ts:50`   |
+| `audit_logs`            | `INSERT` | `logAuditEvent()` in `teacher.actions.ts:66`   |
+| `profiles`              | `INSERT` | `inviteUser()` in `auth.actions.ts:122/157`    |
+| `auth.users` (Supabase) | `INSERT` | `inviteUser()` in `auth.actions.ts:93/107`     |
+| `audit_logs`            | `INSERT` | `logAuditEvent()` in `auth.actions.ts:143/178` |
 
 ### 3.4 Relationship
 
@@ -340,13 +349,13 @@ Timetable -> Class, Section, Subject, DayOfWeek, Time
 
 ### 4.2 Tables Updated
 
-| Table | Action | Created By |
-|-------|--------|------------|
-| `students` | `INSERT` | `createStudent()` or `approveAndEnroll()` |
+| Table                 | Action   | Created By                                |
+| --------------------- | -------- | ----------------------------------------- |
+| `students`            | `INSERT` | `createStudent()` or `approveAndEnroll()` |
 | `student_enrollments` | `INSERT` | `createStudent()` or `approveAndEnroll()` |
-| `parents` | `INSERT` | `approveAndEnroll()` (from guardians) |
-| `student_parents` | `INSERT` | `approveAndEnroll()` or `addParent()` |
-| `audit_logs` | `INSERT` | All actions |
+| `parents`             | `INSERT` | `approveAndEnroll()` (from guardians)     |
+| `student_parents`     | `INSERT` | `approveAndEnroll()` or `addParent()`     |
+| `audit_logs`          | `INSERT` | All actions                               |
 
 ### 4.3 How Records are Linked
 
@@ -409,6 +418,7 @@ Student
 ### 5.3 Important: Parent Portal Authentication
 
 The parent portal uses **email matching** to find the parent record:
+
 ```typescript
 parent = await prisma.parent.findFirst({
   where: { email: userEmail },
@@ -417,6 +427,7 @@ parent = await prisma.parent.findFirst({
 ```
 
 This means:
+
 - The Parent's email in the `parents` table MUST match the Profile email
 - If emails don't match, the parent portal shows no children
 
@@ -427,6 +438,7 @@ This means:
 ### 6.1 Portal Router
 
 `app/portal/page.tsx` - Reads `X-User-Role` header (set by `proxy.ts:101`) and redirects:
+
 - STUDENT -> `/portal/student`
 - PARENT -> `/portal/parent`
 - TEACHER -> `/portal/teacher`
@@ -437,6 +449,7 @@ This means:
 **Dashboard:** `app/portal/teacher/page.tsx`
 
 **Data flow chain:**
+
 ```
 proxy.ts (middleware)
   |-> Sets X-User-Id, X-User-Role, X-User-Email headers
@@ -465,6 +478,7 @@ Portal pages (via teacher-portal.actions.ts):
 **Dashboard:** `app/portal/student/page.tsx`
 
 **Data flow chain:**
+
 ```
 proxy.ts (middleware)
   |-> Sets X-User-Id, X-User-Role, X-User-Email headers
@@ -493,6 +507,7 @@ Portal pages (via student-portal.actions.ts):
 **Dashboard:** `app/portal/parent/page.tsx`
 
 **Data flow chain:**
+
 ```
 proxy.ts (middleware)
   |-> Sets X-User-Id, X-User-Role, X-User-Email headers
@@ -846,6 +861,7 @@ Step 6: Dashboard shows empty data
 ### 9.2 Missing Link Identified
 
 **The Teacher record and Profile are never linked.** The `createTeacher()` action creates a standalone Teacher record. The `inviteUser()` action creates a standalone Profile. There is no code that:
+
 1. Finds the existing Teacher record by name/employeeCode
 2. Updates it with `profileId: userId`
 
@@ -892,6 +908,7 @@ Dashboard loads with children data
 ### 10.1 Teacher Creation Validation
 
 When a Teacher is created via `createTeacher()`:
+
 - **Profile:** NOT created (only creates `teachers` record)
 - **Teacher:** Created in `teachers` table
 - **User:** NOT created (no Supabase auth user)
@@ -899,6 +916,7 @@ When a Teacher is created via `createTeacher()`:
 - **profileId:** NOT set (remains null)
 
 **Manual steps required:**
+
 1. Admin must separately invite the teacher via Users module
 2. Teacher must accept invitation and set password
 3. **Someone must manually link the Teacher record to the Profile** by updating `teacher.profileId` - but there is NO UI for this
@@ -906,12 +924,14 @@ When a Teacher is created via `createTeacher()`:
 ### 10.2 Student Creation Validation
 
 When a Student is created via `createStudent()`:
+
 - **Student:** Created in `students` table
 - **Enrollment:** Created in `student_enrollments` table (if classId + academicSessionId provided)
 - **Profile:** NOT created (no auth user for student portal)
 - **User:** NOT created
 
 **For student portal access:**
+
 1. Admin must separately invite the student via Users module (role: STUDENT)
 2. Student must accept invitation
 3. Student portal finds student by email matching: `prisma.student.findFirst({ email: userEmail })`
@@ -921,11 +941,13 @@ When a Student is created via `createStudent()`:
 ### 10.3 Parent Creation Validation
 
 When a Parent is created via `addParent()`:
+
 - **Parent:** Created in `parents` table
 - **StudentParent:** Created in `student_parents` table (if studentId provided)
 - **Profile:** NOT created (no auth user for parent portal)
 
 **For parent portal access:**
+
 1. Admin must separately invite the parent via Users module (role: PARENT)
 2. Parent must accept invitation
 3. Parent portal finds parent by email matching: `prisma.parent.findFirst({ email: userEmail })`
@@ -938,65 +960,65 @@ When a Parent is created via `addParent()`:
 
 ### 11.1 Broken Relationships
 
-| Issue | Severity | Description |
-|-------|----------|-------------|
+| Issue                    | Severity     | Description                                                                                                                                                              |
+| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Teacher-Profile Link** | **CRITICAL** | `teacher.profileId` is never set by any action. Teacher record and Profile are created independently with no linking mechanism. Teacher portal cannot find teacher data. |
-| **Student-Profile Link** | **HIGH** | Student portal relies on email matching (`student.email == profile.email`). If emails don't match, portal shows no data. No foreign key exists. |
-| **Parent-Profile Link** | **HIGH** | Parent portal relies on email matching (`parent.email == profile.email`). If emails don't match, portal shows no children. No foreign key exists. |
+| **Student-Profile Link** | **HIGH**     | Student portal relies on email matching (`student.email == profile.email`). If emails don't match, portal shows no data. No foreign key exists.                          |
+| **Parent-Profile Link**  | **HIGH**     | Parent portal relies on email matching (`parent.email == profile.email`). If emails don't match, portal shows no children. No foreign key exists.                        |
 
 ### 11.2 Missing Inserts
 
-| Missing Insert | Table | Description |
-|----------------|-------|-------------|
-| Teacher-Profile link | `teachers.profileId` | No action sets this field after both Teacher and Profile are created |
-| Student Profile creation | `profiles` | When student is created directly, no Profile/auth user is created |
-| Parent Profile creation | `profiles` | When parent is created directly, no Profile/auth user is created |
+| Missing Insert                   | Table                 | Description                                                                          |
+| -------------------------------- | --------------------- | ------------------------------------------------------------------------------------ |
+| Teacher-Profile link             | `teachers.profileId`  | No action sets this field after both Teacher and Profile are created                 |
+| Student Profile creation         | `profiles`            | When student is created directly, no Profile/auth user is created                    |
+| Parent Profile creation          | `profiles`            | When parent is created directly, no Profile/auth user is created                     |
 | TeacherAssignment from Timetable | `teacher_assignments` | Timetable creates slots but TeacherAssignment table is never populated by any action |
 
 ### 11.3 Missing Updates
 
-| Missing Update | Description |
-|----------------|-------------|
+| Missing Update                 | Description                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
 | Teacher.profileId after invite | After inviting a user with TEACHER role, no code updates existing Teacher record with the new profileId |
-| Student.email sync | If student email is updated, there's no mechanism to sync with Profile email |
-| Parent.email sync | If parent email is updated, there's no mechanism to sync with Profile email |
+| Student.email sync             | If student email is updated, there's no mechanism to sync with Profile email                            |
+| Parent.email sync              | If parent email is updated, there's no mechanism to sync with Profile email                             |
 
 ### 11.4 Missing Foreign Keys
 
-| Missing FK | From | To | Impact |
-|------------|------|----|--------|
+| Missing FK         | From             | To               | Impact                                           |
+| ------------------ | ---------------- | ---------------- | ------------------------------------------------ |
 | Student -> Profile | `students.email` | `profiles.email` | Portal relies on email matching, not a proper FK |
-| Parent -> Profile | `parents.email` | `profiles.email` | Portal relies on email matching, not a proper FK |
+| Parent -> Profile  | `parents.email`  | `profiles.email` | Portal relies on email matching, not a proper FK |
 
 ### 11.5 Missing Redirects
 
-| Missing Redirect | Description |
-|------------------|-------------|
+| Missing Redirect       | Description                                                                                     |
+| ---------------------- | ----------------------------------------------------------------------------------------------- |
 | After teacher creation | `createTeacher()` revalidates `/dashboard/teachers` but doesn't redirect to teacher detail page |
 | After student creation | `createStudent()` revalidates `/dashboard/students` but doesn't redirect to student detail page |
-| After parent creation | `addParent()` revalidates student detail page but no redirect confirmation |
+| After parent creation  | `addParent()` revalidates student detail page but no redirect confirmation                      |
 
 ### 11.6 Missing Profile Creation
 
-| Scenario | Issue |
-|----------|-------|
+| Scenario                | Issue                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------ |
 | Direct student creation | `createStudent()` creates student record but no Profile. Student cannot log in or access portal. |
-| Direct parent creation | `addParent()` creates parent record but no Profile. Parent cannot log in or access portal. |
+| Direct parent creation  | `addParent()` creates parent record but no Profile. Parent cannot log in or access portal.       |
 | Direct teacher creation | `createTeacher()` creates teacher record but no Profile. Teacher cannot log in or access portal. |
 
 ### 11.7 Missing Teacher Creation
 
-| Scenario | Issue |
-|----------|-------|
-| Invite user with TEACHER role | Creates Profile but no Teacher record. Portal cannot find teacher data. |
-| No auto-linking | Even if both exist, there's no code to match them by name/email and set `profileId` |
+| Scenario                      | Issue                                                                               |
+| ----------------------------- | ----------------------------------------------------------------------------------- |
+| Invite user with TEACHER role | Creates Profile but no Teacher record. Portal cannot find teacher data.             |
+| No auto-linking               | Even if both exist, there's no code to match them by name/email and set `profileId` |
 
 ### 11.8 Missing Student Creation
 
-| Scenario | Issue |
-|----------|-------|
-| Invite user with STUDENT role | Creates Profile but no Student record. Portal cannot find student data. |
-| No auto-linking | Even if both exist, there's no code to match them by email and link them |
+| Scenario                      | Issue                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| Invite user with STUDENT role | Creates Profile but no Student record. Portal cannot find student data.  |
+| No auto-linking               | Even if both exist, there's no code to match them by email and link them |
 
 ---
 
@@ -1017,11 +1039,11 @@ The system has **two independent identity systems** that are not properly integr
 
 **The bridge between them is incomplete:**
 
-| Entity | Auth Layer | Domain Layer | Bridge |
-|--------|-----------|--------------|--------|
+| Entity  | Auth Layer              | Domain Layer   | Bridge                          |
+| ------- | ----------------------- | -------------- | ------------------------------- |
 | Teacher | Profile (role: TEACHER) | Teacher record | `teacher.profileId` - NEVER SET |
-| Student | Profile (role: STUDENT) | Student record | Email matching - NO FK |
-| Parent | Profile (role: PARENT) | Parent record | Email matching - NO FK |
+| Student | Profile (role: STUDENT) | Student record | Email matching - NO FK          |
+| Parent  | Profile (role: PARENT)  | Parent record  | Email matching - NO FK          |
 
 ### 12.2 Why Teacher Portal is Empty
 
@@ -1049,10 +1071,12 @@ Same pattern as Student portal - relies on email matching between `parents.email
 ### 12.5 TeacherAssignment Table is Unused
 
 The `TeacherAssignment` model exists (schema.prisma:516-535) and is referenced by:
+
 - `getTeacherClasses()` in `teacher-portal.actions.ts:31-44`
 - `getTeacherExamResults()` in `teacher-portal.actions.ts:133-136`
 
 **But no action creates TeacherAssignment records.** The only way data gets there is via:
+
 1. Manual database insertion
 2. The seed script (`scripts/seed.ts`)
 3. Timetable creation (but timetable creates `Timetable` records, not `TeacherAssignment`)
@@ -1063,20 +1087,20 @@ The `TeacherAssignment` model exists (schema.prisma:516-535) and is referenced b
 
 ### Files Involved in Each Workflow
 
-| Workflow | Key Files |
-|----------|-----------|
-| Login | `app/(auth)/login/login-form.tsx`, `actions/auth.actions.ts:signin()`, `lib/auth-helpers.ts` |
-| Logout | `components/layout/user-dropdown.tsx`, `actions/auth.actions.ts:signout()` |
-| Invitation | `app/(dashboard)/dashboard/users/invite-user-form.tsx`, `actions/auth.actions.ts:inviteUser()` |
-| Password Setup | `app/(auth)/setup-password/setup-password-form.tsx`, `actions/auth.actions.ts:acceptInvitation()` |
-| Middleware | `proxy.ts`, `lib/supabase/middleware.ts`, `lib/auth.ts` |
-| Create Teacher | `app/(dashboard)/dashboard/teachers/teacher-form.tsx`, `actions/teacher.actions.ts:createTeacher()` |
-| Create Student | `app/(dashboard)/dashboard/students/student-form.tsx`, `actions/student.actions.ts:createStudent()` |
-| Create Parent | `app/(dashboard)/dashboard/students/[id]/student-profile.tsx`, `actions/parent.actions.ts:addParent()` |
-| Admission | `app/(dashboard)/dashboard/admissions/new/admission-form.tsx`, `actions/admission.actions.ts` |
-| Teacher Portal | `app/portal/teacher/page.tsx`, `actions/teacher-portal.actions.ts` |
-| Student Portal | `app/portal/student/page.tsx`, `actions/student-portal.actions.ts` |
-| Parent Portal | `app/portal/parent/page.tsx`, `actions/parent-portal.actions.ts` |
-| Auth Context | `lib/auth.ts`, `lib/supabase/server.ts`, `lib/supabase/client.ts` |
-| Permissions | `lib/permissions.ts`, `scripts/seed-permissions.ts` |
-| Schema | `prisma/schema.prisma` (1311 lines, 37 models, 14 enums) |
+| Workflow       | Key Files                                                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------ |
+| Login          | `app/(auth)/login/login-form.tsx`, `actions/auth.actions.ts:signin()`, `lib/auth-helpers.ts`           |
+| Logout         | `components/layout/user-dropdown.tsx`, `actions/auth.actions.ts:signout()`                             |
+| Invitation     | `app/(dashboard)/dashboard/users/invite-user-form.tsx`, `actions/auth.actions.ts:inviteUser()`         |
+| Password Setup | `app/(auth)/setup-password/setup-password-form.tsx`, `actions/auth.actions.ts:acceptInvitation()`      |
+| Middleware     | `proxy.ts`, `lib/supabase/middleware.ts`, `lib/auth.ts`                                                |
+| Create Teacher | `app/(dashboard)/dashboard/teachers/teacher-form.tsx`, `actions/teacher.actions.ts:createTeacher()`    |
+| Create Student | `app/(dashboard)/dashboard/students/student-form.tsx`, `actions/student.actions.ts:createStudent()`    |
+| Create Parent  | `app/(dashboard)/dashboard/students/[id]/student-profile.tsx`, `actions/parent.actions.ts:addParent()` |
+| Admission      | `app/(dashboard)/dashboard/admissions/new/admission-form.tsx`, `actions/admission.actions.ts`          |
+| Teacher Portal | `app/portal/teacher/page.tsx`, `actions/teacher-portal.actions.ts`                                     |
+| Student Portal | `app/portal/student/page.tsx`, `actions/student-portal.actions.ts`                                     |
+| Parent Portal  | `app/portal/parent/page.tsx`, `actions/parent-portal.actions.ts`                                       |
+| Auth Context   | `lib/auth.ts`, `lib/supabase/server.ts`, `lib/supabase/client.ts`                                      |
+| Permissions    | `lib/permissions.ts`, `scripts/seed-permissions.ts`                                                    |
+| Schema         | `prisma/schema.prisma` (1311 lines, 37 models, 14 enums)                                               |

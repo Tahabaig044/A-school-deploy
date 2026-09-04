@@ -2,12 +2,12 @@
 
 ## Loop Information
 
-| Field | Value |
-|-------|-------|
-| Loop | LOOP_XXX |
+| Field  | Value         |
+| ------ | ------------- |
+| Loop   | LOOP_XXX      |
 | Module | [Module Name] |
-| Date | [Date] |
-| Status | Complete |
+| Date   | [Date]        |
+| Status | Complete      |
 
 ## Summary
 
@@ -28,9 +28,9 @@
 
 ## Issues Found
 
-| ID | Description | Severity | Status |
-|----|-------------|----------|--------|
-| | | | |
+| ID  | Description | Severity | Status |
+| --- | ----------- | -------- | ------ |
+|     |             |          |        |
 
 ## Recommendations
 

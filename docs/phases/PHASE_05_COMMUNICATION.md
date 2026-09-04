@@ -1,9 +1,11 @@
 # Phase 5: Communication
 
 ## Duration
+
 2 weeks
 
 ## Objectives
+
 - Implement Announcement system
 - Build Notification system
 - Create Messaging module
@@ -12,6 +14,7 @@
 ## Deliverables
 
 ### Week 1: Announcements & Notifications
+
 1. **Announcements**
    - Create announcements
    - Target audience selection
@@ -25,6 +28,7 @@
    - Notification history
 
 ### Week 2: Messaging & Integrations
+
 1. **Internal Messaging**
    - Teacher-parent messaging
    - Group messaging
@@ -40,6 +44,7 @@
 ## Technical Implementation
 
 ### API Endpoints
+
 ```
 # Announcements
 GET    /api/v1/announcements
@@ -67,6 +72,7 @@ PUT    /api/v1/templates/:id
 ```
 
 ### Database Schema
+
 ```sql
 -- Announcements
 CREATE TABLE announcements (
@@ -130,6 +136,7 @@ CREATE TABLE message_templates (
 ```
 
 ### UI Pages
+
 - /announcements - Announcement list
 - /announcements/new - Create announcement
 - /notifications - Notification center
@@ -139,6 +146,7 @@ CREATE TABLE message_templates (
 ## Features
 
 ### Announcements
+
 - Rich text editor
 - Schedule for later
 - Audience targeting
@@ -146,6 +154,7 @@ CREATE TABLE message_templates (
 - Attach files
 
 ### Notifications
+
 - Real-time updates
 - Notification badges
 - Mark as read
@@ -153,6 +162,7 @@ CREATE TABLE message_templates (
 - Email digest option
 
 ### Messaging
+
 - Conversation threads
 - Read receipts
 - File sharing
@@ -160,6 +170,7 @@ CREATE TABLE message_templates (
 - Archive threads
 
 ## Email Integration
+
 ```typescript
 // Email service
 class EmailService {
@@ -170,6 +181,7 @@ class EmailService {
 ```
 
 ## SMS Integration
+
 ```typescript
 // SMS service
 class SMSService {
@@ -179,6 +191,7 @@ class SMSService {
 ```
 
 ## Acceptance Criteria
+
 - [ ] Announcements can be created and targeted
 - [ ] Notifications delivered in real-time
 - [ ] Messages work between users
@@ -189,13 +202,15 @@ class SMSService {
 - [ ] File attachments supported
 
 ## Dependencies
+
 - Phase 2 completed
 - All user modules ready
 - Email/SMS provider configured
 
 ## Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Notification delivery failures | High | Retry mechanism, fallback |
-| Email spam filters | Medium | Proper email authentication |
-| SMS delivery delays | Medium | Multiple provider support |
+
+| Risk                           | Impact | Mitigation                  |
+| ------------------------------ | ------ | --------------------------- |
+| Notification delivery failures | High   | Retry mechanism, fallback   |
+| Email spam filters             | Medium | Proper email authentication |
+| SMS delivery delays            | Medium | Multiple provider support   |

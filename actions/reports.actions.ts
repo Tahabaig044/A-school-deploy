@@ -4,11 +4,19 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 
 export async function getDashboardStats(schoolId?: string, branchId?: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+  )
   const statsStart = performance.now()
 
-  const effectiveSchoolId = schoolId || profile.schoolId
-  const effectiveBranchId = branchId || profile.branchId
+  const effectiveSchoolId =
+    profile.role === "SUPER_ADMIN" ? schoolId || profile.schoolId : profile.schoolId
+  const effectiveBranchId =
+    profile.role === "SUPER_ADMIN" ? branchId || profile.branchId : profile.branchId
 
   const whereClause: any = {}
   if (effectiveSchoolId) whereClause.schoolId = effectiveSchoolId
@@ -49,7 +57,14 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
     prisma.parent.count({ where: effectiveSchoolId ? { schoolId: effectiveSchoolId } : {} }),
     prisma.class.count({ where: classWhere }),
     prisma.section.count({
-      where: classWhere.schoolId ? { class: { schoolId: classWhere.schoolId, ...(classWhere.branchId ? { branchId: classWhere.branchId } : {}) } } : {},
+      where: classWhere.schoolId
+        ? {
+            class: {
+              schoolId: classWhere.schoolId,
+              ...(classWhere.branchId ? { branchId: classWhere.branchId } : {}),
+            },
+          }
+        : {},
     }),
     prisma.studentAttendance.count({
       where: {
@@ -139,8 +154,9 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
       },
     }),
     // Timetable conflicts: count slots where same teacher has overlapping time
-    prisma.$queryRawUnsafe<{ count: bigint }[]>(
-      `SELECT COUNT(*) as count FROM (
+    prisma
+      .$queryRawUnsafe<{ count: bigint }[]>(
+        `SELECT COUNT(*) as count FROM (
         SELECT t1.id FROM timetables t1
         INNER JOIN timetables t2 ON t1.teacher_id = t2.teacher_id
           AND t1.day_of_week = t2.day_of_week
@@ -151,17 +167,21 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
         WHERE (t1.school_id = $1 OR $1 IS NULL)
           AND (t1.branch_id = $2 OR $2 IS NULL)
       ) conflicts`,
-      effectiveSchoolId ?? null,
-      effectiveBranchId ?? null
-    ).then((r) => Number(r[0]?.count || 0)).catch(() => 0),
+        effectiveSchoolId ?? null,
+        effectiveBranchId ?? null,
+      )
+      .then((r) => Number(r[0]?.count || 0))
+      .catch(() => 0),
   ])
 
   if (process.env.NODE_ENV !== "production") {
     console.log(`[PERF] dashboardStats: ${(performance.now() - statsStart).toFixed(0)}ms`)
   }
 
-  const pendingFee = Number(pendingFeeAmount._sum.totalAmount || 0) - Number(pendingFeeAmount._sum.paidAmount || 0)
-  const attendanceRate = totalStudentsCount > 0 ? Math.round((todayAttendance / totalStudentsCount) * 100) : 0
+  const pendingFee =
+    Number(pendingFeeAmount._sum.totalAmount || 0) - Number(pendingFeeAmount._sum.paidAmount || 0)
+  const attendanceRate =
+    totalStudentsCount > 0 ? Math.round((todayAttendance / totalStudentsCount) * 100) : 0
 
   return {
     totalStudents,
@@ -187,25 +207,29 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
 export async function getStudentEnrollmentReport(
   schoolId: string,
   branchId?: string,
-  academicSessionId?: string
+  academicSessionId?: string,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
   const enrollments = await prisma.studentEnrollment.groupBy({
     by: ["classId"],
     where: {
-      student: { schoolId, ...(branchId && { branchId }) },
+      student: { schoolId: effectiveSchoolId, ...(branchId && { branchId }) },
       ...(academicSessionId && { academicSessionId }),
     },
     _count: { id: true },
   })
 
   const classes = await prisma.class.findMany({
-    where: { schoolId, ...(branchId && { branchId }) },
+    where: { schoolId: effectiveSchoolId, ...(branchId && { branchId }) },
     select: { id: true, name: true },
   })
 
-  const classMap = classes.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as Record<string, string>)
+  const classMap = classes.reduce(
+    (acc, c) => ({ ...acc, [c.id]: c.name }),
+    {} as Record<string, string>,
+  )
 
   return enrollments.map((e) => ({
     className: classMap[e.classId] || "Unknown",
@@ -217,17 +241,20 @@ export async function getAttendanceReport(
   schoolId: string,
   branchId?: string,
   fromDate?: string,
-  toDate?: string
+  toDate?: string,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
-  const start = fromDate ? new Date(fromDate) : new Date(new Date().setDate(new Date().getDate() - 30))
+  const start = fromDate
+    ? new Date(fromDate)
+    : new Date(new Date().setDate(new Date().getDate() - 30))
   const end = toDate ? new Date(toDate) : new Date()
 
   const whereClause: any = {
     date: { gte: start, lte: end },
   }
-  if (schoolId) whereClause.class = { schoolId, ...(branchId && { branchId }) }
+  if (effectiveSchoolId) whereClause.class = { schoolId: effectiveSchoolId, ...(branchId && { branchId }) }
 
   const attendance = await prisma.studentAttendance.groupBy({
     by: ["date", "status"],
@@ -236,16 +263,22 @@ export async function getAttendanceReport(
     orderBy: { date: "asc" },
   })
 
-  const grouped = attendance.reduce((acc, a) => {
-    const dateStr = a.date.toISOString().split("T")[0]
-    if (!acc[dateStr]) acc[dateStr] = { date: dateStr, PRESENT: 0, ABSENT: 0, LATE: 0, LEAVE: 0 }
-    const record = acc[dateStr]
-    if (a.status === "PRESENT") record.PRESENT = a._count.id
-    else if (a.status === "ABSENT") record.ABSENT = a._count.id
-    else if (a.status === "LATE") record.LATE = a._count.id
-    else if (a.status === "LEAVE") record.LEAVE = a._count.id
-    return acc
-  }, {} as Record<string, { date: string; PRESENT: number; ABSENT: number; LATE: number; LEAVE: number }>)
+  const grouped = attendance.reduce(
+    (acc, a) => {
+      const dateStr = a.date.toISOString().split("T")[0]
+      if (!acc[dateStr]) acc[dateStr] = { date: dateStr, PRESENT: 0, ABSENT: 0, LATE: 0, LEAVE: 0 }
+      const record = acc[dateStr]
+      if (a.status === "PRESENT") record.PRESENT = a._count.id
+      else if (a.status === "ABSENT") record.ABSENT = a._count.id
+      else if (a.status === "LATE") record.LATE = a._count.id
+      else if (a.status === "LEAVE") record.LEAVE = a._count.id
+      return acc
+    },
+    {} as Record<
+      string,
+      { date: string; PRESENT: number; ABSENT: number; LATE: number; LEAVE: number }
+    >,
+  )
 
   return Object.values(grouped)
 }
@@ -254,19 +287,24 @@ export async function getFeeCollectionReport(
   schoolId: string,
   branchId?: string,
   fromDate?: string,
-  toDate?: string
+  toDate?: string,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
 
-  const start = fromDate ? new Date(fromDate) : new Date(new Date().setDate(new Date().getDate() - 30))
+  const start = fromDate
+    ? new Date(fromDate)
+    : new Date(new Date().setDate(new Date().getDate() - 30))
   const end = toDate ? new Date(toDate) : new Date()
 
   const payments = await prisma.payment.findMany({
     where: {
       paymentDate: { gte: start, lte: end },
-      ...(branchId && {
-        invoice: { student: { branchId } },
-      }),
+      invoice: {
+        student: {
+          ...(profile.role === "SUPER_ADMIN" && branchId ? { branchId } : {}),
+          ...(profile.role !== "SUPER_ADMIN" ? { schoolId: profile.schoolId! } : {}),
+        },
+      },
     },
     include: {
       invoice: {
@@ -300,11 +338,12 @@ export async function getFeeCollectionReport(
 }
 
 export async function getFeeDefaulterReport(schoolId: string, branchId?: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
   const whereClause: any = {
     status: { in: ["PENDING", "PARTIAL"] },
-    student: { schoolId, ...(branchId && { branchId }) },
+    student: { schoolId: effectiveSchoolId, ...(branchId && { branchId }) },
   }
 
   const defaulters = await prisma.feeInvoice.findMany({
@@ -325,14 +364,22 @@ export async function getFeeDefaulterReport(schoolId: string, branchId?: string)
     dueAmount: Number(d.totalAmount) - Number(d.paidAmount) + Number(d.lateFee),
     dueDate: d.dueDate,
     status: d.status,
-    daysOverdue: Math.max(0, Math.ceil((new Date().getTime() - new Date(d.dueDate).getTime()) / (1000 * 60 * 60 * 24))),
+    daysOverdue: Math.max(
+      0,
+      Math.ceil((new Date().getTime() - new Date(d.dueDate).getTime()) / (1000 * 60 * 60 * 24)),
+    ),
   }))
 }
 
-export async function getClassStrengthReport(schoolId: string, branchId?: string, academicSessionId?: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+export async function getClassStrengthReport(
+  schoolId: string,
+  branchId?: string,
+  academicSessionId?: string,
+) {
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
-  const whereClause: any = { schoolId }
+  const whereClause: any = { schoolId: effectiveSchoolId }
   if (branchId) whereClause.branchId = branchId
 
   const classes = await prisma.class.findMany({
@@ -369,11 +416,12 @@ export async function getClassStrengthReport(schoolId: string, branchId?: string
 export async function getExamPerformanceReport(
   schoolId: string,
   branchId?: string,
-  examId?: string
+  examId?: string,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
-  const whereClause: any = { schoolId }
+  const whereClause: any = { schoolId: effectiveSchoolId }
   if (branchId) whereClause.branchId = branchId
   if (examId) whereClause.id = examId
 
@@ -396,9 +444,10 @@ export async function getExamPerformanceReport(
     const results = exam.results.filter((r) => r.marksObtained !== null)
     const totalStudents = results.length
     const passed = results.filter((r) => Number(r.marksObtained) >= exam.passingMarks).length
-    const avgMarks = totalStudents > 0
-      ? results.reduce((sum, r) => sum + Number(r.marksObtained), 0) / totalStudents
-      : 0
+    const avgMarks =
+      totalStudents > 0
+        ? results.reduce((sum, r) => sum + Number(r.marksObtained), 0) / totalStudents
+        : 0
 
     return {
       id: exam.id,
@@ -421,16 +470,19 @@ export async function getExpenseReport(
   schoolId: string,
   branchId?: string,
   fromDate?: string,
-  toDate?: string
+  toDate?: string,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
-  const start = fromDate ? new Date(fromDate) : new Date(new Date().setDate(new Date().getDate() - 30))
+  const start = fromDate
+    ? new Date(fromDate)
+    : new Date(new Date().setDate(new Date().getDate() - 30))
   const end = toDate ? new Date(toDate) : new Date()
 
   const expenses = await prisma.expense.findMany({
     where: {
-      schoolId,
+      schoolId: effectiveSchoolId,
       expenseDate: { gte: start, lte: end },
       ...(branchId && { branchId }),
     },
@@ -462,11 +514,14 @@ export async function getIncomeVsExpenseReport(
   schoolId: string,
   branchId?: string,
   fromDate?: string,
-  toDate?: string
+  toDate?: string,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT")
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
-  const start = fromDate ? new Date(fromDate) : new Date(new Date().setFullYear(new Date().getFullYear() - 1))
+  const start = fromDate
+    ? new Date(fromDate)
+    : new Date(new Date().setFullYear(new Date().getFullYear() - 1))
   const end = toDate ? new Date(toDate) : new Date()
 
   const [payments, expenses] = await Promise.all([
@@ -476,12 +531,17 @@ export async function getIncomeVsExpenseReport(
         ...(branchId && {
           invoice: { student: { branchId } },
         }),
+        invoice: {
+          student: {
+            schoolId: effectiveSchoolId,
+          },
+        },
       },
       select: { amount: true, paymentDate: true },
     }),
     prisma.expense.findMany({
       where: {
-        schoolId,
+        schoolId: effectiveSchoolId,
         expenseDate: { gte: start, lte: end },
         ...(branchId && { branchId }),
       },
@@ -489,12 +549,15 @@ export async function getIncomeVsExpenseReport(
     }),
   ])
 
-  const monthlyData = payments.reduce<Record<string, { income: number; expense: number }>>((acc, p) => {
-    const month = p.paymentDate.toISOString().substring(0, 7)
-    if (!acc[month]) acc[month] = { income: 0, expense: 0 }
-    acc[month].income += Number(p.amount)
-    return acc
-  }, {})
+  const monthlyData = payments.reduce<Record<string, { income: number; expense: number }>>(
+    (acc, p) => {
+      const month = p.paymentDate.toISOString().substring(0, 7)
+      if (!acc[month]) acc[month] = { income: 0, expense: 0 }
+      acc[month].income += Number(p.amount)
+      return acc
+    },
+    {},
+  )
 
   expenses.forEach((e) => {
     const month = e.expenseDate.toISOString().substring(0, 7)
@@ -521,16 +584,19 @@ export async function getTeacherAttendanceReport(
   schoolId: string,
   branchId?: string,
   fromDate?: string,
-  toDate?: string
+  toDate?: string,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
-  const start = fromDate ? new Date(fromDate) : new Date(new Date().setDate(new Date().getDate() - 30))
+  const start = fromDate
+    ? new Date(fromDate)
+    : new Date(new Date().setDate(new Date().getDate() - 30))
   const end = toDate ? new Date(toDate) : new Date()
 
   const attendance = await prisma.staffAttendance.findMany({
     where: {
-      staff: { schoolId, ...(branchId && { branchId }) },
+      staff: { schoolId: effectiveSchoolId, ...(branchId && { branchId }) },
       date: { gte: start, lte: end },
     },
     include: {

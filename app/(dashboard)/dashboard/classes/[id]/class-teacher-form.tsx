@@ -7,7 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { assignClassTeacher, removeClassTeacher } from "@/actions/class-teacher.actions"
 import { UserCheck, UserX } from "lucide-react"
 
-type TeacherItem = { id: string; firstName: string; lastName: string; employeeCode: string; department: string | null }
+type TeacherItem = {
+  id: string
+  firstName: string
+  lastName: string
+  employeeCode: string
+  department: string | null
+}
 
 export function ClassTeacherForm({
   classId,
@@ -34,16 +40,21 @@ export function ClassTeacherForm({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4 max-w-md">
+        <form action={formAction} className="grid max-w-md gap-4">
           <input type="hidden" name="classId" value={classId} />
           <div className="grid gap-2">
             <Label htmlFor="teacherId">Assign Teacher</Label>
             <div className="flex gap-2">
-              <select id="teacherId" name="teacherId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm flex-1">
+              <select
+                id="teacherId"
+                name="teacherId"
+                className="border-input bg-background flex h-10 w-full flex-1 rounded-md border px-3 py-2 text-sm"
+              >
                 <option value="">Select teacher</option>
                 {teachers.map((t) => (
                   <option key={t.id} value={t.id}>
-                    {t.firstName} {t.lastName} ({t.employeeCode}){t.department ? ` - ${t.department}` : ""}
+                    {t.firstName} {t.lastName} ({t.employeeCode})
+                    {t.department ? ` - ${t.department}` : ""}
                   </option>
                 ))}
               </select>
@@ -65,13 +76,15 @@ export function ClassTeacherForm({
                   }
                 }}
               >
-                <UserX className="h-4 w-4 mr-1" />
+                <UserX className="mr-1 h-4 w-4" />
                 Remove
               </Button>
             </div>
           )}
-          {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-          {state?.success && <p className="text-sm text-green-600">Class teacher assigned successfully!</p>}
+          {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
+          {state?.success && (
+            <p className="text-sm text-green-600">Class teacher assigned successfully!</p>
+          )}
         </form>
       </CardContent>
     </Card>

@@ -12,7 +12,7 @@ export function ForgotPasswordForm() {
 
   if (state?.success) {
     return (
-      <div className="text-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-center text-sm">
         Check your email for a reset link.
       </div>
     )
@@ -20,9 +20,7 @@ export function ForgotPasswordForm() {
 
   return (
     <form action={formAction} className="grid gap-4">
-      {state?.error && (
-        <p className="text-sm text-destructive">{state.error}</p>
-      )}
+      {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
       <div className="grid gap-2">
         <Label htmlFor="email">Email</Label>
         <Input id="email" name="email" type="email" required />
@@ -30,12 +28,9 @@ export function ForgotPasswordForm() {
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Sending..." : "Send Reset Link"}
       </Button>
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-center text-sm">
         Remember your password?{" "}
-        <Link
-          href="/login"
-          className="underline underline-offset-4 hover:text-primary"
-        >
+        <Link href="/login" className="hover:text-primary underline underline-offset-4">
           Sign in
         </Link>
       </p>

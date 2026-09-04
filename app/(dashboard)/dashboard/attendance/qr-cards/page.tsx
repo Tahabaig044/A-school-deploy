@@ -3,7 +3,13 @@ import { requireRole } from "@/lib/auth"
 import { QrCardGenerator } from "./qr-card-generator"
 
 export default async function QrCardsPage() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
 
   const schoolId = profile.schoolId!
   const [classes, sessions] = await Promise.all([
@@ -22,7 +28,9 @@ export default async function QrCardsPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">QR Attendance Cards</h2>
-        <p className="text-muted-foreground">Generate printable QR cards for students. Scan to mark attendance.</p>
+        <p className="text-muted-foreground">
+          Generate printable QR cards for students. Scan to mark attendance.
+        </p>
       </div>
       <QrCardGenerator
         classes={JSON.parse(JSON.stringify(classes))}

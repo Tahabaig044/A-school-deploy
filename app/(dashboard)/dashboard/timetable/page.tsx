@@ -16,7 +16,8 @@ export default async function TimetablePage({
   const where = profile.role === "SUPER_ADMIN" ? undefined : { schoolId: profile.schoolId! }
 
   const activeSession = await prisma.academicSession.findFirst({
-    where: profile.role === "SUPER_ADMIN" ? undefined : { schoolId: profile.schoolId!, isCurrent: true },
+    where:
+      profile.role === "SUPER_ADMIN" ? undefined : { schoolId: profile.schoolId!, isCurrent: true },
     select: { id: true },
   })
 
@@ -27,7 +28,10 @@ export default async function TimetablePage({
       orderBy: { order: "asc" },
     }),
     prisma.teacher.findMany({
-      where: profile.role === "SUPER_ADMIN" ? undefined : { schoolId: profile.schoolId!, branchId: profile.branchId! },
+      where:
+        profile.role === "SUPER_ADMIN"
+          ? undefined
+          : { schoolId: profile.schoolId!, branchId: profile.branchId! },
       select: { id: true, firstName: true, lastName: true },
     }),
     prisma.subject.findMany({
@@ -59,9 +63,24 @@ export default async function TimetablePage({
           <p className="text-muted-foreground">Manage class timetables</p>
         </div>
         <div className="flex gap-2">
-          <a href="/dashboard/timetable?view=grid" className={`px-3 py-1.5 text-sm rounded-md ${view === "grid" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Grid</a>
-          <a href="/dashboard/timetable?view=conflicts" className={`px-3 py-1.5 text-sm rounded-md ${view === "conflicts" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Conflicts</a>
-          <a href="/dashboard/timetable?view=rooms" className={`px-3 py-1.5 text-sm rounded-md ${view === "rooms" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Rooms</a>
+          <a
+            href="/dashboard/timetable?view=grid"
+            className={`rounded-md px-3 py-1.5 text-sm ${view === "grid" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+          >
+            Grid
+          </a>
+          <a
+            href="/dashboard/timetable?view=conflicts"
+            className={`rounded-md px-3 py-1.5 text-sm ${view === "conflicts" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+          >
+            Conflicts
+          </a>
+          <a
+            href="/dashboard/timetable?view=rooms"
+            className={`rounded-md px-3 py-1.5 text-sm ${view === "rooms" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+          >
+            Rooms
+          </a>
         </div>
       </div>
 
@@ -84,9 +103,7 @@ export default async function TimetablePage({
         <ConflictPanel academicSessionId={activeSession.id} />
       )}
 
-      {view === "rooms" && activeSession && (
-        <RoomView academicSessionId={activeSession.id} />
-      )}
+      {view === "rooms" && activeSession && <RoomView academicSessionId={activeSession.id} />}
     </div>
   )
 }

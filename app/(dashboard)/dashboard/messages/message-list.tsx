@@ -6,14 +6,36 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { UserPicker } from "@/components/ui/user-picker"
-import { sendMessage, markMessageAsRead, toggleStarMessage, deleteMessage } from "@/actions/message.actions"
+import {
+  sendMessage,
+  markMessageAsRead,
+  toggleStarMessage,
+  deleteMessage,
+} from "@/actions/message.actions"
 import { useToast } from "@/hooks/use-toast"
-import { Mail, MailOpen, Send, Star, Trash2, Archive, FileText, Search, Reply, Forward } from "lucide-react"
+import {
+  Mail,
+  MailOpen,
+  Send,
+  Star,
+  Trash2,
+  Archive,
+  FileText,
+  Search,
+  Reply,
+  Forward,
+} from "lucide-react"
 
 export function MessageList({
   inbox,
@@ -117,12 +139,18 @@ export function MessageList({
 
   const getMessageList = () => {
     switch (activeTab) {
-      case "inbox": return inbox
-      case "sent": return sent
-      case "drafts": return drafts
-      case "archived": return archived
-      case "starred": return starred
-      default: return inbox
+      case "inbox":
+        return inbox
+      case "sent":
+        return sent
+      case "drafts":
+        return drafts
+      case "archived":
+        return archived
+      case "starred":
+        return starred
+      default:
+        return inbox
     }
   }
 
@@ -133,16 +161,26 @@ export function MessageList({
       <PageHeader title="Messages" description="Internal messaging system">
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Search messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="pl-9 w-64"
+              className="w-64 pl-9"
             />
           </div>
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setError(null); setReplyMode(false); setReplyTo(null) } }}>
+          <Dialog
+            open={open}
+            onOpenChange={(o) => {
+              setOpen(o)
+              if (!o) {
+                setError(null)
+                setReplyMode(false)
+                setReplyTo(null)
+              }
+            }}
+          >
             <DialogTrigger asChild>
               <Button>
                 <Send className="mr-2 h-4 w-4" />
@@ -152,7 +190,9 @@ export function MessageList({
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {replyMode ? `Reply to ${replyTo?.sender?.firstName} ${replyTo?.sender?.lastName}` : "New Message"}
+                  {replyMode
+                    ? `Reply to ${replyTo?.sender?.firstName} ${replyTo?.sender?.lastName}`
+                    : "New Message"}
                 </DialogTitle>
               </DialogHeader>
               <form action={handleSend} className="space-y-4">
@@ -184,7 +224,11 @@ export function MessageList({
                     name="content"
                     required
                     className="min-h-[100px]"
-                    defaultValue={replyMode ? `\n\n--- Original Message ---\nFrom: ${replyTo?.sender?.firstName} ${replyTo?.sender?.lastName}\nDate: ${new Date(replyTo?.createdAt).toLocaleString()}\n\n${replyTo?.content}` : ""}
+                    defaultValue={
+                      replyMode
+                        ? `\n\n--- Original Message ---\nFrom: ${replyTo?.sender?.firstName} ${replyTo?.sender?.lastName}\nDate: ${new Date(replyTo?.createdAt).toLocaleString()}\n\n${replyTo?.content}`
+                        : ""
+                    }
                   />
                 </div>
                 <Button type="submit" className="w-full">
@@ -197,7 +241,12 @@ export function MessageList({
         </div>
       </PageHeader>
 
-      <Tabs value={activeTab} onValueChange={(v) => router.push(`/dashboard/messages?tab=${v}&search=${encodeURIComponent(searchQuery)}`)}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) =>
+          router.push(`/dashboard/messages?tab=${v}&search=${encodeURIComponent(searchQuery)}`)
+        }
+      >
         <TabsList>
           <TabsTrigger value="inbox" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
@@ -211,7 +260,11 @@ export function MessageList({
           <TabsTrigger value="drafts" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Drafts
-            {tabCounts.drafts > 0 && <Badge variant="secondary" className="ml-1">{tabCounts.drafts}</Badge>}
+            {tabCounts.drafts > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {tabCounts.drafts}
+              </Badge>
+            )}
           </TabsTrigger>
           <TabsTrigger value="starred" className="flex items-center gap-2">
             <Star className="h-4 w-4" />
@@ -225,23 +278,23 @@ export function MessageList({
 
         <TabsContent value={activeTab} className="space-y-4">
           {messages.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No messages in {activeTab}</p>
+            <p className="text-muted-foreground py-8 text-center">No messages in {activeTab}</p>
           ) : (
             messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`p-4 border rounded-lg cursor-pointer hover:bg-muted/50 ${
-                  !msg.isRead && msg.receiverId === profile.id ? "border-l-4 border-l-primary" : ""
+                className={`hover:bg-muted/50 cursor-pointer rounded-lg border p-4 ${
+                  !msg.isRead && msg.receiverId === profile.id ? "border-l-primary border-l-4" : ""
                 }`}
                 onClick={() => handleRead(msg)}
               >
-                <div className="flex justify-between items-start">
+                <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       {!msg.isRead && msg.receiverId === profile.id ? (
-                        <Mail className="h-4 w-4 text-primary" />
+                        <Mail className="text-primary h-4 w-4" />
                       ) : (
-                        <MailOpen className="h-4 w-4 text-muted-foreground" />
+                        <MailOpen className="text-muted-foreground h-4 w-4" />
                       )}
                       <span className="font-medium">
                         {activeTab === "sent" || activeTab === "drafts"
@@ -253,13 +306,15 @@ export function MessageList({
                           ? msg.receiver?.role
                           : msg.sender?.role}
                       </Badge>
-                      {msg.isStarred && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
+                      {msg.isStarred && (
+                        <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                      )}
                     </div>
-                    {msg.subject && <p className="font-medium mt-1">{msg.subject}</p>}
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{msg.content}</p>
+                    {msg.subject && <p className="mt-1 font-medium">{msg.subject}</p>}
+                    <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">{msg.content}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {new Date(msg.createdAt).toLocaleDateString()}
                     </span>
                     <div className="flex items-center gap-1">
@@ -267,15 +322,23 @@ export function MessageList({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={(e) => { e.stopPropagation(); handleStar(msg.id) }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleStar(msg.id)
+                        }}
                       >
-                        <Star className={`h-4 w-4 ${msg.isStarred ? "fill-yellow-500 text-yellow-500" : ""}`} />
+                        <Star
+                          className={`h-4 w-4 ${msg.isStarred ? "fill-yellow-500 text-yellow-500" : ""}`}
+                        />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={(e) => { e.stopPropagation(); handleDelete(msg.id) }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDelete(msg.id)
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -294,18 +357,26 @@ export function MessageList({
             variant="outline"
             size="sm"
             disabled={page <= 1}
-            onClick={() => router.push(`/dashboard/messages?tab=${activeTab}&page=${page - 1}&search=${encodeURIComponent(searchQuery)}`)}
+            onClick={() =>
+              router.push(
+                `/dashboard/messages?tab=${activeTab}&page=${page - 1}&search=${encodeURIComponent(searchQuery)}`,
+              )
+            }
           >
             Previous
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Page {page} of {totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
-            onClick={() => router.push(`/dashboard/messages?tab=${activeTab}&page=${page + 1}&search=${encodeURIComponent(searchQuery)}`)}
+            onClick={() =>
+              router.push(
+                `/dashboard/messages?tab=${activeTab}&page=${page + 1}&search=${encodeURIComponent(searchQuery)}`,
+              )
+            }
           >
             Next
           </Button>
@@ -322,45 +393,76 @@ export function MessageList({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">From:</span>
-                  <span>{selectedMessage.sender?.firstName} {selectedMessage.sender?.lastName}</span>
+                  <span>
+                    {selectedMessage.sender?.firstName} {selectedMessage.sender?.lastName}
+                  </span>
                   <Badge variant="outline">{selectedMessage.sender?.role}</Badge>
                 </div>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   {new Date(selectedMessage.createdAt).toLocaleString()}
                 </span>
               </div>
-              <div className="border rounded p-4 whitespace-pre-wrap">
+              <div className="rounded border p-4 whitespace-pre-wrap">
                 {selectedMessage.content}
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => { handleReply(selectedMessage); setSelectedMessage(null) }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    handleReply(selectedMessage)
+                    setSelectedMessage(null)
+                  }}
+                >
                   <Reply className="mr-2 h-4 w-4" />
                   Reply
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => { handleForward(selectedMessage); setSelectedMessage(null) }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    handleForward(selectedMessage)
+                    setSelectedMessage(null)
+                  }}
+                >
                   <Forward className="mr-2 h-4 w-4" />
                   Forward
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => { handleStar(selectedMessage.id); setSelectedMessage(null) }}>
-                  <Star className={`mr-2 h-4 w-4 ${selectedMessage.isStarred ? "fill-yellow-500 text-yellow-500" : ""}`} />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    handleStar(selectedMessage.id)
+                    setSelectedMessage(null)
+                  }}
+                >
+                  <Star
+                    className={`mr-2 h-4 w-4 ${selectedMessage.isStarred ? "fill-yellow-500 text-yellow-500" : ""}`}
+                  />
                   {selectedMessage.isStarred ? "Unstar" : "Star"}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => { handleDelete(selectedMessage.id) }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    handleDelete(selectedMessage.id)
+                  }}
+                >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete
                 </Button>
               </div>
               {selectedMessage.replies && selectedMessage.replies.length > 0 && (
                 <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Replies ({selectedMessage.replies.length})</h4>
+                  <h4 className="mb-2 font-medium">Replies ({selectedMessage.replies.length})</h4>
                   <div className="space-y-3">
                     {selectedMessage.replies.map((reply: any) => (
-                      <div key={reply.id} className="border rounded p-3 bg-muted/30">
-                        <div className="flex items-center justify-between mb-2">
+                      <div key={reply.id} className="bg-muted/30 rounded border p-3">
+                        <div className="mb-2 flex items-center justify-between">
                           <span className="text-sm font-medium">
                             {reply.sender?.firstName} {reply.sender?.lastName}
                           </span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-muted-foreground text-xs">
                             {new Date(reply.createdAt).toLocaleString()}
                           </span>
                         </div>

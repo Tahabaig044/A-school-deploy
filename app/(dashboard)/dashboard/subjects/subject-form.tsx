@@ -16,7 +16,7 @@ export function SubjectForm() {
         <CardTitle>Add New Subject</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4 max-w-md">
+        <form action={formAction} className="grid max-w-md gap-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Subject Name *</Label>
             <Input id="name" name="name" placeholder="e.g. Mathematics" required />
@@ -27,7 +27,12 @@ export function SubjectForm() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="type">Type</Label>
-            <select id="type" name="type" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" defaultValue="CORE">
+            <select
+              id="type"
+              name="type"
+              className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+              defaultValue="CORE"
+            >
               <option value="CORE">Core</option>
               <option value="ELECTIVE">Elective</option>
             </select>
@@ -35,7 +40,7 @@ export function SubjectForm() {
           <Button type="submit" disabled={pending}>
             {pending ? "Creating..." : "Create Subject"}
           </Button>
-          {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+          {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
         </form>
       </CardContent>
     </Card>

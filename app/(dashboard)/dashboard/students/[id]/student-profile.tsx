@@ -121,27 +121,29 @@ export function StudentProfile({ student }: { student: StudentData }) {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <User className="h-4 w-4 text-muted-foreground" />
+                  <User className="text-muted-foreground h-4 w-4" />
                   <span className="text-muted-foreground">Gender:</span>
                   <span className="capitalize">{student.gender.toLowerCase()}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Calendar className="text-muted-foreground h-4 w-4" />
                   <span className="text-muted-foreground">DOB:</span>
-                  <span>{student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : "-"}</span>
+                  <span>
+                    {student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : "-"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground h-4 w-4" />
                   <span className="text-muted-foreground">Blood Group:</span>
                   <span>{student.bloodGroup || "-"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground h-4 w-4" />
                   <span className="text-muted-foreground">Religion:</span>
                   <span>{student.religion || "-"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground h-4 w-4" />
                   <span className="text-muted-foreground">Nationality:</span>
                   <span>{student.nationality || "-"}</span>
                 </div>
@@ -154,23 +156,23 @@ export function StudentProfile({ student }: { student: StudentData }) {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <Phone className="text-muted-foreground h-4 w-4" />
                   <span className="text-muted-foreground">Phone:</span>
                   <span>{student.phone || "-"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <Mail className="text-muted-foreground h-4 w-4" />
                   <span className="text-muted-foreground">Email:</span>
                   <span>{student.email || "-"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <MapPin className="text-muted-foreground h-4 w-4" />
                   <span className="text-muted-foreground">Address:</span>
                   <span>{student.address || "-"}</span>
                 </div>
                 {(student.city || student.state) && (
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground h-4 w-4" />
                     <span className="text-muted-foreground">City/State:</span>
                     <span>{[student.city, student.state].filter(Boolean).join(", ")}</span>
                   </div>
@@ -186,28 +188,28 @@ export function StudentProfile({ student }: { student: StudentData }) {
                 {currentEnrollment ? (
                   <>
                     <div className="flex items-center gap-2 text-sm">
-                      <BookOpen className="h-4 w-4 text-muted-foreground" />
+                      <BookOpen className="text-muted-foreground h-4 w-4" />
                       <span className="text-muted-foreground">Class:</span>
                       <span>{currentEnrollment.class.name}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground h-4 w-4" />
                       <span className="text-muted-foreground">Section:</span>
                       <span>{currentEnrollment.section?.name || "-"}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground h-4 w-4" />
                       <span className="text-muted-foreground">Roll No:</span>
                       <span>{currentEnrollment.rollNumber || "-"}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground h-4 w-4" />
                       <span className="text-muted-foreground">Session:</span>
                       <span>{currentEnrollment.academicSession.name}</span>
                     </div>
                   </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Not enrolled</p>
+                  <p className="text-muted-foreground text-sm">Not enrolled</p>
                 )}
               </CardContent>
             </Card>
@@ -221,7 +223,7 @@ export function StudentProfile({ student }: { student: StudentData }) {
             </CardHeader>
             <CardContent>
               {student.parents.length === 0 ? (
-                <p className="text-sm text-muted-foreground mb-4">No parents added yet.</p>
+                <p className="text-muted-foreground mb-4 text-sm">No parents added yet.</p>
               ) : (
                 <Table className="mb-6">
                   <TableHeader>
@@ -251,9 +253,11 @@ export function StudentProfile({ student }: { student: StudentData }) {
                 </Table>
               )}
 
-              <form action={parentAction} className="grid gap-4 max-w-md border-t pt-4">
+              <form action={parentAction} className="grid max-w-md gap-4 border-t pt-4">
                 <h4 className="text-sm font-medium">Add Parent</h4>
-                <p className="text-xs text-muted-foreground">Providing an email will create a portal account for the parent.</p>
+                <p className="text-muted-foreground text-xs">
+                  Providing an email will create a portal account for the parent.
+                </p>
                 <input type="hidden" name="studentId" value={student.id} />
                 <div className="grid grid-cols-2 gap-2">
                   <div className="grid gap-1">
@@ -271,7 +275,7 @@ export function StudentProfile({ student }: { student: StudentData }) {
                     <select
                       id="relationship"
                       name="relationship"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
                       defaultValue="FATHER"
                     >
                       <option value="FATHER">Father</option>
@@ -303,13 +307,15 @@ export function StudentProfile({ student }: { student: StudentData }) {
                   {parentPending ? "Adding..." : "Add Parent"}
                 </Button>
                 {parentState?.error && (
-                  <p className="text-sm text-destructive">{parentState.error}</p>
+                  <p className="text-destructive text-sm">{parentState.error}</p>
                 )}
                 {parentState?.success && parentState?.invitationLink && (
                   <div className="rounded-md bg-green-50 p-3 text-sm">
                     <p className="font-medium text-green-800">Parent added successfully!</p>
-                    <p className="text-green-700 mt-1">Share this invitation link:</p>
-                    <code className="text-xs break-all text-green-600">{parentState.invitationLink}</code>
+                    <p className="mt-1 text-green-700">Share this invitation link:</p>
+                    <code className="text-xs break-all text-green-600">
+                      {parentState.invitationLink}
+                    </code>
                   </div>
                 )}
               </form>
@@ -324,7 +330,7 @@ export function StudentProfile({ student }: { student: StudentData }) {
             </CardHeader>
             <CardContent>
               {student.documents.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No documents uploaded.</p>
+                <p className="text-muted-foreground text-sm">No documents uploaded.</p>
               ) : (
                 <Table className="mb-6">
                   <TableHeader>
@@ -339,15 +345,13 @@ export function StudentProfile({ student }: { student: StudentData }) {
                       <TableRow key={doc.id}>
                         <TableCell className="font-medium">{doc.documentName}</TableCell>
                         <TableCell>{doc.documentType}</TableCell>
-                        <TableCell>
-                          {new Date(doc.createdAt).toLocaleDateString()}
-                        </TableCell>
+                        <TableCell>{new Date(doc.createdAt).toLocaleDateString()}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               )}
-              <p className="text-sm text-muted-foreground border-t pt-4">
+              <p className="text-muted-foreground border-t pt-4 text-sm">
                 Document upload with Supabase Storage will be available in a future update.
               </p>
             </CardContent>
@@ -356,7 +360,7 @@ export function StudentProfile({ student }: { student: StudentData }) {
 
         <TabsContent value="attendance">
           <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
+            <CardContent className="text-muted-foreground py-10 text-center">
               Attendance management coming in Phase 6.
             </CardContent>
           </Card>
@@ -364,7 +368,7 @@ export function StudentProfile({ student }: { student: StudentData }) {
 
         <TabsContent value="fees">
           <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
+            <CardContent className="text-muted-foreground py-10 text-center">
               Fee management coming in Phase 7.
             </CardContent>
           </Card>
@@ -372,7 +376,7 @@ export function StudentProfile({ student }: { student: StudentData }) {
 
         <TabsContent value="results">
           <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
+            <CardContent className="text-muted-foreground py-10 text-center">
               Exam results coming in Phase 8.
             </CardContent>
           </Card>
@@ -380,7 +384,7 @@ export function StudentProfile({ student }: { student: StudentData }) {
 
         <TabsContent value="homework">
           <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
+            <CardContent className="text-muted-foreground py-10 text-center">
               Homework management coming in Phase 9.
             </CardContent>
           </Card>
@@ -388,7 +392,7 @@ export function StudentProfile({ student }: { student: StudentData }) {
 
         <TabsContent value="transport">
           <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
+            <CardContent className="text-muted-foreground py-10 text-center">
               Transport management coming in Phase 10.
             </CardContent>
           </Card>

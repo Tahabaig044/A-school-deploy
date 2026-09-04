@@ -9,13 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
-export function ExpenseReportView({
-  data,
-  profile,
-}: {
-  data: any
-  profile: any
-}) {
+export function ExpenseReportView({ data, profile }: { data: any; profile: any }) {
   const router = useRouter()
   const [fromDate, setFromDate] = useState("")
   const [toDate, setToDate] = useState("")
@@ -36,7 +30,7 @@ export function ExpenseReportView({
           <CardTitle>Filter by Date Range</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 items-end">
+          <div className="flex items-end gap-4">
             <div>
               <Label htmlFor="fromDate">From Date</Label>
               <Input
@@ -65,10 +59,10 @@ export function ExpenseReportView({
           <CardTitle>Total Expenses: ${data.totalExpenses.toLocaleString()}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="rounded-lg border">
             <table className="w-full">
               <thead>
-                <tr className="border-b bg-muted/50">
+                <tr className="bg-muted/50 border-b">
                   <th className="p-3 text-left">Category</th>
                   <th className="p-3 text-right">Amount</th>
                   <th className="p-3 text-right">Percentage</th>
@@ -77,12 +71,15 @@ export function ExpenseReportView({
               <tbody>
                 {Object.entries(data.byCategory).map(([category, amount]) => (
                   <tr key={category} className="border-b">
-                    <td className="p-3"><Badge>{category}</Badge></td>
+                    <td className="p-3">
+                      <Badge>{category}</Badge>
+                    </td>
                     <td className="p-3 text-right">${Number(amount).toLocaleString()}</td>
                     <td className="p-3 text-right">
                       {data.totalExpenses > 0
                         ? ((Number(amount) / data.totalExpenses) * 100).toFixed(1)
-                        : 0}%
+                        : 0}
+                      %
                     </td>
                   </tr>
                 ))}
@@ -97,10 +94,10 @@ export function ExpenseReportView({
           <CardTitle>Expense History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="rounded-lg border">
             <table className="w-full">
               <thead>
-                <tr className="border-b bg-muted/50">
+                <tr className="bg-muted/50 border-b">
                   <th className="p-3 text-left">Date</th>
                   <th className="p-3 text-left">Category</th>
                   <th className="p-3 text-left">Description</th>
@@ -111,7 +108,9 @@ export function ExpenseReportView({
                 {data.expenses.slice(0, 20).map((expense: any) => (
                   <tr key={expense.id} className="border-b">
                     <td className="p-3">{new Date(expense.expenseDate).toLocaleDateString()}</td>
-                    <td className="p-3"><Badge>{expense.category}</Badge></td>
+                    <td className="p-3">
+                      <Badge>{expense.category}</Badge>
+                    </td>
                     <td className="p-3">{expense.description || "-"}</td>
                     <td className="p-3 text-right">${Number(expense.amount).toLocaleString()}</td>
                   </tr>

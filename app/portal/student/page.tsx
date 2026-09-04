@@ -23,10 +23,14 @@ async function StudentPortalContent() {
   if (!profile || profile.status !== "ACTIVE" || !profile.isActive) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-destructive">Account Not Active</h1>
-          <p className="text-muted-foreground">Your account is not active. Please contact administration.</p>
-          <a href="/login" className="text-primary underline">Return to Login</a>
+        <div className="space-y-4 text-center">
+          <h1 className="text-destructive text-2xl font-bold">Account Not Active</h1>
+          <p className="text-muted-foreground">
+            Your account is not active. Please contact administration.
+          </p>
+          <a href="/login" className="text-primary underline">
+            Return to Login
+          </a>
         </div>
       </div>
     )
@@ -52,46 +56,91 @@ async function StudentPortalContent() {
   if (!student) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-destructive">Student Record Not Found</h1>
-          <p className="text-muted-foreground">Your student profile could not be found. Please contact administration.</p>
-          <a href="/login" className="text-primary underline">Return to Login</a>
+        <div className="space-y-4 text-center">
+          <h1 className="text-destructive text-2xl font-bold">Student Record Not Found</h1>
+          <p className="text-muted-foreground">
+            Your student profile could not be found. Please contact administration.
+          </p>
+          <a href="/login" className="text-primary underline">
+            Return to Login
+          </a>
         </div>
       </div>
     )
   }
 
-  const [attendanceCount, examCount, feeInvoiceCount, homeworkCount, messageCount] = await Promise.all([
-    prisma.studentAttendance.count({
-      where: { studentId: student.id, status: "PRESENT" },
-    }).catch(() => 0),
-    prisma.examResult.count({
-      where: { studentId: student.id },
-    }).catch(() => 0),
-    prisma.feeInvoice.count({
-      where: { studentId: student.id, status: { in: ["PENDING", "PARTIAL"] } },
-    }).catch(() => 0),
-    student.enrollments[0]?.classId
-      ? prisma.homework.count({
-          where: {
-            classId: student.enrollments[0].classId,
-            isActive: true,
-          },
-        }).catch(() => 0)
-      : 0,
-    prisma.message.count({
-      where: { receiverId: userId },
-    }).catch(() => 0),
-  ])
+  const [attendanceCount, examCount, feeInvoiceCount, homeworkCount, messageCount] =
+    await Promise.all([
+      prisma.studentAttendance
+        .count({
+          where: { studentId: student.id, status: "PRESENT" },
+        })
+        .catch(() => 0),
+      prisma.examResult
+        .count({
+          where: { studentId: student.id },
+        })
+        .catch(() => 0),
+      prisma.feeInvoice
+        .count({
+          where: { studentId: student.id, status: { in: ["PENDING", "PARTIAL"] } },
+        })
+        .catch(() => 0),
+      student.enrollments[0]?.classId
+        ? prisma.homework
+            .count({
+              where: {
+                classId: student.enrollments[0].classId,
+                isActive: true,
+              },
+            })
+            .catch(() => 0)
+        : 0,
+      prisma.message
+        .count({
+          where: { receiverId: userId },
+        })
+        .catch(() => 0),
+    ])
 
   const enrollment = student.enrollments[0]
 
   const cards = [
-    { title: "Attendance", value: attendanceCount, icon: ClipboardCheck, href: "/portal/student/attendance", description: "Days present" },
-    { title: "Exams", value: examCount, icon: FileText, href: "/portal/student/results", description: "Exam results" },
-    { title: "Pending Fees", value: feeInvoiceCount, icon: DollarSign, href: "/portal/student/fees", description: "Unpaid invoices" },
-    { title: "Homework", value: homeworkCount, icon: CalendarClock, href: "/portal/student/homework", description: "Pending assignments" },
-    { title: "Messages", value: messageCount, icon: MessageSquare, href: "/portal/student/messages", description: "Unread messages" },
+    {
+      title: "Attendance",
+      value: attendanceCount,
+      icon: ClipboardCheck,
+      href: "/portal/student/attendance",
+      description: "Days present",
+    },
+    {
+      title: "Exams",
+      value: examCount,
+      icon: FileText,
+      href: "/portal/student/results",
+      description: "Exam results",
+    },
+    {
+      title: "Pending Fees",
+      value: feeInvoiceCount,
+      icon: DollarSign,
+      href: "/portal/student/fees",
+      description: "Unpaid invoices",
+    },
+    {
+      title: "Homework",
+      value: homeworkCount,
+      icon: CalendarClock,
+      href: "/portal/student/homework",
+      description: "Pending assignments",
+    },
+    {
+      title: "Messages",
+      value: messageCount,
+      icon: MessageSquare,
+      href: "/portal/student/messages",
+      description: "Unread messages",
+    },
   ]
 
   return (
@@ -107,14 +156,14 @@ async function StudentPortalContent() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
           <Link key={card.title} href={card.href}>
-            <Card className="transition-colors hover:bg-accent">
+            <Card className="hover:bg-accent transition-colors">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-                <card.icon className="h-4 w-4 text-muted-foreground" />
+                <card.icon className="text-muted-foreground h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{card.value}</div>
-                <p className="text-xs text-muted-foreground">{card.description}</p>
+                <p className="text-muted-foreground text-xs">{card.description}</p>
               </CardContent>
             </Card>
           </Link>

@@ -5,12 +5,13 @@ import { StaffAttendanceView } from "./staff-attendance-view"
 export default async function StaffAttendancePage() {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
-  const staff = profile.role === "SUPER_ADMIN"
-    ? await prisma.staff.findMany({ orderBy: { firstName: "asc" } })
-    : await prisma.staff.findMany({
-        where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
-        orderBy: { firstName: "asc" },
-      })
+  const staff =
+    profile.role === "SUPER_ADMIN"
+      ? await prisma.staff.findMany({ orderBy: { firstName: "asc" } })
+      : await prisma.staff.findMany({
+          where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
+          orderBy: { firstName: "asc" },
+        })
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)

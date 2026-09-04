@@ -6,16 +6,36 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { createFeeStructure, updateFeeStructure, deleteFeeStructure } from "@/actions/fees.actions"
 import { useToast } from "@/hooks/use-toast"
 import { Pencil, Trash2, Plus } from "lucide-react"
 
 const frequencies = ["MONTHLY", "QUARTERLY", "YEARLY", "ONE_TIME"] as const
-const categories = ["TUITION", "ADMISSION", "SPORTS", "LIBRARY", "TRANSPORT", "LAB", "OTHER"] as const
+const categories = [
+  "TUITION",
+  "ADMISSION",
+  "SPORTS",
+  "LIBRARY",
+  "TRANSPORT",
+  "LAB",
+  "OTHER",
+] as const
 
 export function FeeStructureList({
   feeStructures,
@@ -72,13 +92,22 @@ export function FeeStructureList({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Fee Structures"
-        description="Manage fee types and amounts"
-      >
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditItem(null); setError(null) } }}>
+      <PageHeader title="Fee Structures" description="Manage fee types and amounts">
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o)
+            if (!o) {
+              setEditItem(null)
+              setError(null)
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Add Fee Structure</Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Fee Structure
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -92,15 +121,26 @@ export function FeeStructureList({
               </div>
               <div>
                 <Label htmlFor="amount">Amount</Label>
-                <Input id="amount" name="amount" type="number" step="0.01" defaultValue={editItem?.amount || ""} required />
+                <Input
+                  id="amount"
+                  name="amount"
+                  type="number"
+                  step="0.01"
+                  defaultValue={editItem?.amount || ""}
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="frequency">Frequency</Label>
                 <Select name="frequency" defaultValue={editItem?.frequency || "MONTHLY"}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {frequencies.map(f => (
-                      <SelectItem key={f} value={f}>{f.replace(/_/g, " ")}</SelectItem>
+                    {frequencies.map((f) => (
+                      <SelectItem key={f} value={f}>
+                        {f.replace(/_/g, " ")}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -108,10 +148,14 @@ export function FeeStructureList({
               <div>
                 <Label htmlFor="category">Category</Label>
                 <Select name="category" defaultValue={editItem?.category || "TUITION"}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {categories.map(c => (
-                      <SelectItem key={c} value={c}>{c.replace(/_/g, " ")}</SelectItem>
+                    {categories.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c.replace(/_/g, " ")}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -120,7 +164,9 @@ export function FeeStructureList({
                 <div>
                   <Label htmlFor="isActive">Active</Label>
                   <Select name="isActive" defaultValue={editItem?.isActive ? "true" : "false"}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="true">Active</SelectItem>
                       <SelectItem value="false">Inactive</SelectItem>
@@ -128,7 +174,9 @@ export function FeeStructureList({
                   </Select>
                 </div>
               )}
-              <Button type="submit" className="w-full">{editItem ? "Update" : "Create"}</Button>
+              <Button type="submit" className="w-full">
+                {editItem ? "Update" : "Create"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -137,21 +185,44 @@ export function FeeStructureList({
       <DataTable
         columns={[
           { header: "Name", accessorKey: "name" },
-          { header: "Amount", accessorKey: "amount", cell: ({ row }: any) => `$${Number(row.amount).toFixed(2)}` },
-          { header: "Frequency", accessorKey: "frequency", cell: ({ row }: any) => (
-            <Badge variant="outline">{row.frequency.replace(/_/g, " ")}</Badge>
-          )},
-          { header: "Category", accessorKey: "category", cell: ({ row }: any) => (
-            <Badge>{row.category.replace(/_/g, " ")}</Badge>
-          )},
-          { header: "Status", accessorKey: "isActive", cell: ({ row }: any) => (
-            <Badge variant={row.isActive ? "default" : "secondary"}>{row.isActive ? "Active" : "Inactive"}</Badge>
-          )},
+          {
+            header: "Amount",
+            accessorKey: "amount",
+            cell: ({ row }: any) => `$${Number(row.amount).toFixed(2)}`,
+          },
+          {
+            header: "Frequency",
+            accessorKey: "frequency",
+            cell: ({ row }: any) => (
+              <Badge variant="outline">{row.frequency.replace(/_/g, " ")}</Badge>
+            ),
+          },
+          {
+            header: "Category",
+            accessorKey: "category",
+            cell: ({ row }: any) => <Badge>{row.category.replace(/_/g, " ")}</Badge>,
+          },
+          {
+            header: "Status",
+            accessorKey: "isActive",
+            cell: ({ row }: any) => (
+              <Badge variant={row.isActive ? "default" : "secondary"}>
+                {row.isActive ? "Active" : "Inactive"}
+              </Badge>
+            ),
+          },
           {
             header: "Actions",
             cell: ({ row }: any) => (
               <div className="flex gap-2">
-                <Button variant="ghost" size="icon" onClick={() => { setEditItem(row); setOpen(true) }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setEditItem(row)
+                    setOpen(true)
+                  }}
+                >
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)}>

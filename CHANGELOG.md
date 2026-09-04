@@ -9,6 +9,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased] - 2026-07-06
 
 ### Student Admission System (Loop 8)
+
 - **prisma/schema.prisma** — Added `AdmissionStatus` enum (PENDING, UNDER_REVIEW, APPROVED, REJECTED, WAITLISTED), `Admission` model (admission number, student details, previous school, applied class/session, financial info, status tracking), `AdmissionDocument` model, `AdmissionGuardian` model; added `reviewedBy` Profile relation; added admission relations to School, Branch, AcademicSession, Class, Student models
 - **actions/admission.actions.ts** — Full admission workflow: createAdmission, updateAdmission, deleteAdmission, reviewAdmission, approveAndEnroll (creates Student + StudentEnrollment + Parent + StudentParent from approved admission), getAdmissions (search, filter, paginate), getAdmissionById, addGuardian, deleteGuardian, uploadAdmissionDocument, deleteAdmissionDocument, getAdmissionStats (status counts), getAdmissionsByClass, getAdmissionsByMonth; admission number format: `ADM-YYYY-NNNNN`
 - **app/(dashboard)/dashboard/admissions/page.tsx** — Admission list server component
@@ -23,11 +24,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **components/ui/alert-dialog.tsx** — Created alert dialog component
 
 ### Announcements Enhancement (Loop 12)
+
 - **prisma/schema.prisma** — Added `AnnouncementAttachment` model (fileName, fileUrl, fileSize, fileType), `AnnouncementRead` model (announcementId, profileId, readAt with unique constraint), `scheduledAt` field to Announcement, `sectionId` field to Announcement, `class` and `section` relations to Announcement, `announcementReads` relation to Profile, `attachments` and `reads` relations to Announcement
 - **actions/announcement.actions.ts** — Enhanced with: updated audience enum (ALL, SCHOOL, BRANCH, CLASS, SECTION, TEACHERS, STUDENTS, PARENTS), scheduled publishing support (scheduledAt field, publishScheduledAnnouncements function), read tracking (markAnnouncementAsRead, getAnnouncementReadStats), attachment management (addAnnouncementAttachment, deleteAnnouncementAttachment), getAnnouncementsForUser (role-based audience filtering with read status)
 - **app/(dashboard)/dashboard/announcements/announcement-list.tsx** — Enhanced: view detail dialog with full content, attachments display, read status, audience/class/section info, schedule publish field, section field, attachment column, improved form with section support
 
 ### Student Portal (Loop 11)
+
 - **actions/student-portal.actions.ts** — Student-specific server actions: getStudentAttendance (month-filtered), getStudentFees (invoices + payments + summary), getStudentResults (exam results by session), getStudentHomework (class-scoped with submissions), getStudentTimetable (weekly schedule), getStudentReportCards, getStudentLeaveRequests, createStudentLeaveRequest, getStudentProfile, getStudentMessages; all actions verify student email linkage
 - **app/portal/student/page.tsx** — Enhanced dashboard: welcome header with class/section, stat cards (attendance, exams, fees, homework, messages)
 - **app/portal/student/attendance/page.tsx** — Attendance view: month navigation, stats cards (total/present/absent/late/leave with percentages), attendance records table
@@ -41,6 +44,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **lib/portal-menu-items.ts** — Updated student menu: 9 items (Dashboard, My Attendance, My Results, My Fees, Homework, Timetable, Leave Requests, Messages, Profile)
 
 ### Teacher Portal (Loop 10)
+
 - **actions/teacher-portal.actions.ts** — Teacher-specific server actions: getTeacherClasses (assignments with class/section/subject), getTeacherStudents (by class), getTeacherTimetable (weekly schedule), getTeacherHomework (with submission counts), getTeacherExamResults (by session), getTeacherLeaveRequests, createTeacherLeaveRequest, getTeacherProfile, updateTeacherProfile; all actions verify teacher profileId linkage
 - **app/portal/teacher/page.tsx** — Enhanced dashboard: welcome header, stat cards (classes, students, homework, messages, leave requests)
 - **app/portal/teacher/classes/page.tsx** — Assigned classes: grouped by class name, shows subjects and sections per class
@@ -54,6 +58,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **lib/portal-menu-items.ts** — Updated teacher menu: Dashboard, My Classes, Attendance, Marks, Homework, Timetable, Leave Requests, Profile
 
 ### Parent Portal (Loop 9)
+
 - **actions/parent-portal.actions.ts** — Parent-specific server actions: getParentChildren (with full enrollment, attendance, fees, results, homework data), getChildAttendance (month-filtered), getChildFees (invoices + payments + summary), getChildResults (exam results by session), getChildHomework (class-scoped with submissions), getParentAnnouncements, getParentLeaveRequests, createParentLeaveRequest, getParentProfile, updateParentProfile; all actions verify parent email match and student-parent linkage
 - **app/portal/parent/page.tsx** — Enhanced parent dashboard: welcome header, stat cards (children, pending fees, announcements, messages), children list with class/section and quick links
 - **app/portal/parent/children/page.tsx** — Children overview: card grid with name, admission number, class/section, enrollment status, gender; links to attendance, fees, results per child
@@ -67,6 +72,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **lib/portal-menu-items.ts** — Updated parent menu: Dashboard, My Children, Attendance, Fee Status, Results, Homework, Notices, Leave Requests, Profile
 
 ### Input Validation & Error Handling (Loop 7)
+
 - **package.json** — Fixed Vercel build: added `prisma generate` before `next build` in build script
 - **9 action files** — Added Zod schemas to student, teacher, class, fees, staff, subject, branch, session, expenses actions — validates required fields, types, enums, email format, UUID format before database operations
 - **student.actions.ts** — Added `studentSchema` and `enrollmentSchema` with Gender/StudentStatus enum validation
@@ -83,6 +89,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **lib/supabase/server.ts** — Hardened cookie security: httpOnly, secure (production), sameSite: lax, path: /
 
 ### Security & Production Readiness (Loop 6)
+
 - **CRITICAL: School isolation on update/delete actions** — Added schoolId ownership verification to 12 action files (student, teacher, class, fees, exam, staff, expenses, subject, branch, session, timetable, leave) — prevents cross-tenant data access where a user from School A could modify/delete School B's data by passing arbitrary IDs
 - **CRITICAL: Role-based route protection** — Added role-route mapping to `proxy.ts` — STUDENT can no longer access `/dashboard/schools`, `/dashboard/fees/fee-structures`, etc.; admin users can no longer access `/portal/*` routes; redirects unauthorized users to `/dashboard`
 - **Security headers** — Added X-Frame-Options (DENY), X-Content-Type-Options (nosniff), Referrer-Policy (strict-origin-when-cross-origin), X-XSS-Protection (1; mode=block) to all responses via proxy middleware
@@ -101,6 +108,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **leave.actions.ts** — Added school isolation check to `approveLeave` and `rejectLeave`
 
 ### Performance Optimization (Loop 5)
+
 - **lib/auth.ts** - Fixed requireRole double Supabase getUser() call — now makes 1 auth request instead of 2
 - **lib/prisma.ts** - Added connection pool configuration (max: 10, idleTimeout: 30s, connectionTimeout: 5s)
 - **actions/attendance.actions.ts** - Batched bulkMarkAttendance with prisma.$transaction — reduced N+1 queries (50 students: 100+ queries → 3 queries)
@@ -118,6 +126,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **app/(dashboard)/dashboard/fees/invoices/page.tsx** - Moved academicSessions into existing Promise.all for full parallelization
 
 ### Complete CRUD Standardization (Loop 4)
+
 - **actions/session.actions.ts** - Added `updateSession` function for editing session name/dates
 - **actions/class.actions.ts** - Added `updateSection` function for editing section name/capacity
 - **actions/timetable.actions.ts** - Added `updateTimetableSlot` function with conflict checking
@@ -132,6 +141,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **lib/audit.ts** - Added "CANCEL" to AuditAction type
 
 ### Dashboard Stabilization (Loop 3)
+
 - **app/(dashboard)/loading.tsx** - Added loading skeleton for dashboard Suspense boundary
 - **components/layout/portal-mobile-sidebar.tsx** - Fixed: mobile sidebar was embedding PortalSidebar (hidden md:flex) inside Sheet, making nav invisible on mobile
 - **components/layout/portal-sidebar.tsx** - Extracted PortalNavList as reusable component; fixed nested route active state (strict === → startsWith)
@@ -142,6 +152,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **10 list components** - Added try/catch error handling to all delete handlers (exam-list, expense-list, homework-list, book-list, announcement-list, fee-structure-list, schedule-list, exam-type-list, vehicle-list, route-list)
 
 ### Security (Permission Audit - Loop 2)
+
 - **lib/school-context.ts** - CRITICAL: Prevented client-controlled school/branch isolation. `getSchoolId()`/`getBranchId()` now only allow formData override for SUPER_ADMIN role. All other roles always use profile's schoolId/branchId.
 - **notification.actions.ts** - CRITICAL: Added auth checks to `createNotification`, `markAllNotificationsAsRead`, `getNotifications`, `getUnreadNotificationCount`. Removed client-supplied userId parameters.
 - **message.actions.ts** - CRITICAL: Added auth to `getUnreadMessageCount`. Removed `senderId` from formData (prevents impersonation). Removed client userId from `getInboxMessages`/`getSentMessages`. Added ownership check on `getMessageById`.
@@ -160,6 +171,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **exams/report-cards/page.tsx** - Added schoolId filter to report cards query.
 
 ### Fixed
+
 - **attendance.actions.ts** - TypeScript error: `teacher?.id ?? undefined` changed to `teacher?.id || ""` to match Prisma's `string` requirement
 - **setup-password-form.tsx** - Password `minLength` changed from 6 to 8 to match server-side validation
 - **auth.actions.ts** - Self-registration now includes `email`, `status: "ACTIVE"`, and `isActive: true` in Profile creation
@@ -174,6 +186,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **portal/layout.tsx** - Fixed PORTAL_ROLES type compatibility with `Role` type
 
 ### Added
+
 - **teacher-list.tsx** - Edit dialog and delete button with confirmation
 - **staff-list.tsx** - Edit dialog and delete button with confirmation
 - **class-list.tsx** - Edit dialog and delete button with confirmation
@@ -182,6 +195,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **school-list.tsx** - Edit dialog and delete button with confirmation
 
 ### Changed
+
 - **lib/constants.ts** - Added `PORTAL_ROLES` constant and `PortalRole` type
 - **dashboard/layout.tsx** - Refactored to use shared `PORTAL_ROLES` from constants
 - **portal/layout.tsx** - Refactored to use shared `PORTAL_ROLES` from constants
@@ -192,6 +206,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [0.1.0] - Initial Development
 
 ### Core System
+
 - Next.js 16 with TypeScript
 - Tailwind CSS 4 with shadcn/ui
 - Prisma 7 with PostgreSQL (Supabase)
@@ -200,6 +215,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 11 user roles with 48 granular permissions
 
 ### Authentication
+
 - Login/Logout with Supabase Auth
 - Forgot Password / Reset Password flow
 - Invitation flow with token-based setup
@@ -207,6 +223,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Account lockout after 5 failed attempts
 
 ### Dashboard
+
 - Admin dashboard with 8 stat widgets
 - Role-based sidebar with permission filtering
 - Branch selector for multi-branch schools
@@ -214,6 +231,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - User dropdown with role display
 
 ### Modules (31 CRUD modules)
+
 - Students (C/R/U/D/V with enrollment, documents, fees)
 - Teachers (C/R with assignments)
 - Staff (C/R with department tracking)
@@ -238,6 +256,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Settings
 
 ### Portals
+
 - Student portal with attendance, exams, fees, homework, messages
 - Parent portal with children, fees, announcements, messages
 - Teacher portal with classes, students, homework, messages, leaves

@@ -16,24 +16,26 @@ const examTypeSchema = z.object({
   weight: z.number().int().min(1).default(1),
 })
 
-const examSchema = z.object({
-  schoolId: z.string().uuid(),
-  branchId: z.string().uuid(),
-  examTypeId: z.string().uuid(),
-  classId: z.string().uuid(),
-  subjectId: z.string().uuid(),
-  academicSessionId: z.string().uuid(),
-  name: z.string().min(1, "Name is required"),
-  totalMarks: z.number().int().min(1, "Total marks must be at least 1"),
-  passingMarks: z.number().int().min(1, "Passing marks must be at least 1"),
-  examDate: z.string().optional(),
-  startTime: z.string().optional(),
-  endTime: z.string().optional(),
-  description: z.string().optional(),
-}).refine((data) => data.passingMarks <= data.totalMarks, {
-  message: "Passing marks cannot exceed total marks",
-  path: ["passingMarks"],
-})
+const examSchema = z
+  .object({
+    schoolId: z.string().uuid(),
+    branchId: z.string().uuid(),
+    examTypeId: z.string().uuid(),
+    classId: z.string().uuid(),
+    subjectId: z.string().uuid(),
+    academicSessionId: z.string().uuid(),
+    name: z.string().min(1, "Name is required"),
+    totalMarks: z.number().int().min(1, "Total marks must be at least 1"),
+    passingMarks: z.number().int().min(1, "Passing marks must be at least 1"),
+    examDate: z.string().optional(),
+    startTime: z.string().optional(),
+    endTime: z.string().optional(),
+    description: z.string().optional(),
+  })
+  .refine((data) => data.passingMarks <= data.totalMarks, {
+    message: "Passing marks cannot exceed total marks",
+    path: ["passingMarks"],
+  })
 
 const examScheduleSchema = z.object({
   examId: z.string().uuid(),
@@ -65,14 +67,14 @@ function calculateGrade(percentage: number): string {
 
 export async function createExamType(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
   const schoolId = getSchoolId(profile, formData, "Create Exam Type")
   const branchId = getBranchId(profile, formData, "Create Exam Type")
   const name = formData.get("name") as string
-  const description = formData.get("description") as string || undefined
+  const description = (formData.get("description") as string) || undefined
   const weight = Number(formData.get("weight") as string) || 1
 
   const parsed = examTypeSchema.safeParse({ schoolId, branchId, name, description, weight })
@@ -84,7 +86,9 @@ export async function createExamType(
     data: {
       school: { connect: { id: schoolId } },
       branch: { connect: { id: branchId } },
-      name, description, weight,
+      name,
+      description,
+      weight,
     },
   })
 
@@ -104,7 +108,7 @@ export async function createExamType(
 export async function updateExamType(
   examTypeId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -119,7 +123,7 @@ export async function updateExamType(
   }
 
   const name = formData.get("name") as string
-  const description = formData.get("description") as string || undefined
+  const description = (formData.get("description") as string) || undefined
   const weight = Number(formData.get("weight") as string) || 1
   const isActive = formData.get("isActive") === "true"
 
@@ -151,17 +155,20 @@ export async function deleteExamType(examTypeId: string) {
 }
 
 export async function getExamTypes(schoolId: string, branchId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
+  const effectiveBranchId = profile.role === "SUPER_ADMIN" ? branchId : profile.branchId!
 
   return prisma.examType.findMany({
-    where: { schoolId, branchId },
+    where: { schoolId: effectiveSchoolId, branchId: effectiveBranchId },
     orderBy: { name: "asc" },
   })
 }
 
 export async function createExam(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -174,14 +181,25 @@ export async function createExam(
   const name = formData.get("name") as string
   const totalMarks = Number(formData.get("totalMarks") as string)
   const passingMarks = Number(formData.get("passingMarks") as string)
-  const examDate = formData.get("examDate") as string || undefined
-  const startTime = formData.get("startTime") as string || undefined
-  const endTime = formData.get("endTime") as string || undefined
-  const description = formData.get("description") as string || undefined
+  const examDate = (formData.get("examDate") as string) || undefined
+  const startTime = (formData.get("startTime") as string) || undefined
+  const endTime = (formData.get("endTime") as string) || undefined
+  const description = (formData.get("description") as string) || undefined
 
   const parsed = examSchema.safeParse({
-    schoolId, branchId, examTypeId, classId, subjectId, academicSessionId,
-    name, totalMarks, passingMarks, examDate, startTime, endTime, description,
+    schoolId,
+    branchId,
+    examTypeId,
+    classId,
+    subjectId,
+    academicSessionId,
+    name,
+    totalMarks,
+    passingMarks,
+    examDate,
+    startTime,
+    endTime,
+    description,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -195,9 +213,13 @@ export async function createExam(
       class: { connect: { id: classId } },
       subject: { connect: { id: subjectId } },
       academicSession: { connect: { id: academicSessionId } },
-      name, totalMarks, passingMarks,
+      name,
+      totalMarks,
+      passingMarks,
       examDate: examDate ? new Date(examDate) : undefined,
-      startTime, endTime, description,
+      startTime,
+      endTime,
+      description,
     },
   })
 
@@ -217,7 +239,7 @@ export async function createExam(
 export async function updateExam(
   examId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -234,10 +256,10 @@ export async function updateExam(
   const name = formData.get("name") as string
   const totalMarks = Number(formData.get("totalMarks") as string)
   const passingMarks = Number(formData.get("passingMarks") as string)
-  const examDate = formData.get("examDate") as string || undefined
-  const startTime = formData.get("startTime") as string || undefined
-  const endTime = formData.get("endTime") as string || undefined
-  const description = formData.get("description") as string || undefined
+  const examDate = (formData.get("examDate") as string) || undefined
+  const startTime = (formData.get("startTime") as string) || undefined
+  const endTime = (formData.get("endTime") as string) || undefined
+  const description = (formData.get("description") as string) || undefined
   const isPublished = formData.get("isPublished") === "true"
 
   if (passingMarks > totalMarks) {
@@ -247,9 +269,14 @@ export async function updateExam(
   await prisma.exam.update({
     where: { id: examId },
     data: {
-      name, totalMarks, passingMarks,
+      name,
+      totalMarks,
+      passingMarks,
       examDate: examDate ? new Date(examDate) : undefined,
-      startTime, endTime, description, isPublished,
+      startTime,
+      endTime,
+      description,
+      isPublished,
     },
   })
 
@@ -278,13 +305,22 @@ export async function deleteExam(examId: string) {
 export async function getExams(
   schoolId: string,
   branchId: string,
-  filters?: { classId?: string; subjectId?: string; examTypeId?: string; academicSessionId?: string }
+  filters?: {
+    classId?: string
+    subjectId?: string
+    examTypeId?: string
+    academicSessionId?: string
+  },
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
+  const effectiveBranchId = profile.role === "SUPER_ADMIN" ? branchId : profile.branchId!
 
   return prisma.exam.findMany({
     where: {
-      schoolId, branchId,
+      schoolId: effectiveSchoolId,
+      branchId: effectiveBranchId,
       ...(filters?.classId && { classId: filters.classId }),
       ...(filters?.subjectId && { subjectId: filters.subjectId }),
       ...(filters?.examTypeId && { examTypeId: filters.examTypeId }),
@@ -302,9 +338,9 @@ export async function getExams(
 }
 
 export async function getExamById(examId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
 
-  return prisma.exam.findUnique({
+  const exam = await prisma.exam.findUnique({
     where: { id: examId },
     include: {
       examType: true,
@@ -314,29 +350,47 @@ export async function getExamById(examId: string) {
       schedules: true,
     },
   })
+  if (!exam) return null
+  if (profile.role !== "SUPER_ADMIN" && exam.schoolId !== profile.schoolId) return null
+
+  return exam
 }
 
 export async function createExamSchedule(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
   const examId = formData.get("examId") as string
-  const room = formData.get("room") as string || undefined
+  const room = (formData.get("room") as string) || undefined
   const date = formData.get("date") as string
   const startTime = formData.get("startTime") as string
   const endTime = formData.get("endTime") as string
-  const notes = formData.get("notes") as string || undefined
+  const notes = (formData.get("notes") as string) || undefined
 
   const parsed = examScheduleSchema.safeParse({ examId, room, date, startTime, endTime, notes })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
   }
 
+  const exam = await prisma.exam.findUnique({
+    where: { id: parsed.data.examId },
+    select: { schoolId: true },
+  })
+  if (!exam) return { error: "Exam not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && exam.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
+
   await prisma.examSchedule.create({
     data: {
-      examId, room, date: new Date(date), startTime, endTime, notes,
+      examId: parsed.data.examId,
+      room: parsed.data.room,
+      date: new Date(parsed.data.date),
+      startTime: parsed.data.startTime,
+      endTime: parsed.data.endTime,
+      notes: parsed.data.notes,
     },
   })
 
@@ -345,19 +399,34 @@ export async function createExamSchedule(
 }
 
 export async function deleteExamSchedule(scheduleId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  const schedule = await prisma.examSchedule.findUnique({
+    where: { id: scheduleId },
+    include: { exam: { select: { schoolId: true } } },
+  })
+  if (!schedule) return { error: "Schedule not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && schedule.exam.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
+
   await prisma.examSchedule.delete({ where: { id: scheduleId } })
   revalidatePath("/dashboard/exams/schedule")
   return { success: true }
 }
 
 export async function getExamSchedules(academicSessionId: string, branchId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const whereClause: any = {
+    exam: { academicSessionId, branchId },
+  }
+  if (profile.role !== "SUPER_ADMIN") {
+    whereClause.exam.schoolId = profile.schoolId
+  }
 
   return prisma.examSchedule.findMany({
-    where: {
-      exam: { academicSessionId, branchId },
-    },
+    where: whereClause,
     include: {
       exam: {
         include: {
@@ -373,19 +442,33 @@ export async function getExamSchedules(academicSessionId: string, branchId: stri
 
 export async function submitExamResult(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
 
   const examId = formData.get("examId") as string
   const studentId = formData.get("studentId") as string
   const marksObtainedStr = formData.get("marksObtained") as string
-  const remarks = formData.get("remarks") as string || undefined
+  const remarks = (formData.get("remarks") as string) || undefined
 
   const marksObtained = marksObtainedStr ? Number(marksObtainedStr) : null
 
-  const exam = await prisma.exam.findUnique({ where: { id: examId } })
+  const exam = await prisma.exam.findUnique({
+    where: { id: examId },
+    select: { id: true, schoolId: true, totalMarks: true },
+  })
   if (!exam) return { error: "Exam not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && exam.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { schoolId: true },
+  })
+  if (!student || (profile.role !== "SUPER_ADMIN" && student.schoolId !== profile.schoolId)) {
+    return { error: "Student not found.", success: false }
+  }
 
   if (marksObtained !== null && marksObtained > exam.totalMarks) {
     return { error: "Marks obtained cannot exceed total marks.", success: false }
@@ -396,7 +479,7 @@ export async function submitExamResult(
   }
 
   const percentage = marksObtained !== null ? (marksObtained / exam.totalMarks) * 100 : null
-  const grade = percentage !== null ? calculateGrade(percentage) as any : undefined
+  const grade = percentage !== null ? (calculateGrade(percentage) as any) : undefined
 
   await prisma.examResult.upsert({
     where: { examId_studentId: { examId, studentId } },
@@ -426,12 +509,32 @@ export async function submitExamResult(
 
 export async function submitBulkExamResults(
   examId: string,
-  results: Array<{ studentId: string; marksObtained: number | null; remarks?: string }>
+  results: Array<{ studentId: string; marksObtained: number | null; remarks?: string }>,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
 
-  const exam = await prisma.exam.findUnique({ where: { id: examId } })
+  const exam = await prisma.exam.findUnique({
+    where: { id: examId },
+    select: { id: true, schoolId: true, totalMarks: true },
+  })
   if (!exam) return { error: "Exam not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && exam.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
+
+  const studentIds = results.map((r) => r.studentId)
+  const students = await prisma.student.findMany({
+    where: { id: { in: studentIds } },
+    select: { id: true, schoolId: true },
+  })
+  if (profile.role !== "SUPER_ADMIN") {
+    const allowedIds = new Set(
+      students.filter((s) => s.schoolId === profile.schoolId).map((s) => s.id),
+    )
+    if (studentIds.some((id) => !allowedIds.has(id))) {
+      return { error: "Unauthorized", success: false }
+    }
+  }
 
   for (const result of results) {
     if (result.marksObtained !== null && result.marksObtained > exam.totalMarks) {
@@ -443,7 +546,6 @@ export async function submitBulkExamResults(
     }
   }
 
-  const studentIds = results.map((r) => r.studentId)
   const existingResults = await prisma.examResult.findMany({
     where: { examId, studentId: { in: studentIds } },
     select: { id: true, studentId: true },
@@ -451,12 +553,28 @@ export async function submitBulkExamResults(
   const existingMap = new Map(existingResults.map((r) => [r.studentId, r.id]))
 
   const now = new Date()
-  const toCreate: { examId: string; studentId: string; marksObtained: string | null; grade: Grade | null; remarks: string | null; gradedBy: string; gradedAt: Date }[] = []
-  const toUpdate: { id: string; marksObtained: string | null; grade: Grade | null; remarks: string | null; gradedBy: string; gradedAt: Date }[] = []
+  const toCreate: {
+    examId: string
+    studentId: string
+    marksObtained: string | null
+    grade: Grade | null
+    remarks: string | null
+    gradedBy: string
+    gradedAt: Date
+  }[] = []
+  const toUpdate: {
+    id: string
+    marksObtained: string | null
+    grade: Grade | null
+    remarks: string | null
+    gradedBy: string
+    gradedAt: Date
+  }[] = []
 
   for (const result of results) {
-    const percentage = result.marksObtained !== null ? (result.marksObtained / exam.totalMarks) * 100 : null
-    const grade = percentage !== null ? calculateGrade(percentage) as Grade : null
+    const percentage =
+      result.marksObtained !== null ? (result.marksObtained / exam.totalMarks) * 100 : null
+    const grade = percentage !== null ? (calculateGrade(percentage) as Grade) : null
     const marksStr = result.marksObtained !== null ? String(result.marksObtained) : null
 
     const existingId = existingMap.get(result.studentId)
@@ -491,8 +609,8 @@ export async function submitBulkExamResults(
               gradedBy: item.gradedBy,
               gradedAt: item.gradedAt,
             },
-          })
-        )
+          }),
+        ),
       )
     }
   })
@@ -504,14 +622,24 @@ export async function submitBulkExamResults(
 }
 
 export async function getExamResults(examId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER")
+
+  const exam = await prisma.exam.findUnique({
+    where: { id: examId },
+    select: { schoolId: true },
+  })
+  if (!exam) return []
+  if (profile.role !== "SUPER_ADMIN" && exam.schoolId !== profile.schoolId) return []
 
   return prisma.examResult.findMany({
     where: { examId },
     include: {
       student: {
         select: {
-          id: true, firstName: true, lastName: true, admissionNo: true,
+          id: true,
+          firstName: true,
+          lastName: true,
+          admissionNo: true,
         },
       },
     },
@@ -520,7 +648,23 @@ export async function getExamResults(examId: string) {
 }
 
 export async function getStudentExamResults(studentId: string, academicSessionId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  )
+
+  if (!(await canViewStudentRecords(profile, studentId))) return []
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { schoolId: true },
+  })
+  if (!student) return []
+  if (profile.role !== "SUPER_ADMIN" && student.schoolId !== profile.schoolId) return []
 
   return prisma.examResult.findMany({
     where: {
@@ -539,22 +683,63 @@ export async function getStudentExamResults(studentId: string, academicSessionId
   })
 }
 
+async function canViewStudentRecords(
+  actor: { id: string; role: string; schoolId: string | null; email: string | null },
+  studentId: string,
+): Promise<boolean> {
+  if (actor.role === "SUPER_ADMIN") return true
+
+  if (actor.role === "STUDENT") {
+    const own = await prisma.student.findFirst({ where: { email: actor.email ?? "" } })
+    return own !== null && own.id === studentId
+  }
+
+  if (actor.role === "PARENT") {
+    const parent = await prisma.parent.findFirst({
+      where: { OR: [{ profileId: actor.id }, { email: actor.email ?? undefined }] },
+    })
+    if (!parent) return false
+    const link = await prisma.studentParent.findFirst({
+      where: { parentId: parent.id, studentId },
+    })
+    return link !== null
+  }
+
+  const student = await prisma.student.findUnique({ where: { id: studentId } })
+  return student !== null && student.schoolId === actor.schoolId
+}
+
 export async function generateReportCard(
   _prevState: { error?: string; success?: boolean } | null,
   studentId: string,
   examId: string,
-  academicSessionId: string
+  academicSessionId: string,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
   const [exam, result] = await Promise.all([
-    prisma.exam.findUnique({ where: { id: examId } }),
+    prisma.exam.findUnique({
+      where: { id: examId },
+      select: { id: true, schoolId: true, totalMarks: true },
+    }),
     prisma.examResult.findUnique({
       where: { examId_studentId: { examId, studentId } },
     }),
   ])
 
   if (!exam) return { error: "Exam not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && exam.schoolId !== profile.schoolId) {
+    return { error: "Unauthorized", success: false }
+  }
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { schoolId: true },
+  })
+  if (!student || (profile.role !== "SUPER_ADMIN" && student.schoolId !== profile.schoolId)) {
+    return { error: "Student not found.", success: false }
+  }
+
   if (!result || result.marksObtained === null) {
     return { error: "No marks recorded for this student in this exam.", success: false }
   }
@@ -601,8 +786,25 @@ export async function generateReportCard(
   return { success: true, error: undefined }
 }
 
+async function canManageReportCard(
+  profile: { role: string; schoolId: string | null },
+  reportCardId: string,
+): Promise<boolean> {
+  const reportCard = await prisma.reportCard.findUnique({
+    where: { id: reportCardId },
+    select: { student: { select: { schoolId: true } } },
+  })
+  if (!reportCard) return false
+  if (profile.role === "SUPER_ADMIN") return true
+  return reportCard.student.schoolId === profile.schoolId
+}
+
 export async function publishReportCard(reportCardId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  if (!(await canManageReportCard(profile, reportCardId))) {
+    return { error: "Report card not found.", success: false }
+  }
 
   await prisma.reportCard.update({
     where: { id: reportCardId },
@@ -614,7 +816,11 @@ export async function publishReportCard(reportCardId: string) {
 }
 
 export async function unpublishReportCard(reportCardId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+
+  if (!(await canManageReportCard(profile, reportCardId))) {
+    return { error: "Report card not found.", success: false }
+  }
 
   await prisma.reportCard.update({
     where: { id: reportCardId },
@@ -632,7 +838,31 @@ export async function getReportCards(filters: {
   classId?: string
   branchId?: string
 }) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  )
+
+  if (!(await canViewStudentRecords(profile, filters.studentId ?? ""))) return []
+
+  const student = filters.studentId
+    ? await prisma.student.findUnique({
+        where: { id: filters.studentId },
+        select: { schoolId: true },
+      })
+    : null
+  if (filters.studentId && !student) return []
+  if (
+    filters.studentId &&
+    profile.role !== "SUPER_ADMIN" &&
+    student!.schoolId !== profile.schoolId
+  ) {
+    return []
+  }
 
   return prisma.reportCard.findMany({
     where: {
@@ -643,7 +873,11 @@ export async function getReportCards(filters: {
     include: {
       student: {
         select: {
-          id: true, firstName: true, lastName: true, admissionNo: true, branchId: true,
+          id: true,
+          firstName: true,
+          lastName: true,
+          admissionNo: true,
+          branchId: true,
         },
       },
       exam: {
@@ -659,7 +893,23 @@ export async function getReportCards(filters: {
 }
 
 export async function getStudentReportCards(studentId: string, academicSessionId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  )
+
+  if (!(await canViewStudentRecords(profile, studentId))) return []
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { schoolId: true },
+  })
+  if (!student) return []
+  if (profile.role !== "SUPER_ADMIN" && student.schoolId !== profile.schoolId) return []
 
   return prisma.reportCard.findMany({
     where: {

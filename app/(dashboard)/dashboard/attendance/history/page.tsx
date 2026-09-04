@@ -7,15 +7,22 @@ export default async function AttendanceHistoryPage({
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>
 }) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
   const params = await searchParams
 
-  const classes = profile.role === "SUPER_ADMIN"
-    ? await prisma.class.findMany({ orderBy: { order: "asc" } })
-    : await prisma.class.findMany({
-        where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
-        orderBy: { order: "asc" },
-      })
+  const classes =
+    profile.role === "SUPER_ADMIN"
+      ? await prisma.class.findMany({ orderBy: { order: "asc" } })
+      : await prisma.class.findMany({
+          where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
+          orderBy: { order: "asc" },
+        })
 
   const where: any = {}
   if (params.classId) where.classId = params.classId

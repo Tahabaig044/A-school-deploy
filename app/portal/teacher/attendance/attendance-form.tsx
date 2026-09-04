@@ -23,7 +23,7 @@ type AttendanceState = {
 
 async function submitAttendance(
   _prevState: AttendanceState | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<AttendanceState> {
   try {
     await bulkMarkAttendance(formData)
@@ -66,9 +66,7 @@ export function AttendanceForm({
 
       {state?.error && (
         <Card className="border-red-200 bg-red-50">
-          <CardContent className="py-3 text-sm text-red-700">
-            {state.error}
-          </CardContent>
+          <CardContent className="py-3 text-sm text-red-700">{state.error}</CardContent>
         </Card>
       )}
 
@@ -82,7 +80,7 @@ export function AttendanceForm({
           </div>
 
           {students.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
+            <p className="text-muted-foreground py-4 text-center text-sm">
               No students found for this class.
             </p>
           ) : (
@@ -93,7 +91,7 @@ export function AttendanceForm({
                   className="flex items-center justify-between rounded-lg border p-3"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground w-6 text-center">
+                    <span className="text-muted-foreground w-6 text-center text-sm">
                       {index + 1}
                     </span>
                     <div>
@@ -101,7 +99,7 @@ export function AttendanceForm({
                         {student.firstName} {student.lastName}
                       </p>
                       {student.enrollments[0] && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           {student.enrollments[0].class.name}
                           {student.enrollments[0].section
                             ? ` - ${student.enrollments[0].section.name}`
@@ -113,7 +111,7 @@ export function AttendanceForm({
                   <select
                     name={`status_${student.id}`}
                     defaultValue="PRESENT"
-                    className="flex h-9 w-32 rounded-md border border-input bg-background px-3 py-1 text-sm"
+                    className="border-input bg-background flex h-9 w-32 rounded-md border px-3 py-1 text-sm"
                   >
                     <option value="PRESENT">Present</option>
                     <option value="ABSENT">Absent</option>

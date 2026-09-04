@@ -15,9 +15,10 @@ export default async function ClassesPage({
   const page = Math.max(1, Number(params.page) || 1)
   const skip = (page - 1) * PAGE_SIZE
 
-  const where = profile.role === "SUPER_ADMIN"
-    ? {}
-    : { schoolId: profile.schoolId!, branchId: profile.branchId! }
+  const where =
+    profile.role === "SUPER_ADMIN"
+      ? {}
+      : { schoolId: profile.schoolId!, branchId: profile.branchId! }
 
   const [classes, total] = await Promise.all([
     prisma.class.findMany({

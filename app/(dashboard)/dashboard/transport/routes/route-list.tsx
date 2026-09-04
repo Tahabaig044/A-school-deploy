@@ -6,20 +6,24 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { createTransportRoute, updateTransportRoute, deleteTransportRoute } from "@/actions/transport.actions"
+import {
+  createTransportRoute,
+  updateTransportRoute,
+  deleteTransportRoute,
+} from "@/actions/transport.actions"
 import { useToast } from "@/hooks/use-toast"
 import { Pencil, Trash2, Plus } from "lucide-react"
 
-export function RouteList({
-  routes,
-  profile,
-}: {
-  routes: any[]
-  profile: any
-}) {
+export function RouteList({ routes, profile }: { routes: any[]; profile: any }) {
   const router = useRouter()
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
@@ -61,9 +65,21 @@ export function RouteList({
   return (
     <div className="space-y-6">
       <PageHeader title="Transport Routes" description="Manage transport routes">
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditItem(null); setError(null) } }}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o)
+            if (!o) {
+              setEditItem(null)
+              setError(null)
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Add Route</Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Route
+            </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -71,34 +87,65 @@ export function RouteList({
             </DialogHeader>
             <form action={handleSubmit} className="space-y-4">
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="name">Route Name</Label>
                   <Input id="name" name="name" defaultValue={editItem?.name || ""} required />
                 </div>
                 <div>
                   <Label htmlFor="vehicleId">Vehicle ID</Label>
-                  <Input id="vehicleId" name="vehicleId" defaultValue={editItem?.vehicleId || ""} required />
+                  <Input
+                    id="vehicleId"
+                    name="vehicleId"
+                    defaultValue={editItem?.vehicleId || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="startLocation">Start Location</Label>
-                  <Input id="startLocation" name="startLocation" defaultValue={editItem?.startLocation || ""} required />
+                  <Input
+                    id="startLocation"
+                    name="startLocation"
+                    defaultValue={editItem?.startLocation || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="endLocation">End Location</Label>
-                  <Input id="endLocation" name="endLocation" defaultValue={editItem?.endLocation || ""} required />
+                  <Input
+                    id="endLocation"
+                    name="endLocation"
+                    defaultValue={editItem?.endLocation || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="pickupTime">Pickup Time</Label>
-                  <Input id="pickupTime" name="pickupTime" type="time" defaultValue={editItem?.pickupTime || ""} />
+                  <Input
+                    id="pickupTime"
+                    name="pickupTime"
+                    type="time"
+                    defaultValue={editItem?.pickupTime || ""}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="dropTime">Drop Time</Label>
-                  <Input id="dropTime" name="dropTime" type="time" defaultValue={editItem?.dropTime || ""} />
+                  <Input
+                    id="dropTime"
+                    name="dropTime"
+                    type="time"
+                    defaultValue={editItem?.dropTime || ""}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="monthlyFee">Monthly Fee</Label>
-                  <Input id="monthlyFee" name="monthlyFee" type="number" step="0.01" defaultValue={editItem?.monthlyFee || ""} />
+                  <Input
+                    id="monthlyFee"
+                    name="monthlyFee"
+                    type="number"
+                    step="0.01"
+                    defaultValue={editItem?.monthlyFee || ""}
+                  />
                 </div>
               </div>
               <div>
@@ -108,13 +155,19 @@ export function RouteList({
               {editItem && (
                 <div>
                   <Label htmlFor="isActive">Active</Label>
-                  <select name="isActive" defaultValue={editItem?.isActive ? "true" : "false"} className="w-full border rounded p-2">
+                  <select
+                    name="isActive"
+                    defaultValue={editItem?.isActive ? "true" : "false"}
+                    className="w-full rounded border p-2"
+                  >
                     <option value="true">Active</option>
                     <option value="false">Inactive</option>
                   </select>
                 </div>
               )}
-              <Button type="submit" className="w-full">{editItem ? "Update" : "Create Route"}</Button>
+              <Button type="submit" className="w-full">
+                {editItem ? "Update" : "Create Route"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -123,23 +176,50 @@ export function RouteList({
       <DataTable
         columns={[
           { header: "Name", accessorKey: "name" },
-          { header: "Vehicle", accessorKey: "vehicle", cell: ({ row }: any) => `${row.vehicle?.plateNumber} (${row.vehicle?.vehicleType})` },
+          {
+            header: "Vehicle",
+            accessorKey: "vehicle",
+            cell: ({ row }: any) => `${row.vehicle?.plateNumber} (${row.vehicle?.vehicleType})`,
+          },
           { header: "Start", accessorKey: "startLocation" },
           { header: "End", accessorKey: "endLocation" },
-          { header: "Pickup", accessorKey: "pickupTime", cell: ({ row }: any) => row.pickupTime || "-" },
+          {
+            header: "Pickup",
+            accessorKey: "pickupTime",
+            cell: ({ row }: any) => row.pickupTime || "-",
+          },
           { header: "Drop", accessorKey: "dropTime", cell: ({ row }: any) => row.dropTime || "-" },
-          { header: "Fee", accessorKey: "monthlyFee", cell: ({ row }: any) => row.monthlyFee ? `$${row.monthlyFee}` : "-" },
-          { header: "Students", accessorKey: "_count", cell: ({ row }: any) => row._count?.assignments || 0 },
-          { header: "Status", accessorKey: "isActive", cell: ({ row }: any) => (
-            <Badge variant={row.isActive ? "default" : "secondary"}>
-              {row.isActive ? "Active" : "Inactive"}
-            </Badge>
-          )},
+          {
+            header: "Fee",
+            accessorKey: "monthlyFee",
+            cell: ({ row }: any) => (row.monthlyFee ? `$${row.monthlyFee}` : "-"),
+          },
+          {
+            header: "Students",
+            accessorKey: "_count",
+            cell: ({ row }: any) => row._count?.assignments || 0,
+          },
+          {
+            header: "Status",
+            accessorKey: "isActive",
+            cell: ({ row }: any) => (
+              <Badge variant={row.isActive ? "default" : "secondary"}>
+                {row.isActive ? "Active" : "Inactive"}
+              </Badge>
+            ),
+          },
           {
             header: "Actions",
             cell: ({ row }: any) => (
               <div className="flex gap-2">
-                <Button variant="ghost" size="icon" onClick={() => { setEditItem(row); setOpen(true) }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setEditItem(row)
+                    setOpen(true)
+                  }}
+                >
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)}>

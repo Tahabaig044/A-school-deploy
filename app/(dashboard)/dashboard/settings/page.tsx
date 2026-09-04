@@ -3,13 +3,11 @@ import { requireRole } from "@/lib/auth"
 import { PageHeader } from "@/components/shared/page-header"
 import { SettingsForm } from "./settings-form"
 import { AttendancePolicyForm } from "./attendance-policy-form"
+import { TwoFactorSettings } from "@/components/two-factor-settings"
 import { getAttendancePolicy } from "@/actions/attendance-settings.actions"
 
 export default async function SettingsPage() {
-  const { profile } = await requireRole(
-    "SUPER_ADMIN",
-    "SCHOOL_ADMIN"
-  )
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN")
 
   const school = profile.schoolId
     ? await prisma.school.findUnique({
@@ -29,14 +27,17 @@ export default async function SettingsPage() {
     ? await getAttendancePolicy(profile.schoolId)
     : "first_period_teacher"
 
+  const userProfile = await prisma.profile.findUnique({
+    where: { id: profile.id },
+    select: { twoFactorEnabled: true },
+  })
+
   return (
     <div className="grid gap-6">
-      <PageHeader
-        title="Settings"
-        description="Manage school profile and application settings"
-      />
+      <PageHeader title="Settings" description="Manage school profile and application settings" />
       <SettingsForm school={school} profileRole={profile.role} />
       <AttendancePolicyForm currentPolicy={attendancePolicy} />
+      <TwoFactorSettings twoFactorEnabled={userProfile?.twoFactorEnabled ?? false} />
     </div>
   )
 }

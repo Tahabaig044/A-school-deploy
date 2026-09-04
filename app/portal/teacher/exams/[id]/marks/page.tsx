@@ -32,11 +32,7 @@ type StudentResult = {
   remarks: string | null
 }
 
-export default function MarksEntryPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default function MarksEntryPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const { toast } = useToast()
   const [exam, setExam] = useState<ExamData | null>(null)
@@ -55,27 +51,23 @@ export default function MarksEntryPage({
     Promise.all([
       fetch(`/api/teacher/exams/${examId}`).then((r) => r.json()),
       fetch(`/api/teacher/exams/${examId}/results`).then((r) => r.json()),
-    ]).then(([examData, resultsData]) => {
-      setExam(examData)
-      setResults(resultsData)
-      setLoading(false)
-    }).catch(() => setLoading(false))
+    ])
+      .then(([examData, resultsData]) => {
+        setExam(examData)
+        setResults(resultsData)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
   }, [examId])
 
   const updateMarks = (studentId: string, marks: number | null) => {
     setResults((prev) =>
-      prev.map((r) =>
-        r.studentId === studentId ? { ...r, marksObtained: marks } : r
-      )
+      prev.map((r) => (r.studentId === studentId ? { ...r, marksObtained: marks } : r)),
     )
   }
 
   const updateRemarks = (studentId: string, remarks: string) => {
-    setResults((prev) =>
-      prev.map((r) =>
-        r.studentId === studentId ? { ...r, remarks } : r
-      )
-    )
+    setResults((prev) => prev.map((r) => (r.studentId === studentId ? { ...r, remarks } : r)))
   }
 
   const saveAll = async () => {
@@ -101,9 +93,9 @@ export default function MarksEntryPage({
     return (
       <div className="space-y-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-64 bg-muted rounded" />
-          <div className="h-4 w-48 bg-muted rounded" />
-          <div className="h-64 bg-muted rounded" />
+          <div className="bg-muted h-8 w-64 rounded" />
+          <div className="bg-muted h-4 w-48 rounded" />
+          <div className="bg-muted h-64 rounded" />
         </div>
       </div>
     )
@@ -132,7 +124,7 @@ export default function MarksEntryPage({
             {exam.isPublished ? "Published" : "Draft"}
           </Badge>
           <Button onClick={saveAll} disabled={saving}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="mr-2 h-4 w-4" />
             {saving ? "Saving..." : "Save All Marks"}
           </Button>
         </div>
@@ -169,7 +161,10 @@ export default function MarksEntryPage({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {results.filter((r) => r.marksObtained !== null && r.marksObtained !== undefined).length}
+              {
+                results.filter((r) => r.marksObtained !== null && r.marksObtained !== undefined)
+                  .length
+              }
             </div>
           </CardContent>
         </Card>
@@ -182,39 +177,48 @@ export default function MarksEntryPage({
         </CardHeader>
         <CardContent>
           {results.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No students found for this exam.</p>
+            <p className="text-muted-foreground text-sm">No students found for this exam.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-2 font-medium">#</th>
-                    <th className="text-left py-2 px-2 font-medium">Student</th>
-                    <th className="text-left py-2 px-2 font-medium">Admission No</th>
-                    <th className="text-center py-2 px-2 font-medium">Marks (/{exam.totalMarks})</th>
-                    <th className="text-left py-2 px-2 font-medium">Remarks</th>
-                    <th className="text-center py-2 px-2 font-medium">Status</th>
+                    <th className="px-2 py-2 text-left font-medium">#</th>
+                    <th className="px-2 py-2 text-left font-medium">Student</th>
+                    <th className="px-2 py-2 text-left font-medium">Admission No</th>
+                    <th className="px-2 py-2 text-center font-medium">
+                      Marks (/{exam.totalMarks})
+                    </th>
+                    <th className="px-2 py-2 text-left font-medium">Remarks</th>
+                    <th className="px-2 py-2 text-center font-medium">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {results.map((result, idx) => (
-                    <tr key={result.studentId} className="border-b hover:bg-muted/50">
-                      <td className="py-2 px-2 text-muted-foreground">{idx + 1}</td>
-                      <td className="py-2 px-2 font-medium">
+                    <tr key={result.studentId} className="hover:bg-muted/50 border-b">
+                      <td className="text-muted-foreground px-2 py-2">{idx + 1}</td>
+                      <td className="px-2 py-2 font-medium">
                         {result.firstName} {result.lastName}
                       </td>
-                      <td className="py-2 px-2 text-muted-foreground">{result.admissionNo || "-"}</td>
-                      <td className="py-2 px-2">
+                      <td className="text-muted-foreground px-2 py-2">
+                        {result.admissionNo || "-"}
+                      </td>
+                      <td className="px-2 py-2">
                         <Input
                           type="number"
                           min="0"
                           max={exam.totalMarks}
                           value={result.marksObtained ?? ""}
-                          onChange={(e) => updateMarks(result.studentId, e.target.value ? Number(e.target.value) : null)}
-                          className="w-24 text-center mx-auto"
+                          onChange={(e) =>
+                            updateMarks(
+                              result.studentId,
+                              e.target.value ? Number(e.target.value) : null,
+                            )
+                          }
+                          className="mx-auto w-24 text-center"
                         />
                       </td>
-                      <td className="py-2 px-2">
+                      <td className="px-2 py-2">
                         <Input
                           value={result.remarks ?? ""}
                           onChange={(e) => updateRemarks(result.studentId, e.target.value)}
@@ -222,10 +226,12 @@ export default function MarksEntryPage({
                           className="w-40"
                         />
                       </td>
-                      <td className="py-2 px-2 text-center">
+                      <td className="px-2 py-2 text-center">
                         {result.marksObtained !== null && result.marksObtained !== undefined ? (
                           result.marksObtained >= exam.passingMarks ? (
-                            <Badge variant="default" className="bg-green-100 text-green-800">Pass</Badge>
+                            <Badge variant="default" className="bg-green-100 text-green-800">
+                              Pass
+                            </Badge>
                           ) : (
                             <Badge variant="destructive">Fail</Badge>
                           )

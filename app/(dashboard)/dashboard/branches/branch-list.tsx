@@ -56,7 +56,10 @@ export function BranchList({ branches }: { branches: Branch[] }) {
       toast({ title: "Branch deleted" })
       router.refresh()
     } catch (e) {
-      toast({ title: e instanceof Error ? e.message : "Failed to delete branch", variant: "destructive" })
+      toast({
+        title: e instanceof Error ? e.message : "Failed to delete branch",
+        variant: "destructive",
+      })
     }
   }
 
@@ -67,7 +70,7 @@ export function BranchList({ branches }: { branches: Branch[] }) {
           <CardTitle>All Branches</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No branches created yet.</p>
+          <p className="text-muted-foreground text-sm">No branches created yet.</p>
         </CardContent>
       </Card>
     )
@@ -101,15 +104,24 @@ export function BranchList({ branches }: { branches: Branch[] }) {
                     <TableCell className="hidden lg:table-cell">{branch.school.name}</TableCell>
                     <TableCell className="hidden lg:table-cell">{branch.address || "-"}</TableCell>
                     <TableCell className="hidden md:table-cell">{branch.phone || "-"}</TableCell>
-                    <TableCell>
-                      {branch.isActive ? "Active" : "Inactive"}
-                    </TableCell>
+                    <TableCell>{branch.isActive ? "Active" : "Inactive"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditItem(branch); setError(null) }}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setEditItem(branch)
+                            setError(null)
+                          }}
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(branch.id, branch.name)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(branch.id, branch.name)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -122,13 +134,21 @@ export function BranchList({ branches }: { branches: Branch[] }) {
         </CardContent>
       </Card>
 
-      <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
+      <Dialog
+        open={!!editItem}
+        onOpenChange={(o) => {
+          if (!o) {
+            setEditItem(null)
+            setError(null)
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Branch</DialogTitle>
           </DialogHeader>
           <form action={handleUpdate} className="space-y-4">
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
             <div className="grid gap-2">
               <Label htmlFor="edit-name">Branch Name</Label>
               <Input id="edit-name" name="name" defaultValue={editItem?.name} required />
@@ -141,17 +161,24 @@ export function BranchList({ branches }: { branches: Branch[] }) {
               <Label htmlFor="edit-address">Address</Label>
               <Input id="edit-address" name="address" defaultValue={editItem?.address || ""} />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-phone">Phone</Label>
                 <Input id="edit-phone" name="phone" defaultValue={editItem?.phone || ""} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-email">Email</Label>
-                <Input id="edit-email" name="email" type="email" defaultValue={editItem?.email || ""} />
+                <Input
+                  id="edit-email"
+                  name="email"
+                  type="email"
+                  defaultValue={editItem?.email || ""}
+                />
               </div>
             </div>
-            <Button type="submit" className="w-full">Update Branch</Button>
+            <Button type="submit" className="w-full">
+              Update Branch
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

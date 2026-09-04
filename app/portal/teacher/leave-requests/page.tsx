@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { useActionState } from "react";
-import { UserCheck, Plus, X, Calendar } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react"
+import { useActionState } from "react"
+import { UserCheck, Plus, X, Calendar } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,26 +16,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import {
   getTeacherLeaveRequests,
   createTeacherLeaveRequest,
   cancelTeacherLeaveRequest,
-} from "@/actions/teacher-portal.actions";
+} from "@/actions/teacher-portal.actions"
 
-type LeaveType = "SICK" | "CASUAL" | "ANNUAL" | "OTHER";
-type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+type LeaveType = "SICK" | "CASUAL" | "ANNUAL" | "OTHER"
+type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"
 
 interface LeaveRequest {
-  id: string;
-  leaveType: LeaveType;
-  startDate: Date;
-  endDate: Date;
-  reason: string;
-  status: LeaveStatus;
-  createdAt: Date;
+  id: string
+  leaveType: LeaveType
+  startDate: Date
+  endDate: Date
+  reason: string
+  status: LeaveStatus
+  createdAt: Date
 }
 
 const leaveTypeLabels: Record<LeaveType, string> = {
@@ -43,63 +43,63 @@ const leaveTypeLabels: Record<LeaveType, string> = {
   CASUAL: "Casual Leave",
   ANNUAL: "Annual Leave",
   OTHER: "Other",
-};
+}
 
 const statusStyles: Record<LeaveStatus, string> = {
   PENDING: "bg-yellow-100 text-yellow-800 border-yellow-200",
   APPROVED: "bg-green-100 text-green-800 border-green-200",
   REJECTED: "bg-red-100 text-red-800 border-red-200",
   CANCELLED: "bg-gray-100 text-gray-800 border-gray-200",
-};
+}
 
 function formatDate(date: Date): string {
   return new Date(date).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
-  });
+  })
 }
 
 const initialState = {
   success: false,
   error: undefined as string | undefined,
-};
+}
 
 export default function TeacherLeaveRequestsPage() {
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [state, formAction] = useActionState(createTeacherLeaveRequest, initialState);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [state, formAction] = useActionState(createTeacherLeaveRequest, initialState)
 
   useEffect(() => {
-    loadLeaveRequests();
-  }, []);
+    loadLeaveRequests()
+  }, [])
 
   useEffect(() => {
     if (state.success) {
-      loadLeaveRequests();
-      setShowForm(false);
+      loadLeaveRequests()
+      setShowForm(false)
     }
-  }, [state.success]);
+  }, [state.success])
 
   async function loadLeaveRequests() {
-    setLoading(true);
+    setLoading(true)
     try {
-      const data = await getTeacherLeaveRequests();
-      setLeaveRequests(data as LeaveRequest[]);
+      const data = await getTeacherLeaveRequests()
+      setLeaveRequests(data as LeaveRequest[])
     } catch {
-      setLeaveRequests([]);
+      setLeaveRequests([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="rounded-lg bg-blue-100 p-2">
               <UserCheck className="h-6 w-6 text-blue-600" />
             </div>
             <div>
@@ -107,10 +107,7 @@ export default function TeacherLeaveRequestsPage() {
               <p className="text-sm text-gray-500">Submit and manage your leave requests</p>
             </div>
           </div>
-          <Button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2"
-          >
+          <Button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2">
             {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
             {showForm ? "Cancel" : "New Leave Request"}
           </Button>
@@ -123,7 +120,7 @@ export default function TeacherLeaveRequestsPage() {
             </CardHeader>
             <CardContent>
               <form action={formAction} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <label htmlFor="leaveType" className="text-sm font-medium text-gray-700">
                       Leave Type
@@ -132,7 +129,7 @@ export default function TeacherLeaveRequestsPage() {
                       id="leaveType"
                       name="leaveType"
                       required
-                      className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
                       <option value="">Select leave type</option>
                       <option value="SICK">Sick Leave</option>
@@ -145,23 +142,13 @@ export default function TeacherLeaveRequestsPage() {
                     <label htmlFor="startDate" className="text-sm font-medium text-gray-700">
                       Start Date
                     </label>
-                    <Input
-                      type="date"
-                      id="startDate"
-                      name="startDate"
-                      required
-                    />
+                    <Input type="date" id="startDate" name="startDate" required />
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="endDate" className="text-sm font-medium text-gray-700">
                       End Date
                     </label>
-                    <Input
-                      type="date"
-                      id="endDate"
-                      name="endDate"
-                      required
-                    />
+                    <Input type="date" id="endDate" name="endDate" required />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -176,9 +163,7 @@ export default function TeacherLeaveRequestsPage() {
                     required
                   />
                 </div>
-                {state.error && (
-                  <p className="text-sm text-red-600">{state.error}</p>
-                )}
+                {state.error && <p className="text-sm text-red-600">{state.error}</p>}
                 <div className="flex justify-end">
                   <Button type="submit">Submit Request</Button>
                 </div>
@@ -193,27 +178,23 @@ export default function TeacherLeaveRequestsPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8 text-gray-500">Loading...</div>
+              <div className="py-8 text-center text-gray-500">Loading...</div>
             ) : leaveRequests.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No leave requests found.
-              </div>
+              <div className="py-8 text-center text-gray-500">No leave requests found.</div>
             ) : (
               <div className="space-y-4">
                 {leaveRequests.map((request) => (
                   <div
                     key={request.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                    className="rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
                   >
-                      <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
                           <h3 className="font-medium text-gray-900">
                             {leaveTypeLabels[request.leaveType]}
                           </h3>
-                          <Badge className={statusStyles[request.status]}>
-                            {request.status}
-                          </Badge>
+                          <Badge className={statusStyles[request.status]}>{request.status}</Badge>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-gray-500">
                           <div className="flex items-center gap-1">
@@ -232,7 +213,11 @@ export default function TeacherLeaveRequestsPage() {
                         {request.status === "PENDING" && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-red-200 text-red-600 hover:bg-red-50"
+                              >
                                 Cancel
                               </Button>
                             </AlertDialogTrigger>
@@ -240,12 +225,18 @@ export default function TeacherLeaveRequestsPage() {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Cancel Leave Request</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Are you sure you want to cancel this {leaveTypeLabels[request.leaveType]}?
+                                  Are you sure you want to cancel this{" "}
+                                  {leaveTypeLabels[request.leaveType]}?
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>No, keep it</AlertDialogCancel>
-                                <AlertDialogAction onClick={async () => { await cancelTeacherLeaveRequest(request.id); loadLeaveRequests(); }}>
+                                <AlertDialogAction
+                                  onClick={async () => {
+                                    await cancelTeacherLeaveRequest(request.id)
+                                    loadLeaveRequests()
+                                  }}
+                                >
                                   Yes, cancel it
                                 </AlertDialogAction>
                               </AlertDialogFooter>
@@ -262,5 +253,5 @@ export default function TeacherLeaveRequestsPage() {
         </Card>
       </div>
     </div>
-  );
+  )
 }

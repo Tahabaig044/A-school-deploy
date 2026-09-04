@@ -15,9 +15,16 @@ const messageSchema = z.object({
 
 export async function sendMessage(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   const schoolId = getSchoolId(profile, formData, "Send Message")
   const receiverIdsRaw = formData.get("receiverIds") as string
@@ -28,13 +35,23 @@ export async function sendMessage(
   } catch {
     receiverId = receiverIdsRaw
   }
-  const subject = formData.get("subject") as string || undefined
+  const subject = (formData.get("subject") as string) || undefined
   const content = formData.get("content") as string
-  const parentMessageId = formData.get("parentMessageId") as string || undefined
+  const parentMessageId = (formData.get("parentMessageId") as string) || undefined
 
   const parsed = messageSchema.safeParse({ schoolId, receiverId, subject, content })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
+  }
+
+  if (profile.role !== "SUPER_ADMIN") {
+    const receiver = await prisma.profile.findUnique({
+      where: { id: receiverId },
+      select: { schoolId: true },
+    })
+    if (!receiver || receiver.schoolId !== schoolId) {
+      return { error: "Receiver not found.", success: false }
+    }
   }
 
   const messageData: any = {
@@ -59,9 +76,16 @@ export async function sendMessage(
 
 export async function saveDraft(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   const schoolId = getSchoolId(profile, formData, "Save Draft")
   const receiverIdsRaw = formData.get("receiverIds") as string
@@ -72,8 +96,18 @@ export async function saveDraft(
   } catch {
     receiverId = receiverIdsRaw || profile.id
   }
-  const subject = formData.get("subject") as string || undefined
+  const subject = (formData.get("subject") as string) || undefined
   const content = formData.get("content") as string
+
+  if (profile.role !== "SUPER_ADMIN" && receiverId !== profile.id) {
+    const receiver = await prisma.profile.findUnique({
+      where: { id: receiverId },
+      select: { schoolId: true },
+    })
+    if (!receiver || receiver.schoolId !== schoolId) {
+      return { error: "Receiver not found.", success: false }
+    }
+  }
 
   const draftData: any = {
     school: { connect: { id: schoolId } },
@@ -92,7 +126,14 @@ export async function saveDraft(
 }
 
 export async function markMessageAsRead(messageId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   await prisma.message.update({
     where: { id: messageId, receiverId: profile.id },
@@ -104,15 +145,19 @@ export async function markMessageAsRead(messageId: string) {
 }
 
 export async function toggleStarMessage(messageId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   const message = await prisma.message.findFirst({
     where: {
       id: messageId,
-      OR: [
-        { senderId: profile.id },
-        { receiverId: profile.id },
-      ],
+      OR: [{ senderId: profile.id }, { receiverId: profile.id }],
     },
   })
 
@@ -128,15 +173,19 @@ export async function toggleStarMessage(messageId: string) {
 }
 
 export async function deleteMessage(messageId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   await prisma.message.update({
     where: {
       id: messageId,
-      OR: [
-        { senderId: profile.id },
-        { receiverId: profile.id },
-      ],
+      OR: [{ senderId: profile.id }, { receiverId: profile.id }],
     },
     data: { isDeleted: true },
   })
@@ -146,15 +195,19 @@ export async function deleteMessage(messageId: string) {
 }
 
 export async function restoreMessage(messageId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   await prisma.message.update({
     where: {
       id: messageId,
-      OR: [
-        { senderId: profile.id },
-        { receiverId: profile.id },
-      ],
+      OR: [{ senderId: profile.id }, { receiverId: profile.id }],
     },
     data: { isDeleted: false },
   })
@@ -164,21 +217,30 @@ export async function restoreMessage(messageId: string) {
 }
 
 export async function getInboxMessages(search?: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.message.findMany({
     where: {
       receiverId: profile.id,
       isDeleted: false,
       isDraft: false,
-      ...(search ? {
-        OR: [
-          { subject: { contains: search, mode: "insensitive" } },
-          { content: { contains: search, mode: "insensitive" } },
-          { sender: { firstName: { contains: search, mode: "insensitive" } } },
-          { sender: { lastName: { contains: search, mode: "insensitive" } } },
-        ],
-      } : {}),
+      ...(search
+        ? {
+            OR: [
+              { subject: { contains: search, mode: "insensitive" } },
+              { content: { contains: search, mode: "insensitive" } },
+              { sender: { firstName: { contains: search, mode: "insensitive" } } },
+              { sender: { lastName: { contains: search, mode: "insensitive" } } },
+            ],
+          }
+        : {}),
     },
     include: {
       sender: { select: { id: true, firstName: true, lastName: true, role: true } },
@@ -188,21 +250,30 @@ export async function getInboxMessages(search?: string) {
 }
 
 export async function getSentMessages(search?: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.message.findMany({
     where: {
       senderId: profile.id,
       isDeleted: false,
       isDraft: false,
-      ...(search ? {
-        OR: [
-          { subject: { contains: search, mode: "insensitive" } },
-          { content: { contains: search, mode: "insensitive" } },
-          { receiver: { firstName: { contains: search, mode: "insensitive" } } },
-          { receiver: { lastName: { contains: search, mode: "insensitive" } } },
-        ],
-      } : {}),
+      ...(search
+        ? {
+            OR: [
+              { subject: { contains: search, mode: "insensitive" } },
+              { content: { contains: search, mode: "insensitive" } },
+              { receiver: { firstName: { contains: search, mode: "insensitive" } } },
+              { receiver: { lastName: { contains: search, mode: "insensitive" } } },
+            ],
+          }
+        : {}),
     },
     include: {
       receiver: { select: { id: true, firstName: true, lastName: true, role: true } },
@@ -212,7 +283,14 @@ export async function getSentMessages(search?: string) {
 }
 
 export async function getDraftMessages() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.message.findMany({
     where: {
@@ -227,14 +305,18 @@ export async function getDraftMessages() {
 }
 
 export async function getArchivedMessages() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.message.findMany({
     where: {
-      OR: [
-        { senderId: profile.id },
-        { receiverId: profile.id },
-      ],
+      OR: [{ senderId: profile.id }, { receiverId: profile.id }],
       isDeleted: true,
     },
     include: {
@@ -246,14 +328,18 @@ export async function getArchivedMessages() {
 }
 
 export async function getStarredMessages() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.message.findMany({
     where: {
-      OR: [
-        { senderId: profile.id },
-        { receiverId: profile.id },
-      ],
+      OR: [{ senderId: profile.id }, { receiverId: profile.id }],
       isStarred: true,
       isDeleted: false,
     },
@@ -266,15 +352,19 @@ export async function getStarredMessages() {
 }
 
 export async function getMessageById(messageId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   const message = await prisma.message.findFirst({
     where: {
       id: messageId,
-      OR: [
-        { senderId: profile.id },
-        { receiverId: profile.id },
-      ],
+      OR: [{ senderId: profile.id }, { receiverId: profile.id }],
     },
     include: {
       sender: { select: { id: true, firstName: true, lastName: true, role: true } },
@@ -304,7 +394,14 @@ export async function getMessageById(messageId: string) {
 }
 
 export async function getUnreadMessageCount() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.message.count({
     where: {
@@ -317,15 +414,19 @@ export async function getUnreadMessageCount() {
 }
 
 export async function getMessageThread(messageId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   const message = await prisma.message.findFirst({
     where: {
       id: messageId,
-      OR: [
-        { senderId: profile.id },
-        { receiverId: profile.id },
-      ],
+      OR: [{ senderId: profile.id }, { receiverId: profile.id }],
     },
     include: {
       sender: { select: { id: true, firstName: true, lastName: true, role: true } },
@@ -334,13 +435,32 @@ export async function getMessageThread(messageId: string) {
 
   if (!message) return null
 
-  const thread = await prisma.message.findMany({
+  const rootMessage = await prisma.message.findUnique({
+    where: { id: messageId },
+    select: { schoolId: true },
+  })
+  if (
+    profile.role !== "SUPER_ADMIN" &&
+    (!rootMessage || rootMessage.schoolId !== profile.schoolId)
+  ) {
+    return null
+  }
+
+  const edges = await prisma.message.findMany({
     where: {
-      OR: [
-        { id: messageId },
-        { parentMessageId: messageId },
-      ],
+      OR: [{ id: messageId }, { parentMessageId: messageId }],
     },
+    select: { id: true, senderId: true, receiverId: true },
+  })
+
+  const allowedIds = new Set(
+    edges
+      .filter((m) => m.senderId === profile.id || m.receiverId === profile.id)
+      .map((m) => m.id),
+  )
+
+  const thread = await prisma.message.findMany({
+    where: { id: { in: [...allowedIds] } },
     include: {
       sender: { select: { id: true, firstName: true, lastName: true, role: true } },
     },

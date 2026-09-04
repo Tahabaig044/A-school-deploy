@@ -2,14 +2,14 @@
 
 ## Bug Information
 
-| Field | Value |
-|-------|-------|
-| Bug ID | BUG_XXX |
-| Title | [Short description] |
-| Severity | Critical/High/Medium/Low |
-| Status | Open/In Progress/Fixed/Closed |
-| Date Reported | [Date] |
-| Reported By | [Name] |
+| Field         | Value                         |
+| ------------- | ----------------------------- |
+| Bug ID        | BUG_XXX                       |
+| Title         | [Short description]           |
+| Severity      | Critical/High/Medium/Low      |
+| Status        | Open/In Progress/Fixed/Closed |
+| Date Reported | [Date]                        |
+| Reported By   | [Name]                        |
 
 ## Description
 

@@ -23,7 +23,7 @@ export default async function ParentHomeworkPage({
         </div>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+            <BookOpen className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-muted-foreground">No children found in your account.</p>
           </CardContent>
         </Card>
@@ -43,7 +43,7 @@ export default async function ParentHomeworkPage({
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {children.map((child) => (
             <Link key={child.id} href={`/portal/parent/homework?student=${child.id}`}>
-              <Card className="transition-colors hover:bg-accent cursor-pointer">
+              <Card className="hover:bg-accent cursor-pointer transition-colors">
                 <CardHeader>
                   <CardTitle className="text-base">
                     {child.firstName} {child.lastName}
@@ -51,12 +51,14 @@ export default async function ParentHomeworkPage({
                 </CardHeader>
                 <CardContent>
                   {child.enrollments[0] ? (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {child.enrollments[0].class.name}
-                      {child.enrollments[0].section ? ` - ${child.enrollments[0].section.name}` : ""}
+                      {child.enrollments[0].section
+                        ? ` - ${child.enrollments[0].section.name}`
+                        : ""}
                     </p>
                   ) : (
-                    <p className="text-sm text-muted-foreground">No active enrollment</p>
+                    <p className="text-muted-foreground text-sm">No active enrollment</p>
                   )}
                 </CardContent>
               </Card>
@@ -90,7 +92,7 @@ export default async function ParentHomeworkPage({
       {homework.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+            <BookOpen className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-muted-foreground">No homework assignments found.</p>
           </CardContent>
         </Card>
@@ -105,17 +107,22 @@ export default async function ParentHomeworkPage({
             return (
               <Card
                 key={hw.id}
-                className={isOverdue ? "border-red-300 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20" : ""}
+                className={
+                  isOverdue
+                    ? "border-red-300 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20"
+                    : ""
+                }
               >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
                       <CardTitle className="text-base">{hw.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {hw.subject?.name ?? "General"} &middot; {hw.teacher?.firstName ?? "Unknown"} {hw.teacher?.lastName ?? ""}
+                      <p className="text-muted-foreground text-sm">
+                        {hw.subject?.name ?? "General"} &middot;{" "}
+                        {hw.teacher?.firstName ?? "Unknown"} {hw.teacher?.lastName ?? ""}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex shrink-0 items-center gap-2">
                       {isOverdue && (
                         <Badge variant="destructive">
                           <AlertCircle className="mr-1 h-3 w-3" />
@@ -144,27 +151,25 @@ export default async function ParentHomeworkPage({
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex flex-wrap items-center gap-4 text-sm">
                     <div className="flex items-center gap-1.5">
                       <CalendarClock className="h-4 w-4" />
                       Due: {new Date(hw.dueDate).toLocaleDateString()}
                     </div>
                     {hw.totalMarks && (
-                      <div className="flex items-center gap-1.5">
-                        Total Marks: {hw.totalMarks}
-                      </div>
+                      <div className="flex items-center gap-1.5">Total Marks: {hw.totalMarks}</div>
                     )}
                     {isGraded && submission.marksObtained != null && (
-                      <div className="font-medium text-foreground">
+                      <div className="text-foreground font-medium">
                         Marks: {submission.marksObtained}/{hw.totalMarks}
                       </div>
                     )}
                   </div>
                   {hw.description && (
-                    <p className="mt-2 text-sm text-muted-foreground">{hw.description}</p>
+                    <p className="text-muted-foreground mt-2 text-sm">{hw.description}</p>
                   )}
                   {submission?.feedback && (
-                    <div className="mt-3 rounded-md bg-muted p-3 text-sm">
+                    <div className="bg-muted mt-3 rounded-md p-3 text-sm">
                       <span className="font-medium">Feedback: </span>
                       {submission.feedback}
                     </div>

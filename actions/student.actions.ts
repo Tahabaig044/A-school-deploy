@@ -89,13 +89,13 @@ async function generateRollNumber(classId: string, academicSessionId: string): P
  */
 export async function createStudent(
   _prevState: ActionResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const schoolId = getSchoolId(profile, formData, "Create Student")
@@ -121,19 +121,31 @@ export async function createStudent(
   const rollNumber = formData.get("rollNumber") as string
 
   // Parent data
-  const parentAction = formData.get("parentAction") as string || "skip"
+  const parentAction = (formData.get("parentAction") as string) || "skip"
   const parentProfileId = formData.get("parentProfileId") as string
   const parentFirstName = formData.get("parentFirstName") as string
   const parentLastName = formData.get("parentLastName") as string
-  const parentRelationship = formData.get("parentRelationship") as string || "FATHER"
+  const parentRelationship = (formData.get("parentRelationship") as string) || "FATHER"
   const parentPhone = formData.get("parentPhone") as string
   const parentEmail = formData.get("parentEmail") as string
   const parentOccupation = formData.get("parentOccupation") as string
 
   const parsed = studentSchema.safeParse({
-    firstName, lastName, dateOfBirth, gender, bloodGroup, religion,
-    nationality, phone, email, address, city, state, postalCode,
-    admissionNo, admissionDate,
+    firstName,
+    lastName,
+    dateOfBirth,
+    gender,
+    bloodGroup,
+    religion,
+    nationality,
+    phone,
+    email,
+    address,
+    city,
+    state,
+    postalCode,
+    admissionNo,
+    admissionDate,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
@@ -178,11 +190,13 @@ export async function createStudent(
     }
   }
 
-  const generatedAdmissionNo = admissionNo || await generateAdmissionNumber(schoolId)
+  const generatedAdmissionNo = admissionNo || (await generateAdmissionNumber(schoolId))
 
-  const generatedRollNumber = rollNumber || (cleanClassId && cleanAcademicSessionId
-    ? await generateRollNumber(cleanClassId, cleanAcademicSessionId)
-    : null)
+  const generatedRollNumber =
+    rollNumber ||
+    (cleanClassId && cleanAcademicSessionId
+      ? await generateRollNumber(cleanClassId, cleanAcademicSessionId)
+      : null)
 
   // Generate invitation token if email provided
   let rawToken: string | null = null
@@ -394,7 +408,10 @@ export async function createStudent(
         console.error("[createStudent] Failed to cleanup auth user:", cleanupErr)
       })
     }
-    return { error: `Failed to create student: ${e?.message || "Please try again."}`, success: false }
+    return {
+      error: `Failed to create student: ${e?.message || "Please try again."}`,
+      success: false,
+    }
   }
 }
 
@@ -432,7 +449,7 @@ export async function approveAndEnrollStudent(admissionId: string) {
     // Generate roll number
     const rollNumber = await generateRollNumber(
       fullAdmission.appliedClassId,
-      fullAdmission.academicSessionId
+      fullAdmission.academicSessionId,
     )
 
     // Generate invitation token
@@ -585,13 +602,13 @@ export async function approveAndEnrollStudent(admissionId: string) {
 export async function updateStudent(
   studentId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole(
     "SUPER_ADMIN",
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const existing = await prisma.student.findUnique({
@@ -621,9 +638,22 @@ export async function updateStudent(
   const status = formData.get("status") as string
 
   const parsed = studentSchema.safeParse({
-    firstName, lastName, dateOfBirth, gender, bloodGroup, religion,
-    nationality, phone, email, address, city, state, postalCode,
-    admissionNo, admissionDate, status,
+    firstName,
+    lastName,
+    dateOfBirth,
+    gender,
+    bloodGroup,
+    religion,
+    nationality,
+    phone,
+    email,
+    address,
+    city,
+    state,
+    postalCode,
+    admissionNo,
+    admissionDate,
+    status,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }

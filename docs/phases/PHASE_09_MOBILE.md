@@ -1,9 +1,11 @@
 # Phase 9: Mobile
 
 ## Duration
+
 3 weeks
 
 ## Objectives
+
 - Build responsive web application
 - Implement PWA features
 - Create mobile-optimized views
@@ -12,6 +14,7 @@
 ## Deliverables
 
 ### Week 1: Responsive Design
+
 1. **Mobile Layouts**
    - Responsive navigation
    - Mobile-optimized forms
@@ -25,6 +28,7 @@
    - Install prompt
 
 ### Week 2: Mobile Features
+
 1. **Mobile-Specific Features**
    - Camera integration
    - Barcode scanning
@@ -37,6 +41,7 @@
    - Notification preferences
 
 ### Week 3: Testing & Optimization
+
 1. **Testing**
    - Cross-device testing
    - Performance testing
@@ -52,6 +57,7 @@
 ## Technical Implementation
 
 ### PWA Configuration
+
 ```json
 // manifest.json
 {
@@ -77,29 +83,25 @@
 ```
 
 ### Service Worker
+
 ```typescript
 // sw.ts
-import { precacheAndRoute } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, CacheFirst } from 'workbox-strategies';
+import { precacheAndRoute } from "workbox-precaching"
+import { registerRoute } from "workbox-routing"
+import { NetworkFirst, CacheFirst } from "workbox-strategies"
 
 // Precache all static assets
-precacheAndRoute(self.__WB_MANIFEST);
+precacheAndRoute(self.__WB_MANIFEST)
 
 // Cache API responses
-registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
-  new NetworkFirst()
-);
+registerRoute(({ url }) => url.pathname.startsWith("/api/"), new NetworkFirst())
 
 // Cache static assets
-registerRoute(
-  ({ request }) => request.destination === 'image',
-  new CacheFirst()
-);
+registerRoute(({ request }) => request.destination === "image", new CacheFirst())
 ```
 
 ### Responsive Breakpoints
+
 ```css
 /* Mobile first approach */
 .container {
@@ -131,6 +133,7 @@ registerRoute(
 ```
 
 ### Mobile Navigation
+
 ```typescript
 // Mobile bottom navigation
 const MobileNav = () => (
@@ -149,18 +152,21 @@ const MobileNav = () => (
 ## Mobile-Optimized Pages
 
 ### Student List (Mobile)
+
 - Card-based layout
 - Infinite scroll
 - Pull-to-refresh
 - Quick actions (swipe)
 
 ### Attendance (Mobile)
+
 - Large touch targets
 - Quick mark buttons
 - Voice input (future)
 - Offline support
 
 ### Messages (Mobile)
+
 - Chat-like interface
 - Quick replies
 - Voice messages (future)
@@ -169,24 +175,28 @@ const MobileNav = () => (
 ## Features
 
 ### PWA Features
+
 - Add to home screen
 - Offline mode
 - Background sync
 - Push notifications
 
 ### Mobile-Specific
+
 - Camera for profile photos
 - Barcode scanning for attendance
 - Shake to refresh
 - Swipe gestures
 
 ### Performance
+
 - Lazy loading images
 - Virtual scrolling
 - Code splitting
 - Prefetching
 
 ## Acceptance Criteria
+
 - [ ] App works on all screen sizes
 - [ ] PWA installable
 - [ ] Offline mode functional
@@ -197,13 +207,15 @@ const MobileNav = () => (
 - [ ] Cross-browser compatible
 
 ## Dependencies
+
 - All previous phases completed
 - Responsive design system ready
 - PWA configuration done
 
 ## Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Browser compatibility | High | Progressive enhancement |
-| Performance on low-end devices | Medium | Optimize bundle size |
-| Offline data sync | Medium | Conflict resolution strategy |
+
+| Risk                           | Impact | Mitigation                   |
+| ------------------------------ | ------ | ---------------------------- |
+| Browser compatibility          | High   | Progressive enhancement      |
+| Performance on low-end devices | Medium | Optimize bundle size         |
+| Offline data sync              | Medium | Conflict resolution strategy |

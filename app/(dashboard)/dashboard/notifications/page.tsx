@@ -9,7 +9,14 @@ export default async function NotificationsPage({
 }: {
   searchParams: Promise<{ page?: string; category?: string }>
 }) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
   const params = await searchParams
   const page = Math.max(1, Number(params.page) || 1)
   const category = params.category || "all"

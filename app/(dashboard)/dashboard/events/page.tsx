@@ -11,10 +11,5 @@ export default async function EventsPage({
 
   const events = await getEvents(eventType)
 
-  return (
-    <EventList
-      events={JSON.parse(JSON.stringify(events))}
-      activeType={eventType || "all"}
-    />
-  )
+  return <EventList events={JSON.parse(JSON.stringify(events))} activeType={eventType || "all"} />
 }

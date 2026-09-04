@@ -21,16 +21,14 @@ export default function GlobalError({
         <div className="flex min-h-screen items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle className="text-center text-destructive">
-                Application Error
-              </CardTitle>
+              <CardTitle className="text-destructive text-center">Application Error</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-center text-muted-foreground">
+              <p className="text-muted-foreground text-center">
                 A critical error occurred. Please refresh the page.
               </p>
               {error.digest && (
-                <p className="text-center text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-center text-xs">
                   Error ID: {error.digest}
                 </p>
               )}

@@ -1,27 +1,32 @@
 # Loop 010: Results
 
 ## Overview
+
 Results module handles exam results processing, grade calculation, report card generation, and result publication.
 
 ## User Stories
 
 ### As an Admin
+
 1. I want to view all results
 2. I want to approve results
 3. I want to generate report cards
 4. I want to publish results
 
 ### As a Teacher
+
 1. I want to enter marks for my subjects
 2. I want to view class performance
 3. I want to add remarks for students
 
 ### As a Student
+
 1. I want to view my results
 2. I want to download my report card
 3. I want to see my grade history
 
 ### As a Parent
+
 1. I want to view my child's results
 2. I want to download report card
 3. I want to see performance trends
@@ -140,29 +145,34 @@ CREATE TABLE grading_scales (
 ## Business Rules
 
 ### Report Number Generation
+
 ```
 Format: RPT{CLASS}{EXAM}{YEAR}{SEQUENCE}
 Example: RPT05MT2024001
 ```
 
 ### Grade Calculation
+
 1. Percentage = (Marks Obtained / Total Marks) × 100
 2. Grade determined from grading scale
 3. Grade points from scale
 4. Overall grade from weighted average
 
 ### Rank Calculation
+
 1. Rank within class based on percentage
 2. Rank within section
 3. Tie-breaking by subject scores
 4. Ranks updated on approval
 
 ### Result Status Flow
+
 ```
 draft → entered → approved → published
 ```
 
 ### Report Card Generation
+
 1. Compile all subject results
 2. Calculate overall metrics
 3. Add attendance data
@@ -173,24 +183,28 @@ draft → entered → approved → published
 ## UI Components
 
 ### Results Dashboard
+
 - Exam selector
 - Class/section filter
 - Statistics cards
 - Quick actions
 
 ### Marks Entry
+
 - Subject-wise entry
 - Bulk entry mode
 - Validation indicators
 - Save/approve buttons
 
 ### Result View
+
 - Student result card
 - Subject-wise breakdown
 - Grade display
 - Rank information
 
 ### Report Card
+
 - School branding
 - Student information
 - Subject table
@@ -199,6 +213,7 @@ draft → entered → approved → published
 - PDF preview/download
 
 ## Reports
+
 1. Class-wise results
 2. Subject-wise analysis
 3. Top performers
@@ -207,6 +222,7 @@ draft → entered → approved → published
 6. Performance trends
 
 ## Acceptance Criteria
+
 - [ ] Results can be entered for all subjects
 - [ ] Grade calculation accurate
 - [ ] Rank calculation correct

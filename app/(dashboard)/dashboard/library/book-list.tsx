@@ -6,7 +6,13 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createBook, updateBook, deleteBook } from "@/actions/library.actions"
@@ -69,9 +75,21 @@ export function BookList({
   return (
     <div className="space-y-6">
       <PageHeader title="Library" description="Manage library books">
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditItem(null); setError(null) } }}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o)
+            if (!o) {
+              setEditItem(null)
+              setError(null)
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Add Book</Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Book
+            </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -79,7 +97,7 @@ export function BookList({
             </DialogHeader>
             <form action={handleSubmit} className="space-y-4">
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="title">Title</Label>
                   <Input id="title" name="title" defaultValue={editItem?.title || ""} required />
@@ -102,7 +120,13 @@ export function BookList({
                 </div>
                 <div>
                   <Label htmlFor="quantity">Quantity</Label>
-                  <Input id="quantity" name="quantity" type="number" defaultValue={editItem?.quantity || 1} required />
+                  <Input
+                    id="quantity"
+                    name="quantity"
+                    type="number"
+                    defaultValue={editItem?.quantity || 1}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="location">Location</Label>
@@ -112,13 +136,19 @@ export function BookList({
               {editItem && (
                 <div>
                   <Label htmlFor="isActive">Active</Label>
-                  <select name="isActive" defaultValue={editItem?.isActive ? "true" : "false"} className="w-full border rounded p-2">
+                  <select
+                    name="isActive"
+                    defaultValue={editItem?.isActive ? "true" : "false"}
+                    className="w-full rounded border p-2"
+                  >
                     <option value="true">Active</option>
                     <option value="false">Inactive</option>
                   </select>
                 </div>
               )}
-              <Button type="submit" className="w-full">{editItem ? "Update" : "Add Book"}</Button>
+              <Button type="submit" className="w-full">
+                {editItem ? "Update" : "Add Book"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -129,19 +159,36 @@ export function BookList({
           { header: "Title", accessorKey: "title" },
           { header: "Author", accessorKey: "author", cell: ({ row }: any) => row.author || "-" },
           { header: "ISBN", accessorKey: "isbn", cell: ({ row }: any) => row.isbn || "-" },
-          { header: "Category", accessorKey: "category", cell: ({ row }: any) => row.category || "-" },
+          {
+            header: "Category",
+            accessorKey: "category",
+            cell: ({ row }: any) => row.category || "-",
+          },
           { header: "Quantity", accessorKey: "quantity" },
-          { header: "Available", accessorKey: "available", cell: ({ row }: any) => (
-            <Badge variant={row.available > 0 ? "default" : "destructive"}>
-              {row.available}
-            </Badge>
-          )},
-          { header: "Location", accessorKey: "location", cell: ({ row }: any) => row.location || "-" },
+          {
+            header: "Available",
+            accessorKey: "available",
+            cell: ({ row }: any) => (
+              <Badge variant={row.available > 0 ? "default" : "destructive"}>{row.available}</Badge>
+            ),
+          },
+          {
+            header: "Location",
+            accessorKey: "location",
+            cell: ({ row }: any) => row.location || "-",
+          },
           {
             header: "Actions",
             cell: ({ row }: any) => (
               <div className="flex gap-2">
-                <Button variant="ghost" size="icon" onClick={() => { setEditItem(row); setOpen(true) }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setEditItem(row)
+                    setOpen(true)
+                  }}
+                >
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)}>

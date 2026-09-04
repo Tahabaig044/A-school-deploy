@@ -24,54 +24,81 @@ export default async function StudentMessagesPage({
   const search = params.search || ""
   const skip = (page - 1) * PAGE_SIZE
 
-  const searchFilter = search ? {
-    OR: [
-      { subject: { contains: search, mode: "insensitive" as const } },
-      { content: { contains: search, mode: "insensitive" as const } },
-    ],
-  } : {}
+  const searchFilter = search
+    ? {
+        OR: [
+          { subject: { contains: search, mode: "insensitive" as const } },
+          { content: { contains: search, mode: "insensitive" as const } },
+        ],
+      }
+    : {}
 
-  const [inbox, sent, drafts, archived, starred, unreadCount, inboxTotal, sentTotal] = await Promise.all([
-    prisma.message.findMany({
-      where: { receiverId: userId, isDeleted: false, isDraft: false, ...searchFilter },
-      include: { sender: { select: { id: true, firstName: true, lastName: true, role: true } } },
-      orderBy: { createdAt: "desc" },
-      skip: tab === "inbox" ? skip : 0,
-      take: tab === "inbox" ? PAGE_SIZE : undefined,
-    }),
-    prisma.message.findMany({
-      where: { senderId: userId, isDeleted: false, isDraft: false, ...searchFilter },
-      include: { receiver: { select: { id: true, firstName: true, lastName: true, role: true } } },
-      orderBy: { createdAt: "desc" },
-      skip: tab === "sent" ? skip : 0,
-      take: tab === "sent" ? PAGE_SIZE : undefined,
-    }),
-    prisma.message.findMany({
-      where: { senderId: userId, isDraft: true },
-      include: { receiver: { select: { id: true, firstName: true, lastName: true, role: true } } },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.message.findMany({
-      where: { OR: [{ senderId: userId }, { receiverId: userId }], isDeleted: true },
-      include: { sender: { select: { id: true, firstName: true, lastName: true, role: true } }, receiver: { select: { id: true, firstName: true, lastName: true, role: true } } },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.message.findMany({
-      where: { OR: [{ senderId: userId }, { receiverId: userId }], isStarred: true, isDeleted: false },
-      include: { sender: { select: { id: true, firstName: true, lastName: true, role: true } }, receiver: { select: { id: true, firstName: true, lastName: true, role: true } } },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.message.count({ where: { receiverId: userId, isRead: false, isDeleted: false, isDraft: false } }),
-    prisma.message.count({ where: { receiverId: userId, isDeleted: false, isDraft: false } }),
-    prisma.message.count({ where: { senderId: userId, isDeleted: false, isDraft: false } }),
-  ])
+  const [inbox, sent, drafts, archived, starred, unreadCount, inboxTotal, sentTotal] =
+    await Promise.all([
+      prisma.message.findMany({
+        where: { receiverId: userId, isDeleted: false, isDraft: false, ...searchFilter },
+        include: { sender: { select: { id: true, firstName: true, lastName: true, role: true } } },
+        orderBy: { createdAt: "desc" },
+        skip: tab === "inbox" ? skip : 0,
+        take: tab === "inbox" ? PAGE_SIZE : undefined,
+      }),
+      prisma.message.findMany({
+        where: { senderId: userId, isDeleted: false, isDraft: false, ...searchFilter },
+        include: {
+          receiver: { select: { id: true, firstName: true, lastName: true, role: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip: tab === "sent" ? skip : 0,
+        take: tab === "sent" ? PAGE_SIZE : undefined,
+      }),
+      prisma.message.findMany({
+        where: { senderId: userId, isDraft: true },
+        include: {
+          receiver: { select: { id: true, firstName: true, lastName: true, role: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.message.findMany({
+        where: { OR: [{ senderId: userId }, { receiverId: userId }], isDeleted: true },
+        include: {
+          sender: { select: { id: true, firstName: true, lastName: true, role: true } },
+          receiver: { select: { id: true, firstName: true, lastName: true, role: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.message.findMany({
+        where: {
+          OR: [{ senderId: userId }, { receiverId: userId }],
+          isStarred: true,
+          isDeleted: false,
+        },
+        include: {
+          sender: { select: { id: true, firstName: true, lastName: true, role: true } },
+          receiver: { select: { id: true, firstName: true, lastName: true, role: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.message.count({
+        where: { receiverId: userId, isRead: false, isDeleted: false, isDraft: false },
+      }),
+      prisma.message.count({ where: { receiverId: userId, isDeleted: false, isDraft: false } }),
+      prisma.message.count({ where: { senderId: userId, isDeleted: false, isDraft: false } }),
+    ])
 
   const tabCounts = {
     inbox: inboxTotal,
     sent: sentTotal,
     drafts: await prisma.message.count({ where: { senderId: userId, isDraft: true } }),
-    archived: await prisma.message.count({ where: { OR: [{ senderId: userId }, { receiverId: userId }], isDeleted: true } }),
-    starred: await prisma.message.count({ where: { OR: [{ senderId: userId }, { receiverId: userId }], isStarred: true, isDeleted: false } }),
+    archived: await prisma.message.count({
+      where: { OR: [{ senderId: userId }, { receiverId: userId }], isDeleted: true },
+    }),
+    starred: await prisma.message.count({
+      where: {
+        OR: [{ senderId: userId }, { receiverId: userId }],
+        isStarred: true,
+        isDeleted: false,
+      },
+    }),
   }
 
   const total = tabCounts[tab as keyof typeof tabCounts] || 0

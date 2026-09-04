@@ -21,7 +21,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { updateTeacher, deleteTeacher, suspendTeacher, activateTeacher } from "@/actions/teacher.actions"
+import {
+  updateTeacher,
+  deleteTeacher,
+  suspendTeacher,
+  activateTeacher,
+} from "@/actions/teacher.actions"
 import { useToast } from "@/hooks/use-toast"
 import { MoreHorizontal, Eye, Pencil, Trash2, UserX, UserCheck } from "lucide-react"
 
@@ -114,7 +119,7 @@ export function TeacherList({
           <CardTitle>All Teachers</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No teachers added yet.</p>
+          <p className="text-muted-foreground text-sm">No teachers added yet.</p>
         </CardContent>
       </Card>
     )
@@ -148,16 +153,26 @@ export function TeacherList({
                       {teacher.firstName} {teacher.lastName}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{teacher.employeeCode}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{teacher.department || "-"}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{teacher.designation || "-"}</TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {teacher.department || "-"}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {teacher.designation || "-"}
+                    </TableCell>
                     <TableCell className="hidden xl:table-cell">{teacher.school.name}</TableCell>
-                    <TableCell className="hidden xl:table-cell">{teacher.assignments.length}</TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      {teacher.assignments.length}
+                    </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        teacher.status === "ACTIVE" ? "bg-green-100 text-green-800" :
-                        teacher.status === "INACTIVE" ? "bg-yellow-100 text-yellow-800" :
-                        "bg-red-100 text-red-800"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          teacher.status === "ACTIVE"
+                            ? "bg-green-100 text-green-800"
+                            : teacher.status === "INACTIVE"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                        }`}
+                      >
                         {teacher.status.charAt(0) + teacher.status.slice(1).toLowerCase()}
                       </span>
                     </TableCell>
@@ -169,27 +184,37 @@ export function TeacherList({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem onClick={() => router.push(`/dashboard/teachers/${teacher.id}`)}>
-                            <Eye className="h-4 w-4 mr-2" />
+                          <DropdownMenuItem
+                            onClick={() => router.push(`/dashboard/teachers/${teacher.id}`)}
+                          >
+                            <Eye className="mr-2 h-4 w-4" />
                             View Profile
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { setEditItem(teacher); setError(null) }}>
-                            <Pencil className="h-4 w-4 mr-2" />
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setEditItem(teacher)
+                              setError(null)
+                            }}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
                           {teacher.status === "ACTIVE" ? (
                             <DropdownMenuItem onClick={() => handleSuspend(teacher.id)}>
-                              <UserX className="h-4 w-4 mr-2" />
+                              <UserX className="mr-2 h-4 w-4" />
                               Suspend
                             </DropdownMenuItem>
                           ) : teacher.status === "INACTIVE" ? (
                             <DropdownMenuItem onClick={() => handleActivate(teacher.id)}>
-                              <UserCheck className="h-4 w-4 mr-2" />
+                              <UserCheck className="mr-2 h-4 w-4" />
                               Activate
                             </DropdownMenuItem>
                           ) : null}
-                          <DropdownMenuItem onClick={() => handleDelete(teacher.id)} className="text-destructive">
-                            <Trash2 className="h-4 w-4 mr-2" />
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(teacher.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -213,7 +238,7 @@ export function TeacherList({
           >
             Previous
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Page {page} of {totalPages}
           </span>
           <Button
@@ -227,69 +252,131 @@ export function TeacherList({
         </div>
       )}
 
-      <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Dialog
+        open={!!editItem}
+        onOpenChange={(o) => {
+          if (!o) {
+            setEditItem(null)
+            setError(null)
+          }
+        }}
+      >
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Teacher</DialogTitle>
           </DialogHeader>
           <form action={handleUpdate} className="space-y-4">
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {error && <p className="text-destructive text-sm">{error}</p>}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-firstName">First Name</Label>
-                <Input id="edit-firstName" name="firstName" defaultValue={editItem?.firstName} required />
+                <Input
+                  id="edit-firstName"
+                  name="firstName"
+                  defaultValue={editItem?.firstName}
+                  required
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-lastName">Last Name</Label>
-                <Input id="edit-lastName" name="lastName" defaultValue={editItem?.lastName} required />
+                <Input
+                  id="edit-lastName"
+                  name="lastName"
+                  defaultValue={editItem?.lastName}
+                  required
+                />
               </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-employeeCode">Employee Code</Label>
-              <Input id="edit-employeeCode" name="employeeCode" defaultValue={editItem?.employeeCode} required />
+              <Input
+                id="edit-employeeCode"
+                name="employeeCode"
+                defaultValue={editItem?.employeeCode}
+                required
+              />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-phone">Phone</Label>
-                <Input id="edit-phone" name="phone" type="tel" defaultValue={editItem?.phone || ""} />
+                <Input
+                  id="edit-phone"
+                  name="phone"
+                  type="tel"
+                  defaultValue={editItem?.phone || ""}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-email">Email</Label>
-                <Input id="edit-email" name="email" type="email" defaultValue={editItem?.email || ""} />
+                <Input
+                  id="edit-email"
+                  name="email"
+                  type="email"
+                  defaultValue={editItem?.email || ""}
+                />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-qualification">Qualification</Label>
-                <Input id="edit-qualification" name="qualification" defaultValue={editItem?.qualification || ""} />
+                <Input
+                  id="edit-qualification"
+                  name="qualification"
+                  defaultValue={editItem?.qualification || ""}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-specialization">Specialization</Label>
-                <Input id="edit-specialization" name="specialization" defaultValue={editItem?.specialization || ""} />
+                <Input
+                  id="edit-specialization"
+                  name="specialization"
+                  defaultValue={editItem?.specialization || ""}
+                />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-designation">Designation</Label>
-                <Input id="edit-designation" name="designation" defaultValue={editItem?.designation || ""} />
+                <Input
+                  id="edit-designation"
+                  name="designation"
+                  defaultValue={editItem?.designation || ""}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-department">Department</Label>
-                <Input id="edit-department" name="department" defaultValue={editItem?.department || ""} />
+                <Input
+                  id="edit-department"
+                  name="department"
+                  defaultValue={editItem?.department || ""}
+                />
               </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-experience">Experience (Years)</Label>
-              <Input id="edit-experience" name="experience" type="number" min="0" defaultValue={editItem?.experience?.toString() || ""} />
+              <Input
+                id="edit-experience"
+                name="experience"
+                type="number"
+                min="0"
+                defaultValue={editItem?.experience?.toString() || ""}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-status">Status</Label>
-              <select id="edit-status" name="status" defaultValue={editItem?.status} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <select
+                id="edit-status"
+                name="status"
+                defaultValue={editItem?.status}
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+              >
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
               </select>
             </div>
-            <Button type="submit" className="w-full">Update Teacher</Button>
+            <Button type="submit" className="w-full">
+              Update Teacher
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

@@ -13,13 +13,8 @@ export default async function ExamPerformanceReportPage({
   const data = await getExamPerformanceReport(
     profile.schoolId!,
     profile.branchId || undefined,
-    params.examId || undefined
+    params.examId || undefined,
   )
 
-  return (
-    <ExamPerformanceReportView
-      data={data}
-      profile={JSON.parse(JSON.stringify(profile))}
-    />
-  )
+  return <ExamPerformanceReportView data={data} profile={JSON.parse(JSON.stringify(profile))} />
 }

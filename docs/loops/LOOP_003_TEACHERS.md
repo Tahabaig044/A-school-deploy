@@ -1,23 +1,27 @@
 # Loop 003: Teachers
 
 ## Overview
+
 Teacher module manages teacher profiles, qualifications, assignments, and schedules. This is essential for academic operations and class management.
 
 ## User Stories
 
 ### As an Admin
+
 1. I want to add new teachers
 2. I want to manage teacher assignments
 3. I want to view teacher workload
 4. I want to manage teacher leave
 
 ### As a Teacher
+
 1. I want to view my profile
 2. I want to see my assigned classes
 3. I want to view my timetable
 4. I want to apply for leave
 
 ### As a Principal
+
 1. I want to view all teachers
 2. I want to approve leave requests
 3. I want to see teacher performance
@@ -126,18 +130,21 @@ CREATE TABLE teacher_leave (
 ## Business Rules
 
 ### Employee ID Generation
+
 ```
 Format: TCH{YEAR}{SEQUENCE}
 Example: TCH2024001 (Year 2024, Teacher 001)
 ```
 
 ### Assignment Rules
+
 - A teacher can be class teacher for one section only
 - A teacher can teach multiple subjects
 - Subject must belong to assigned class
 - No scheduling conflicts allowed
 
 ### Leave Rules
+
 - Maximum 2 days casual leave per month
 - Maximum 12 days sick leave per year
 - Leave requests need principal approval
@@ -146,18 +153,21 @@ Example: TCH2024001 (Year 2024, Teacher 001)
 ## UI Components
 
 ### Teacher List
+
 - Search and filter
 - Department-wise view
 - Status indicators
 - Quick actions
 
 ### Teacher Form
+
 - Multi-step form
 - Qualification details
 - Bank details
 - Document upload
 
 ### Teacher Profile
+
 - Personal information
 - Assigned classes
 - Timetable view
@@ -165,6 +175,7 @@ Example: TCH2024001 (Year 2024, Teacher 001)
 - Performance metrics
 
 ## Acceptance Criteria
+
 - [ ] Teacher can be created with all details
 - [ ] Employee ID auto-generated
 - [ ] Class assignments work correctly

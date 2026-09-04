@@ -10,11 +10,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Clock, MapPin, BookOpen } from "lucide-react"
 
-export default async function PortalLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
   const profile = await getCurrentProfile()
 
@@ -41,12 +37,22 @@ export default async function PortalLayout({
         select: { id: true },
       })
       if (teacher && activeSession) {
-        const dayNames = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]
+        const dayNames = [
+          "SUNDAY",
+          "MONDAY",
+          "TUESDAY",
+          "WEDNESDAY",
+          "THURSDAY",
+          "FRIDAY",
+          "SATURDAY",
+        ]
         const todayDayName = dayNames[new Date().getDay()]
-        const classIds = (await prisma.teacherAssignment.findMany({
-          where: { teacherId: teacher.id, academicSessionId: activeSession.id },
-          select: { classId: true },
-        })).map((a) => a.classId)
+        const classIds = (
+          await prisma.teacherAssignment.findMany({
+            where: { teacherId: teacher.id, academicSessionId: activeSession.id },
+            select: { classId: true },
+          })
+        ).map((a) => a.classId)
         todaySlots = await prisma.timetable.findMany({
           where: {
             academicSessionId: activeSession.id,
@@ -67,19 +73,21 @@ export default async function PortalLayout({
     <div className="flex min-h-full">
       <PortalSidebar role={role} />
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-10 border-b bg-background">
+        <header className="bg-background sticky top-0 z-10 border-b">
           <div className="flex h-16 items-center justify-between px-4 md:px-6">
             <PortalMobileSidebar role={role} />
             {role === "TEACHER" && todaySlots.length > 0 && (
-              <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="text-muted-foreground hidden items-center gap-2 text-sm md:flex">
                 <Clock className="h-4 w-4" />
-                <span>Today: {todaySlots.length} period{todaySlots.length > 1 ? "s" : ""}</span>
+                <span>
+                  Today: {todaySlots.length} period{todaySlots.length > 1 ? "s" : ""}
+                </span>
                 <span className="text-xs">
                   {todaySlots[0]?.startTime} - {todaySlots[todaySlots.length - 1]?.endTime}
                 </span>
               </div>
             )}
-            <div className="flex items-center gap-4 ml-auto">
+            <div className="ml-auto flex items-center gap-4">
               <NotificationsDropdown initialCount={unreadNotificationCount} />
               <UserDropdown
                 email={profile.email || user.email || ""}
@@ -96,32 +104,49 @@ export default async function PortalLayout({
         <main className="flex-1 p-4 md:p-6">
           {role === "TEACHER" && todaySlots.length > 0 && (
             <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Clock className="h-4 w-4 text-primary shrink-0" />
+              <div className="mb-3 flex items-center gap-2">
+                <Clock className="text-primary h-4 w-4 shrink-0" />
                 <h3 className="text-sm font-semibold">Today&apos;s Schedule</h3>
               </div>
-              <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:px-0 snap-x snap-mandatory scrollbar-thin">
+              <div className="-mx-4 flex snap-x snap-mandatory scrollbar-thin flex-wrap gap-2 overflow-x-auto px-4 pb-2 md:px-0">
                 {todaySlots.map((slot) => (
-                  <Card key={slot.id} className={`shrink-0 w-[180px] md:min-w-[200px] snap-start ${slot.isFree ? "border-dashed bg-muted/30" : ""}`}>
-                    <CardContent className="p-3 space-y-1.5">
+                  <Card
+                    key={slot.id}
+                    className={`w-[180px] shrink-0 snap-start md:min-w-[200px] ${slot.isFree ? "bg-muted/30 border-dashed" : ""}`}
+                  >
+                    <CardContent className="space-y-1.5 p-3">
                       <div className="flex items-center justify-between gap-1">
-                        <Badge variant="secondary" className="text-xs shrink-0">{slot.startTime}</Badge>
-                        <span className="text-xs text-muted-foreground">{slot.endTime}</span>
+                        <Badge variant="secondary" className="shrink-0 text-xs">
+                          {slot.startTime}
+                        </Badge>
+                        <span className="text-muted-foreground text-xs">{slot.endTime}</span>
                       </div>
                       {slot.isFree ? (
-                        <div className="flex items-center gap-1 min-w-0">
-                          <Badge variant="outline" className="text-xs text-muted-foreground shrink-0">Free</Badge>
-                          {slot.freePeriodReason && <span className="text-xs text-muted-foreground truncate">{slot.freePeriodReason}</span>}
+                        <div className="flex min-w-0 items-center gap-1">
+                          <Badge
+                            variant="outline"
+                            className="text-muted-foreground shrink-0 text-xs"
+                          >
+                            Free
+                          </Badge>
+                          {slot.freePeriodReason && (
+                            <span className="text-muted-foreground truncate text-xs">
+                              {slot.freePeriodReason}
+                            </span>
+                          )}
                         </div>
                       ) : (
-                        <p className="font-medium text-sm truncate">{slot.subject?.name}</p>
+                        <p className="truncate text-sm font-medium">{slot.subject?.name}</p>
                       )}
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+                      <div className="text-muted-foreground flex min-w-0 items-center gap-2 text-xs">
                         <BookOpen className="h-3 w-3 shrink-0" />
-                        <span className="truncate">{slot.class.name}{slot.section ? ` - ${slot.section.name}` : ""}</span>
+                        <span className="truncate">
+                          {slot.class.name}
+                          {slot.section ? ` - ${slot.section.name}` : ""}
+                        </span>
                       </div>
                       {slot.room && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <div className="text-muted-foreground flex items-center gap-1 text-xs">
                           <MapPin className="h-3 w-3 shrink-0" />
                           <span className="truncate">{slot.room}</span>
                         </div>

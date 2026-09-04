@@ -5,11 +5,7 @@ import { SectionForm } from "./section-form"
 import { SectionList } from "./section-list"
 import { ClassTeacherForm } from "./class-teacher-form"
 
-export default async function ClassDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function ClassDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
   const { id } = await params
 
@@ -43,7 +39,9 @@ export default async function ClassDetailPage({
     <div className="grid gap-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">{classData.name}</h2>
-        <p className="text-muted-foreground">{classData.school.name} — Code: {classData.code}</p>
+        <p className="text-muted-foreground">
+          {classData.school.name} — Code: {classData.code}
+        </p>
       </div>
       <ClassTeacherForm
         classId={id}

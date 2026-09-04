@@ -2,7 +2,15 @@ import { getStudentHomework } from "@/actions/student-portal.actions"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { CalendarClock, CheckCircle, Clock, AlertCircle, BookOpen, ArrowRight, RotateCcw } from "lucide-react"
+import {
+  CalendarClock,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  BookOpen,
+  ArrowRight,
+  RotateCcw,
+} from "lucide-react"
 import Link from "next/link"
 
 const statusStyles: Record<string, string> = {
@@ -25,9 +33,9 @@ export default async function StudentHomeworkPage() {
       {homework.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+            <BookOpen className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-lg font-medium">No homework assigned</p>
-            <p className="text-sm text-muted-foreground">Check back later for new assignments</p>
+            <p className="text-muted-foreground text-sm">Check back later for new assignments</p>
           </CardContent>
         </Card>
       ) : (
@@ -39,12 +47,12 @@ export default async function StudentHomeworkPage() {
             return (
               <Link key={hw.id} href={`/portal/student/homework/${hw.id}`}>
                 <Card
-                  className={`transition-colors hover:bg-accent cursor-pointer ${status === "NOT_SUBMITTED" && hw.isOverdue ? "border-red-300 bg-red-50/50" : ""}`}
+                  className={`hover:bg-accent cursor-pointer transition-colors ${status === "NOT_SUBMITTED" && hw.isOverdue ? "border-red-300 bg-red-50/50" : ""}`}
                 >
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                     <div className="space-y-1">
                       <CardTitle className="text-lg">{hw.title}</CardTitle>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="text-muted-foreground flex items-center gap-2 text-sm">
                         <BookOpen className="h-3.5 w-3.5" />
                         <span>{hw.subject?.name ?? "General"}</span>
                         <span className="text-muted-foreground/50">•</span>
@@ -60,21 +68,32 @@ export default async function StudentHomeworkPage() {
                         </Badge>
                       )}
                       <Badge className={statusStyles[status] || "bg-gray-100"}>
-                        {status === "GRADED" ? <CheckCircle className="mr-1 h-3 w-3" /> :
-                          status === "SUBMITTED" ? <Clock className="mr-1 h-3 w-3" /> :
-                          status === "LATE" ? <AlertCircle className="mr-1 h-3 w-3" /> :
-                          status === "RETURNED" ? <RotateCcw className="mr-1 h-3 w-3" /> : null}
-                        {status === "GRADED" ? "Graded" :
-                          status === "SUBMITTED" ? "Submitted" :
-                          status === "LATE" ? "Late" :
-                          status === "RETURNED" ? "Returned" :
-                          hw.isOverdue ? "Overdue" : "Pending"}
+                        {status === "GRADED" ? (
+                          <CheckCircle className="mr-1 h-3 w-3" />
+                        ) : status === "SUBMITTED" ? (
+                          <Clock className="mr-1 h-3 w-3" />
+                        ) : status === "LATE" ? (
+                          <AlertCircle className="mr-1 h-3 w-3" />
+                        ) : status === "RETURNED" ? (
+                          <RotateCcw className="mr-1 h-3 w-3" />
+                        ) : null}
+                        {status === "GRADED"
+                          ? "Graded"
+                          : status === "SUBMITTED"
+                            ? "Submitted"
+                            : status === "LATE"
+                              ? "Late"
+                              : status === "RETURNED"
+                                ? "Returned"
+                                : hw.isOverdue
+                                  ? "Overdue"
+                                  : "Pending"}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <div className="text-muted-foreground flex items-center gap-1.5">
                         <CalendarClock className="h-3.5 w-3.5" />
                         <span>
                           Due:{" "}
@@ -86,7 +105,7 @@ export default async function StudentHomeworkPage() {
                           })}
                         </span>
                       </div>
-                      <span className="flex items-center gap-1 text-primary">
+                      <span className="text-primary flex items-center gap-1">
                         View Details <ArrowRight className="h-3 w-3" />
                       </span>
                     </div>

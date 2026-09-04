@@ -1,7 +1,18 @@
 "use client"
 
 import { useState, useEffect, useActionState } from "react"
-import { Calendar, Clock, MapPin, Plus, X, CheckCircle2, Ban, MessageSquare, Download, Pencil } from "lucide-react"
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Plus,
+  X,
+  CheckCircle2,
+  Ban,
+  MessageSquare,
+  Download,
+  Pencil,
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,7 +45,12 @@ const meetingTypeLabels: Record<string, string> = {
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
 }
 
 function formatTime(dateStr: string) {
@@ -55,10 +71,15 @@ export default function TeacherMeetingsPage() {
   const [reschedStart, setReschedStart] = useState("")
   const [reschedEnd, setReschedEnd] = useState("")
 
-  useEffect(() => { loadMeetings() }, [])
+  useEffect(() => {
+    loadMeetings()
+  }, [])
 
   useEffect(() => {
-    if (state?.success) { loadMeetings(); setShowForm(false) }
+    if (state?.success) {
+      loadMeetings()
+      setShowForm(false)
+    }
   }, [state?.success])
 
   async function loadMeetings() {
@@ -115,7 +136,7 @@ export default function TeacherMeetingsPage() {
           <p className="text-muted-foreground">Schedule and manage parent-teacher meetings</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? <X className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+          {showForm ? <X className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
           {showForm ? "Cancel" : "New Meeting"}
         </Button>
       </div>
@@ -132,10 +153,15 @@ export default function TeacherMeetingsPage() {
                 <Label htmlFor="title">Title *</Label>
                 <Input id="title" name="title" placeholder="e.g. Parent-Teacher Meeting" required />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="meetingType">Type *</Label>
-                  <select id="meetingType" name="meetingType" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                  <select
+                    id="meetingType"
+                    name="meetingType"
+                    className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                    required
+                  >
                     <option value="PARENT_TEACHER">Parent-Teacher</option>
                     <option value="STAFF">Staff</option>
                     <option value="DEPARTMENT">Department</option>
@@ -146,7 +172,7 @@ export default function TeacherMeetingsPage() {
                   <Input id="location" name="location" placeholder="Room 101" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="startDateTime">Start *</Label>
                   <Input id="startDateTime" name="startDateTime" type="datetime-local" required />
@@ -158,14 +184,25 @@ export default function TeacherMeetingsPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="parentProfileId">Attendee Profile ID</Label>
-                <Input id="parentProfileId" name="parentProfileId" placeholder="Optional parent profile ID" />
+                <Input
+                  id="parentProfileId"
+                  name="parentProfileId"
+                  placeholder="Optional parent profile ID"
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="description">Description</Label>
-                <Textarea id="description" name="description" rows={3} placeholder="Meeting agenda..." />
+                <Textarea
+                  id="description"
+                  name="description"
+                  rows={3}
+                  placeholder="Meeting agenda..."
+                />
               </div>
-              {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-              <Button type="submit" disabled={pending}>{pending ? "Creating..." : "Create Meeting"}</Button>
+              {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
+              <Button type="submit" disabled={pending}>
+                {pending ? "Creating..." : "Create Meeting"}
+              </Button>
             </form>
           </CardContent>
         </Card>
@@ -173,46 +210,64 @@ export default function TeacherMeetingsPage() {
 
       <div className="space-y-4">
         {loading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading meetings...</div>
+          <div className="text-muted-foreground py-8 text-center">Loading meetings...</div>
         ) : meetings.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+              <Calendar className="text-muted-foreground mb-4 h-12 w-12" />
               <p className="text-lg font-medium">No meetings</p>
-              <p className="text-sm text-muted-foreground">No meetings scheduled yet.</p>
+              <p className="text-muted-foreground text-sm">No meetings scheduled yet.</p>
             </CardContent>
           </Card>
         ) : (
           meetings.map((meeting) => (
             <Card key={meeting.id}>
               <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
+                <div className="mb-3 flex items-start justify-between">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="mb-1 flex items-center gap-2">
                       <h3 className="font-semibold">{meeting.title}</h3>
                       <Badge className={statusStyles[meeting.status]}>{meeting.status}</Badge>
-                      <Badge variant="outline">{meetingTypeLabels[meeting.meetingType] || meeting.meetingType}</Badge>
+                      <Badge variant="outline">
+                        {meetingTypeLabels[meeting.meetingType] || meeting.meetingType}
+                      </Badge>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(meeting.startDateTime)}</span>
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatTime(meeting.startDateTime)} - {formatTime(meeting.endDateTime)}</span>
-                      {meeting.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{meeting.location}</span>}
+                    <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {formatDate(meeting.startDateTime)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatTime(meeting.startDateTime)} - {formatTime(meeting.endDateTime)}
+                      </span>
+                      {meeting.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {meeting.location}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 {meeting.description && (
-                  <p className="text-sm text-muted-foreground mb-3">{meeting.description}</p>
+                  <p className="text-muted-foreground mb-3 text-sm">{meeting.description}</p>
                 )}
 
-                <div className="flex items-center gap-2 mb-3 text-sm">
-                  <span className="text-muted-foreground">By {meeting.createdBy?.firstName} {meeting.createdBy?.lastName} ({meeting.createdBy?.role})</span>
+                <div className="mb-3 flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">
+                    By {meeting.createdBy?.firstName} {meeting.createdBy?.lastName} (
+                    {meeting.createdBy?.role})
+                  </span>
                   <span className="text-muted-foreground">|</span>
-                  <span className="text-muted-foreground">{meeting._count?.notes || 0} note(s)</span>
+                  <span className="text-muted-foreground">
+                    {meeting._count?.notes || 0} note(s)
+                  </span>
                 </div>
 
                 {meeting.attendees?.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="mb-3 flex flex-wrap gap-2">
                     {meeting.attendees.map((a: any) => (
                       <Badge key={a.id} variant="secondary" className="text-xs">
                         {a.profile.firstName} {a.profile.lastName} ({a.profile.role}) - {a.status}
@@ -221,42 +276,61 @@ export default function TeacherMeetingsPage() {
                   </div>
                 )}
 
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="mb-3 flex flex-wrap gap-2">
                   {(meeting.status === "PENDING" || meeting.status === "APPROVED") && (
-                    <Button variant="outline" size="sm" onClick={() => handleStatusChange(meeting.id, "COMPLETED")}>
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStatusChange(meeting.id, "COMPLETED")}
+                    >
+                      <CheckCircle2 className="mr-1 h-3 w-3" />
                       Complete
                     </Button>
                   )}
-                  {meeting.status !== "CANCELLED" && meeting.status !== "REJECTED" && meeting.status !== "COMPLETED" && (
-                    <>
-                      <Button variant="outline" size="sm" onClick={() => handleCancel(meeting.id)}>
-                        <Ban className="h-3 w-3 mr-1" />
-                        Cancel
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => {
-                        setRescheduleDialog(meeting)
-                        setReschedStart(new Date(meeting.startDateTime).toISOString().slice(0, 16))
-                        setReschedEnd(new Date(meeting.endDateTime).toISOString().slice(0, 16))
-                      }}>
-                        <Clock className="h-3 w-3 mr-1" />
-                        Reschedule
-                      </Button>
-                    </>
-                  )}
+                  {meeting.status !== "CANCELLED" &&
+                    meeting.status !== "REJECTED" &&
+                    meeting.status !== "COMPLETED" && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCancel(meeting.id)}
+                        >
+                          <Ban className="mr-1 h-3 w-3" />
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setRescheduleDialog(meeting)
+                            setReschedStart(
+                              new Date(meeting.startDateTime).toISOString().slice(0, 16),
+                            )
+                            setReschedEnd(new Date(meeting.endDateTime).toISOString().slice(0, 16))
+                          }}
+                        >
+                          <Clock className="mr-1 h-3 w-3" />
+                          Reschedule
+                        </Button>
+                      </>
+                    )}
                   <Button variant="ghost" size="sm" onClick={() => handleDownloadIcs(meeting.id)}>
-                    <Download className="h-3 w-3 mr-1" />
+                    <Download className="mr-1 h-3 w-3" />
                     Calendar
                   </Button>
                 </div>
 
                 {meeting.notes?.length > 0 && (
-                  <div className="border rounded-md p-3 mb-3 bg-muted/30">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Recent Notes</p>
+                  <div className="bg-muted/30 mb-3 rounded-md border p-3">
+                    <p className="text-muted-foreground mb-2 text-xs font-medium">Recent Notes</p>
                     {meeting.notes.slice(0, 3).map((note: any) => (
-                      <div key={note.id} className="text-sm mb-1">
-                        <span className="font-medium">{note.author?.firstName}:</span> {note.content}
-                        <span className="text-xs text-muted-foreground ml-2">{new Date(note.createdAt).toLocaleString()}</span>
+                      <div key={note.id} className="mb-1 text-sm">
+                        <span className="font-medium">{note.author?.firstName}:</span>{" "}
+                        {note.content}
+                        <span className="text-muted-foreground ml-2 text-xs">
+                          {new Date(note.createdAt).toLocaleString()}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -267,10 +341,12 @@ export default function TeacherMeetingsPage() {
                     name="content"
                     placeholder="Add a note..."
                     value={noteText[meeting.id] || ""}
-                    onChange={(e) => setNoteText((prev) => ({ ...prev, [meeting.id]: e.target.value }))}
+                    onChange={(e) =>
+                      setNoteText((prev) => ({ ...prev, [meeting.id]: e.target.value }))
+                    }
                   />
                   <Button type="submit" size="sm" variant="secondary">
-                    <MessageSquare className="h-4 w-4 mr-1" />
+                    <MessageSquare className="mr-1 h-4 w-4" />
                     Add
                   </Button>
                 </form>
@@ -289,13 +365,23 @@ export default function TeacherMeetingsPage() {
             <div className="space-y-4">
               <div>
                 <Label>New Start</Label>
-                <Input type="datetime-local" value={reschedStart} onChange={(e) => setReschedStart(e.target.value)} />
+                <Input
+                  type="datetime-local"
+                  value={reschedStart}
+                  onChange={(e) => setReschedStart(e.target.value)}
+                />
               </div>
               <div>
                 <Label>New End</Label>
-                <Input type="datetime-local" value={reschedEnd} onChange={(e) => setReschedEnd(e.target.value)} />
+                <Input
+                  type="datetime-local"
+                  value={reschedEnd}
+                  onChange={(e) => setReschedEnd(e.target.value)}
+                />
               </div>
-              <Button onClick={handleReschedule} className="w-full">Reschedule</Button>
+              <Button onClick={handleReschedule} className="w-full">
+                Reschedule
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

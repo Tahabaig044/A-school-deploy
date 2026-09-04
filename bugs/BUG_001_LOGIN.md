@@ -2,14 +2,14 @@
 
 ## Bug Information
 
-| Field | Value |
-|-------|-------|
-| Bug ID | BUG_001 |
-| Title | Login fails with special characters in password |
-| Severity | High |
-| Status | Open |
-| Date Reported | [Date] |
-| Reported By | [Name] |
+| Field         | Value                                           |
+| ------------- | ----------------------------------------------- |
+| Bug ID        | BUG_001                                         |
+| Title         | Login fails with special characters in password |
+| Severity      | High                                            |
+| Status        | Open                                            |
+| Date Reported | [Date]                                          |
+| Reported By   | [Name]                                          |
 
 ## Description
 

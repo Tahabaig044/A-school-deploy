@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import { requireAuth } from "@/lib/auth"
+import { requireAuth, requireRole } from "@/lib/auth"
 import { z } from "zod"
 
 async function getTeacherRecord() {
@@ -48,6 +48,9 @@ export async function getTeacherClasses() {
 export async function getTeacherStudents(classId: string, sectionId?: string) {
   const { user, teacher } = await getTeacherRecord()
   if (!user || !teacher) return []
+
+  const cls = await prisma.class.findUnique({ where: { id: classId }, select: { schoolId: true } })
+  if (!cls || cls.schoolId !== teacher.schoolId) return []
 
   const activeSession = await prisma.academicSession.findFirst({
     where: { schoolId: teacher.schoolId, isCurrent: true },
@@ -225,7 +228,7 @@ export async function cancelTeacherLeaveRequest(leaveId: string) {
 
 export async function createTeacherLeaveRequest(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { user } = await getTeacherRecord()
   if (!user) return { error: "Not authenticated.", success: false }
@@ -264,7 +267,7 @@ export async function getTeacherProfile() {
 
 export async function updateTeacherProfile(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { user, teacher } = await getTeacherRecord()
   if (!user) return { error: "Not authenticated.", success: false }
@@ -289,7 +292,8 @@ export async function updateTeacherProfile(
       await prisma.teacher.update({
         where: { id: teacher.id },
         data: {
-          firstName, lastName,
+          firstName,
+          lastName,
           phone: phone || null,
           address: address || null,
         },
@@ -304,8 +308,18 @@ export async function updateTeacherProfile(
 }
 
 export async function getActiveSessionId(schoolId: string) {
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+  )
+
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId
+
   const session = await prisma.academicSession.findFirst({
-    where: { schoolId, isCurrent: true },
+    where: { schoolId: effectiveSchoolId!, isCurrent: true },
     select: { id: true },
   })
   return session?.id
@@ -409,11 +423,7 @@ export async function getTeacherDashboardStats() {
     where: {
       schoolId: teacher.schoolId,
       isPublished: true,
-      OR: [
-        { audience: "ALL" },
-        { audience: "TEACHERS" },
-        { audience: "SCHOOL" },
-      ],
+      OR: [{ audience: "ALL" }, { audience: "TEACHERS" }, { audience: "SCHOOL" }],
     },
     orderBy: { createdAt: "desc" },
     take: 5,
@@ -523,7 +533,7 @@ export async function getTeacherStudentDetail(studentId: string) {
   if (!activeSession) return null
 
   const student = await prisma.student.findFirst({
-    where: { id: studentId },
+    where: { id: studentId, schoolId: teacher.schoolId },
     include: {
       enrollments: {
         where: { status: "ACTIVE", academicSessionId: activeSession.id },
@@ -552,7 +562,8 @@ export async function getTeacherStudentDetail(studentId: string) {
 
   const totalAttendanceDays = student.attendance.length
   const presentDays = student.attendance.filter((a) => a.status === "PRESENT").length
-  const attendancePercentage = totalAttendanceDays > 0 ? Math.round((presentDays / totalAttendanceDays) * 100) : 0
+  const attendancePercentage =
+    totalAttendanceDays > 0 ? Math.round((presentDays / totalAttendanceDays) * 100) : 0
 
   return {
     ...student,
@@ -608,18 +619,18 @@ const homeworkSchema = z.object({
 
 export async function createTeacherHomework(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { user, teacher } = await getTeacherRecord()
   if (!user || !teacher) return { error: "Not authenticated.", success: false }
 
   const title = formData.get("title") as string
-  const description = formData.get("description") as string || undefined
+  const description = (formData.get("description") as string) || undefined
   const dueDate = formData.get("dueDate") as string
   const totalMarksStr = formData.get("totalMarks") as string
   const totalMarks = totalMarksStr ? Number(totalMarksStr) : undefined
   const classId = formData.get("classId") as string
-  const sectionId = formData.get("sectionId") as string || undefined
+  const sectionId = (formData.get("sectionId") as string) || undefined
   const subjectId = formData.get("subjectId") as string
 
   const parsed = homeworkSchema.safeParse({ title, description, dueDate, totalMarks })
@@ -665,13 +676,13 @@ export async function createTeacherHomework(
 export async function updateTeacherHomework(
   homeworkId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { user, teacher } = await getTeacherRecord()
   if (!user || !teacher) return { error: "Not authenticated.", success: false }
 
   const title = formData.get("title") as string
-  const description = formData.get("description") as string || undefined
+  const description = (formData.get("description") as string) || undefined
   const dueDate = formData.get("dueDate") as string
   const totalMarksStr = formData.get("totalMarks") as string
   const totalMarks = totalMarksStr ? Number(totalMarksStr) : undefined
@@ -702,6 +713,13 @@ export async function getTeacherHomeworkSubmissions(homeworkId: string) {
   const { user, teacher } = await getTeacherRecord()
   if (!user || !teacher) return []
 
+  const homework = await prisma.homework.findUnique({
+    where: { id: homeworkId },
+    select: { teacherId: true, schoolId: true },
+  })
+  if (!homework) return []
+  if (homework.teacherId !== teacher.id || homework.schoolId !== teacher.schoolId) return []
+
   return prisma.homeworkSubmission.findMany({
     where: { homeworkId },
     include: {
@@ -714,20 +732,23 @@ export async function getTeacherHomeworkSubmissions(homeworkId: string) {
 
 export async function gradeTeacherHomeworkSubmission(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { user, teacher } = await getTeacherRecord()
   if (!user || !teacher) return { error: "Not authenticated.", success: false }
 
   const submissionId = formData.get("submissionId") as string
   const marksObtained = Number(formData.get("marksObtained") as string)
-  const feedback = formData.get("feedback") as string || undefined
+  const feedback = (formData.get("feedback") as string) || undefined
 
   const submission = await prisma.homeworkSubmission.findUnique({
     where: { id: submissionId },
-    include: { homework: true },
+    include: { homework: { select: { teacherId: true, totalMarks: true } } },
   })
   if (!submission) return { error: "Submission not found.", success: false }
+  if (submission.homework.teacherId !== teacher.id) {
+    return { error: "Not authorized to grade this submission.", success: false }
+  }
   if (submission.homework.totalMarks && marksObtained > submission.homework.totalMarks) {
     return { error: "Marks cannot exceed total marks.", success: false }
   }
@@ -745,7 +766,7 @@ export async function gradeTeacherHomeworkSubmission(
 
 export async function returnHomeworkForResubmission(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { user, teacher } = await getTeacherRecord()
   if (!user || !teacher) return { error: "Not authenticated.", success: false }
@@ -793,21 +814,31 @@ export async function getTeacherHomeworkById(homeworkId: string) {
 
 export async function createTeacherMeeting(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { user, teacher, profile } = await getTeacherRecord()
   if (!user || !teacher || !profile) return { error: "Not authenticated.", success: false }
 
   const title = formData.get("title") as string
-  const description = formData.get("description") as string || undefined
+  const description = (formData.get("description") as string) || undefined
   const meetingType = formData.get("meetingType") as string
   const startDateTime = formData.get("startDateTime") as string
   const endDateTime = formData.get("endDateTime") as string
-  const location = formData.get("location") as string || undefined
+  const location = (formData.get("location") as string) || undefined
   const parentProfileId = formData.get("parentProfileId") as string
 
   if (!title || !startDateTime || !endDateTime) {
     return { error: "Title, start and end time are required.", success: false }
+  }
+
+  if (parentProfileId) {
+    const parentProfile = await prisma.parent.findFirst({
+      where: { profileId: parentProfileId, schoolId: teacher.schoolId },
+      select: { id: true },
+    })
+    if (!parentProfile) {
+      return { error: "Selected parent does not belong to this school.", success: false }
+    }
   }
 
   try {
@@ -850,11 +881,15 @@ export async function createTeacherMeeting(
 }
 
 export async function updateTeacherMeetingStatus(meetingId: string, status: string) {
-  const { user } = await getTeacherRecord()
-  if (!user) return { error: "Not authenticated.", success: false }
+  const { user, profile } = await getTeacherRecord()
+  if (!user || !profile) return { error: "Not authenticated.", success: false }
 
-  const meeting = await prisma.meeting.findUnique({
-    where: { id: meetingId },
+  const meeting = await prisma.meeting.findFirst({
+    where: {
+      id: meetingId,
+      schoolId: profile.schoolId!,
+      OR: [{ createdById: user.id }, { attendees: { some: { profileId: user.id } } }],
+    },
     select: { title: true, attendees: { select: { profileId: true } }, createdById: true },
   })
   if (!meeting) return { error: "Meeting not found.", success: false }
@@ -885,7 +920,7 @@ export async function updateTeacherMeetingStatus(meetingId: string, status: stri
 
 export async function addTeacherMeetingNote(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { user } = await getTeacherRecord()
   if (!user) return { error: "Not authenticated.", success: false }
@@ -893,7 +928,17 @@ export async function addTeacherMeetingNote(
   const meetingId = formData.get("meetingId") as string
   const content = formData.get("content") as string
 
-  if (!meetingId || !content) return { error: "Meeting ID and content are required.", success: false }
+  if (!meetingId || !content)
+    return { error: "Meeting ID and content are required.", success: false }
+
+  const meeting = await prisma.meeting.findFirst({
+    where: {
+      id: meetingId,
+      OR: [{ createdById: user.id }, { attendees: { some: { profileId: user.id } } }],
+    },
+    select: { id: true },
+  })
+  if (!meeting) return { error: "Meeting not found.", success: false }
 
   await prisma.meetingNote.create({
     data: { meetingId, authorId: user.id, content },

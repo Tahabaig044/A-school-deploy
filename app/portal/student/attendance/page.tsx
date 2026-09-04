@@ -31,8 +31,18 @@ const MONTH_NAMES = [
 ]
 
 const STATUS_CONFIG = {
-  PRESENT: { label: "Present", variant: "success" as const, icon: CheckCircle, color: "text-emerald-600" },
-  ABSENT: { label: "Absent", variant: "destructive" as const, icon: XCircle, color: "text-red-600" },
+  PRESENT: {
+    label: "Present",
+    variant: "success" as const,
+    icon: CheckCircle,
+    color: "text-emerald-600",
+  },
+  ABSENT: {
+    label: "Absent",
+    variant: "destructive" as const,
+    icon: XCircle,
+    color: "text-red-600",
+  },
   LATE: { label: "Late", variant: "warning" as const, icon: Clock, color: "text-amber-600" },
   LEAVE: { label: "Leave", variant: "info" as const, icon: AlertCircle, color: "text-blue-600" },
 }
@@ -55,7 +65,8 @@ export default async function StudentAttendancePage({
   const params = await searchParams
   const now = new Date()
   const currentMonth = params.month ? parseInt(params.month) : now.getMonth()
-  const safeMonth = isNaN(currentMonth) || currentMonth < 0 || currentMonth > 11 ? now.getMonth() : currentMonth
+  const safeMonth =
+    isNaN(currentMonth) || currentMonth < 0 || currentMonth > 11 ? now.getMonth() : currentMonth
 
   const prevMonth = safeMonth === 0 ? 11 : safeMonth - 1
   const nextMonth = safeMonth === 11 ? 0 : safeMonth + 1
@@ -85,7 +96,9 @@ export default async function StudentAttendancePage({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Attendance</h2>
-          <p className="text-muted-foreground">{MONTH_NAMES[safeMonth]} {now.getFullYear()}</p>
+          <p className="text-muted-foreground">
+            {MONTH_NAMES[safeMonth]} {now.getFullYear()}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" asChild>
@@ -101,7 +114,7 @@ export default async function StudentAttendancePage({
         </div>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((stat) => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -111,7 +124,7 @@ export default async function StudentAttendancePage({
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
               {stat.label !== "Total Days" && (
-                <p className="text-xs text-muted-foreground">{pct(stat.value)}% of total</p>
+                <p className="text-muted-foreground text-xs">{pct(stat.value)}% of total</p>
               )}
             </CardContent>
           </Card>
@@ -124,7 +137,7 @@ export default async function StudentAttendancePage({
         </CardHeader>
         <CardContent>
           {records.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="text-muted-foreground py-8 text-center">
               No attendance records found for {MONTH_NAMES[safeMonth]}.
             </p>
           ) : (
@@ -148,7 +161,7 @@ export default async function StudentAttendancePage({
                             day: "numeric",
                           })}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {record.class.name}
                           {record.section ? ` - ${record.section.name}` : ""}
                         </p>
@@ -156,7 +169,7 @@ export default async function StudentAttendancePage({
                     </div>
                     <div className="flex items-center gap-3">
                       {record.remarks && (
-                        <p className="text-sm text-muted-foreground hidden sm:block">
+                        <p className="text-muted-foreground hidden text-sm sm:block">
                           {record.remarks}
                         </p>
                       )}

@@ -5,7 +5,22 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 import { getBulkStudentIdCardData, verifyIdCardToken } from "@/services/id-card"
 
-export async function getStudentsForQrCards(schoolId: string, classId: string, sectionId?: string, sessionId?: string) {
+export async function getStudentsForQrCards(
+  schoolId: string,
+  classId: string,
+  sectionId?: string,
+  sessionId?: string,
+) {
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
+  if (profile.role !== "SUPER_ADMIN" && profile.schoolId && profile.schoolId !== schoolId) {
+    return []
+  }
   return getBulkStudentIdCardData(schoolId, classId, sectionId, sessionId)
 }
 
@@ -13,9 +28,15 @@ export async function markAttendanceByQr(
   token: string,
   classId: string,
   sectionId: string | null,
-  academicSessionId: string
+  academicSessionId: string,
 ) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
 
   const verification = await verifyIdCardToken(token, {
     role: profile.role,
@@ -88,16 +109,24 @@ export async function markAttendanceByQr(
 }
 
 export async function getClassesAndSessions(schoolId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
+
+  const effectiveSchoolId = profile.role === "SUPER_ADMIN" ? schoolId : profile.schoolId!
 
   const [classes, sessions] = await Promise.all([
     prisma.class.findMany({
-      where: profile.role === "SUPER_ADMIN" ? {} : { schoolId },
+      where: profile.role === "SUPER_ADMIN" ? {} : { schoolId: effectiveSchoolId },
       include: { sections: { select: { id: true, name: true } } },
       orderBy: { order: "asc" },
     }),
     prisma.academicSession.findMany({
-      where: { schoolId, isCurrent: true },
+      where: { schoolId: effectiveSchoolId, isCurrent: true },
       select: { id: true, name: true },
     }),
   ])

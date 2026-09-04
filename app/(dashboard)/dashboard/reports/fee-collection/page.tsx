@@ -14,13 +14,8 @@ export default async function FeeCollectionReportPage({
     profile.schoolId!,
     profile.branchId || undefined,
     params.fromDate || undefined,
-    params.toDate || undefined
+    params.toDate || undefined,
   )
 
-  return (
-    <FeeCollectionReportView
-      data={data}
-      profile={JSON.parse(JSON.stringify(profile))}
-    />
-  )
+  return <FeeCollectionReportView data={data} profile={JSON.parse(JSON.stringify(profile))} />
 }

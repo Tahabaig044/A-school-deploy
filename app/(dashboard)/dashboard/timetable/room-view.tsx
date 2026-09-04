@@ -7,8 +7,12 @@ import { Badge } from "@/components/ui/badge"
 import { MapPin } from "lucide-react"
 
 const DAY_LABELS: Record<string, string> = {
-  MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed",
-  THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat",
+  MONDAY: "Mon",
+  TUESDAY: "Tue",
+  WEDNESDAY: "Wed",
+  THURSDAY: "Thu",
+  FRIDAY: "Fri",
+  SATURDAY: "Sat",
 }
 
 export function RoomView({ academicSessionId }: { academicSessionId: string }) {
@@ -26,18 +30,18 @@ export function RoomView({ academicSessionId }: { academicSessionId: string }) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold flex items-center gap-2">
+      <h3 className="flex items-center gap-2 text-lg font-semibold">
         <MapPin className="h-5 w-5" />
         Room Utilization
       </h3>
       {rooms.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">No rooms with scheduled classes.</p>
+        <p className="text-muted-foreground py-8 text-center">No rooms with scheduled classes.</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room) => (
             <Card key={room.room}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center justify-between">
+                <CardTitle className="flex items-center justify-between text-base">
                   <span>{room.room}</span>
                   <Badge variant="secondary">{room.totalSlots} slots</Badge>
                 </CardTitle>
@@ -49,7 +53,9 @@ export function RoomView({ academicSessionId }: { academicSessionId: string }) {
                       <span className="text-muted-foreground">
                         {DAY_LABELS[b.dayOfWeek]} {b.startTime}-{b.endTime}
                       </span>
-                      <span className="font-medium">{b.isFree ? "Free Period" : b.subject?.name}</span>
+                      <span className="font-medium">
+                        {b.isFree ? "Free Period" : b.subject?.name}
+                      </span>
                       <span className="text-muted-foreground">{b.class.name}</span>
                     </div>
                   ))}

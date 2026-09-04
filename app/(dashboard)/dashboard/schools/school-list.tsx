@@ -65,7 +65,10 @@ export function SchoolList({
       toast({ title: "School deleted" })
       router.refresh()
     } catch (e) {
-      toast({ title: e instanceof Error ? e.message : "Failed to delete school", variant: "destructive" })
+      toast({
+        title: e instanceof Error ? e.message : "Failed to delete school",
+        variant: "destructive",
+      })
     }
   }
 
@@ -76,7 +79,7 @@ export function SchoolList({
           <CardTitle>All Schools</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No schools created yet.</p>
+          <p className="text-muted-foreground text-sm">No schools created yet.</p>
         </CardContent>
       </Card>
     )
@@ -110,15 +113,24 @@ export function SchoolList({
                     <TableCell className="hidden lg:table-cell">{school.address || "-"}</TableCell>
                     <TableCell className="hidden md:table-cell">{school.phone || "-"}</TableCell>
                     <TableCell className="hidden lg:table-cell">{school.email || "-"}</TableCell>
-                    <TableCell>
-                      {school.isActive ? "Active" : "Inactive"}
-                    </TableCell>
+                    <TableCell>{school.isActive ? "Active" : "Inactive"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditItem(school); setError(null) }}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setEditItem(school)
+                            setError(null)
+                          }}
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(school.id, school.name)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(school.id, school.name)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -141,7 +153,7 @@ export function SchoolList({
           >
             Previous
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Page {page} of {totalPages}
           </span>
           <Button
@@ -155,13 +167,21 @@ export function SchoolList({
         </div>
       )}
 
-      <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
+      <Dialog
+        open={!!editItem}
+        onOpenChange={(o) => {
+          if (!o) {
+            setEditItem(null)
+            setError(null)
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit School</DialogTitle>
           </DialogHeader>
           <form action={handleUpdate} className="space-y-4">
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
             <div className="grid gap-2">
               <Label htmlFor="edit-name">School Name</Label>
               <Input id="edit-name" name="name" defaultValue={editItem?.name} required />
@@ -174,17 +194,24 @@ export function SchoolList({
               <Label htmlFor="edit-address">Address</Label>
               <Input id="edit-address" name="address" defaultValue={editItem?.address || ""} />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-phone">Phone</Label>
                 <Input id="edit-phone" name="phone" defaultValue={editItem?.phone || ""} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-email">Email</Label>
-                <Input id="edit-email" name="email" type="email" defaultValue={editItem?.email || ""} />
+                <Input
+                  id="edit-email"
+                  name="email"
+                  type="email"
+                  defaultValue={editItem?.email || ""}
+                />
               </div>
             </div>
-            <Button type="submit" className="w-full">Update School</Button>
+            <Button type="submit" className="w-full">
+              Update School
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

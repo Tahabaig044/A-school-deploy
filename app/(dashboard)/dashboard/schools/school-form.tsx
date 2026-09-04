@@ -16,7 +16,7 @@ export function SchoolForm() {
         <CardTitle>Add New School</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4 max-w-md">
+        <form action={formAction} className="grid max-w-md gap-4">
           <div className="grid gap-2">
             <Label htmlFor="name">School Name</Label>
             <Input id="name" name="name" required />

@@ -1,54 +1,56 @@
-import { getParentChildren, getChildResults } from '@/actions/parent-portal.actions';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { GraduationCap, CheckCircle, XCircle, Award, BookOpen, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
+import { getParentChildren, getChildResults } from "@/actions/parent-portal.actions"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { GraduationCap, CheckCircle, XCircle, Award, BookOpen, ChevronRight } from "lucide-react"
+import Link from "next/link"
 
 const gradeLabels: Record<string, string> = {
-  A_PLUS: 'A+',
-  A: 'A',
-  B_PLUS: 'B+',
-  B: 'B',
-  C_PLUS: 'C+',
-  C: 'C',
-  D: 'D',
-  F: 'F',
-};
+  A_PLUS: "A+",
+  A: "A",
+  B_PLUS: "B+",
+  B: "B",
+  C_PLUS: "C+",
+  C: "C",
+  D: "D",
+  F: "F",
+}
 
 function formatDate(date: string | Date) {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
 }
 
 export default async function ParentResultsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ student?: string }>;
+  searchParams: Promise<{ student?: string }>
 }) {
-  const { student: studentId } = await searchParams;
-  const children = await getParentChildren();
+  const { student: studentId } = await searchParams
+  const children = await getParentChildren()
 
   if (!studentId) {
     return (
-      <div className="container mx-auto py-8 px-4 max-w-5xl">
-        <h1 className="text-2xl font-bold mb-6">Exam Results</h1>
+      <div className="container mx-auto max-w-5xl px-4 py-8">
+        <h1 className="mb-6 text-2xl font-bold">Exam Results</h1>
         <p className="text-muted-foreground mb-4">Select a child to view their exam results.</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {children.map((child) => (
             <Link key={child.id} href={`/portal/parent/results?student=${child.id}`}>
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <Card className="cursor-pointer transition-shadow hover:shadow-md">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <GraduationCap className="h-5 w-5 text-primary" />
+                    <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
+                      <GraduationCap className="text-primary h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-medium">{child.firstName} {child.lastName}</p>
-                      <p className="text-sm text-muted-foreground">View results</p>
+                      <p className="font-medium">
+                        {child.firstName} {child.lastName}
+                      </p>
+                      <p className="text-muted-foreground text-sm">View results</p>
                     </div>
                   </div>
                 </CardContent>
@@ -57,58 +59,58 @@ export default async function ParentResultsPage({
           ))}
         </div>
       </div>
-    );
+    )
   }
 
-  const results = await getChildResults(studentId);
-  const selectedChild = children.find((c) => c.id === studentId);
+  const results = await getChildResults(studentId)
+  const selectedChild = children.find((c) => c.id === studentId)
 
-  const totalResults = results.length;
+  const totalResults = results.length
   const passedResults = results.filter((r) => {
-    const marks = Number(r.marksObtained);
-    return marks >= Number(r.exam.passingMarks);
-  }).length;
-  const failedResults = totalResults - passedResults;
-  const passRate = totalResults > 0 ? Math.round((passedResults / totalResults) * 100) : 0;
+    const marks = Number(r.marksObtained)
+    return marks >= Number(r.exam.passingMarks)
+  }).length
+  const failedResults = totalResults - passedResults
+  const passRate = totalResults > 0 ? Math.round((passedResults / totalResults) * 100) : 0
 
   const averagePercentage =
     totalResults > 0
       ? Math.round(
           results.reduce((sum, r) => {
-            const marks = Number(r.marksObtained);
-            const total = Number(r.exam.totalMarks);
-            return sum + (total > 0 ? (marks / total) * 100 : 0);
-          }, 0) / totalResults
+            const marks = Number(r.marksObtained)
+            const total = Number(r.exam.totalMarks)
+            return sum + (total > 0 ? (marks / total) * 100 : 0)
+          }, 0) / totalResults,
         )
-      : 0;
+      : 0
 
-  const groupedByType: Record<string, typeof results> = {};
+  const groupedByType: Record<string, typeof results> = {}
   for (const result of results) {
-    const typeName = result.exam.examType.name;
-    if (!groupedByType[typeName]) groupedByType[typeName] = [];
-    groupedByType[typeName].push(result);
+    const typeName = result.exam.examType.name
+    if (!groupedByType[typeName]) groupedByType[typeName] = []
+    groupedByType[typeName].push(result)
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="container mx-auto max-w-5xl px-4 py-8">
+      <div className="mb-6 flex items-center gap-3">
         <Button asChild variant="ghost" size="sm">
           <Link href="/portal/parent/results">
-            <ChevronRight className="h-4 w-4 rotate-180 mr-1" />
+            <ChevronRight className="mr-1 h-4 w-4 rotate-180" />
             Back
           </Link>
         </Button>
         <h1 className="text-2xl font-bold">
           {selectedChild
             ? `${selectedChild.firstName} ${selectedChild.lastName}'s Results`
-            : 'Results'}
+            : "Results"}
         </h1>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Exams</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">Total Exams</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -119,7 +121,7 @@ export default async function ParentResultsPage({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pass Rate</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">Pass Rate</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -130,7 +132,7 @@ export default async function ParentResultsPage({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Passed</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">Passed</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -141,7 +143,7 @@ export default async function ParentResultsPage({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Average</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">Average</CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-2xl font-bold">{averagePercentage}%</span>
@@ -161,45 +163,43 @@ export default async function ParentResultsPage({
             <Card key={typeName}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5 text-primary" />
+                  <GraduationCap className="text-primary h-5 w-5" />
                   {typeName}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {typeResults.map((result) => {
-                    const marks = Number(result.marksObtained);
-                    const total = Number(result.exam.totalMarks);
-                    const passing = Number(result.exam.passingMarks);
-                    const passed = marks >= passing;
-                    const percentage = total > 0 ? Math.round((marks / total) * 100) : 0;
+                    const marks = Number(result.marksObtained)
+                    const total = Number(result.exam.totalMarks)
+                    const passing = Number(result.exam.passingMarks)
+                    const passed = marks >= passing
+                    const percentage = total > 0 ? Math.round((marks / total) * 100) : 0
 
                     return (
                       <div
                         key={result.id}
-                        className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 border rounded-lg"
+                        className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
                       >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium truncate">{result.exam.name}</p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="truncate font-medium">{result.exam.name}</p>
                             <Badge variant="secondary">{result.exam.subject.name}</Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1">
+                          <p className="text-muted-foreground mt-1 text-sm">
                             {result.exam.examDate ? formatDate(result.exam.examDate) : "No date"}
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 shrink-0">
+                        <div className="flex shrink-0 items-center gap-4">
                           <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Marks</p>
+                            <p className="text-muted-foreground text-sm">Marks</p>
                             <p className="font-semibold">
                               {marks} / {total}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Grade</p>
-                            <Badge
-                              variant={passed ? 'success' : 'destructive'}
-                            >
+                            <p className="text-muted-foreground text-sm">Grade</p>
+                            <Badge variant={passed ? "success" : "destructive"}>
                               {result.grade ? gradeLabels[result.grade] || result.grade : "N/A"}
                             </Badge>
                           </div>
@@ -212,7 +212,7 @@ export default async function ParentResultsPage({
                           </div>
                         </div>
                       </div>
-                    );
+                    )
                   })}
                 </div>
               </CardContent>
@@ -221,5 +221,5 @@ export default async function ParentResultsPage({
         </div>
       )}
     </div>
-  );
+  )
 }

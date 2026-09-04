@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const unauthorized = err instanceof Error && err.message === "Unauthorized"
     return NextResponse.json(
       { error: unauthorized ? "Unauthorized" : "Forbidden" },
-      { status: unauthorized ? 401 : 403 }
+      { status: unauthorized ? 401 : 403 },
     )
   }
 
@@ -33,7 +33,10 @@ export async function POST(request: Request) {
     if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 })
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json({ error: "File type not allowed. Accepted: PDF, DOCX, DOC, Images, TXT" }, { status: 400 })
+      return NextResponse.json(
+        { error: "File type not allowed. Accepted: PDF, DOCX, DOC, Images, TXT" },
+        { status: 400 },
+      )
     }
     if (file.size > MAX_SIZE) {
       return NextResponse.json({ error: "File too large. Max 10MB" }, { status: 400 })

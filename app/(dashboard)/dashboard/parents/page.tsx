@@ -16,14 +16,27 @@ export default async function ParentsPage({
   const skip = (page - 1) * PAGE_SIZE
   const search = params.search || ""
 
-  const where = profile.role === "SUPER_ADMIN"
-    ? search
-      ? { OR: [{ firstName: { contains: search, mode: "insensitive" as const } }, { lastName: { contains: search, mode: "insensitive" as const } }] }
-      : {}
-    : {
-        schoolId: profile.schoolId!,
-        ...(search ? { OR: [{ firstName: { contains: search, mode: "insensitive" as const } }, { lastName: { contains: search, mode: "insensitive" as const } }] } : {}),
-      }
+  const where =
+    profile.role === "SUPER_ADMIN"
+      ? search
+        ? {
+            OR: [
+              { firstName: { contains: search, mode: "insensitive" as const } },
+              { lastName: { contains: search, mode: "insensitive" as const } },
+            ],
+          }
+        : {}
+      : {
+          schoolId: profile.schoolId!,
+          ...(search
+            ? {
+                OR: [
+                  { firstName: { contains: search, mode: "insensitive" as const } },
+                  { lastName: { contains: search, mode: "insensitive" as const } },
+                ],
+              }
+            : {}),
+        }
 
   const [parents, total] = await Promise.all([
     prisma.parent.findMany({

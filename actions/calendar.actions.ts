@@ -21,21 +21,21 @@ const calendarEventSchema = z.object({
 
 export async function createCalendarEvent(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
   const schoolId = getSchoolId(profile, formData, "Create Calendar Event")
 
   const title = formData.get("title") as string
-  const description = formData.get("description") as string || undefined
+  const description = (formData.get("description") as string) || undefined
   const eventType = formData.get("eventType") as string
   const startDate = formData.get("startDate") as string
   const endDate = formData.get("endDate") as string
   const isAllDay = formData.get("isAllDay") === "true"
-  const startTime = formData.get("startTime") as string || undefined
-  const endTime = formData.get("endTime") as string || undefined
-  const color = formData.get("color") as string || undefined
-  const academicSessionId = formData.get("academicSessionId") as string || undefined
+  const startTime = (formData.get("startTime") as string) || undefined
+  const endTime = (formData.get("endTime") as string) || undefined
+  const color = (formData.get("color") as string) || undefined
+  const academicSessionId = (formData.get("academicSessionId") as string) || undefined
 
   const parsed = calendarEventSchema.safeParse({
     title,
@@ -82,19 +82,28 @@ export async function createCalendarEvent(
 export async function updateCalendarEvent(
   eventId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
   const title = formData.get("title") as string
-  const description = formData.get("description") as string || undefined
+  const description = (formData.get("description") as string) || undefined
   const eventType = formData.get("eventType") as string
   const startDate = formData.get("startDate") as string
   const endDate = formData.get("endDate") as string
   const isAllDay = formData.get("isAllDay") === "true"
-  const startTime = formData.get("startTime") as string || undefined
-  const endTime = formData.get("endTime") as string || undefined
-  const color = formData.get("color") as string || undefined
+  const startTime = (formData.get("startTime") as string) || undefined
+  const endTime = (formData.get("endTime") as string) || undefined
+  const color = (formData.get("color") as string) || undefined
+
+  const existing = await prisma.calendarEvent.findUnique({
+    where: { id: eventId },
+    select: { schoolId: true },
+  })
+  if (!existing) return { error: "Calendar event not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
 
   await prisma.calendarEvent.update({
     where: { id: eventId },
@@ -118,6 +127,15 @@ export async function updateCalendarEvent(
 export async function deleteCalendarEvent(eventId: string) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
+  const existing = await prisma.calendarEvent.findUnique({
+    where: { id: eventId },
+    select: { schoolId: true },
+  })
+  if (!existing) return { error: "Calendar event not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && existing.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
+  }
+
   await prisma.calendarEvent.delete({
     where: { id: eventId },
   })
@@ -127,14 +145,25 @@ export async function deleteCalendarEvent(eventId: string) {
 }
 
 export async function getCalendarEvents(startDate?: string, endDate?: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
-  const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-  const end = endDate ? new Date(endDate) : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
+  const start = startDate
+    ? new Date(startDate)
+    : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+  const end = endDate
+    ? new Date(endDate)
+    : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
 
   return prisma.calendarEvent.findMany({
     where: {
-      schoolId: profile.schoolId!,
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
       startDate: { lte: end },
       endDate: { gte: start },
     },
@@ -146,10 +175,20 @@ export async function getCalendarEvents(startDate?: string, endDate?: string) {
 }
 
 export async function getCalendarEventById(eventId: string) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.calendarEvent.findFirst({
-    where: { id: eventId },
+    where: {
+      id: eventId,
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
+    },
     include: {
       createdBy: { select: { firstName: true, lastName: true } },
     },
@@ -157,11 +196,18 @@ export async function getCalendarEventById(eventId: string) {
 }
 
 export async function getHolidays() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.calendarEvent.findMany({
     where: {
-      schoolId: profile.schoolId!,
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
       eventType: "HOLIDAY",
       endDate: { gte: new Date() },
     },
@@ -170,11 +216,18 @@ export async function getHolidays() {
 }
 
 export async function getExamSchedule() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT", "STUDENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "STUDENT",
+  )
 
   return prisma.calendarEvent.findMany({
     where: {
-      schoolId: profile.schoolId!,
+      ...(profile.role === "SUPER_ADMIN" ? {} : { schoolId: profile.schoolId! }),
       eventType: "EXAM",
       endDate: { gte: new Date() },
     },

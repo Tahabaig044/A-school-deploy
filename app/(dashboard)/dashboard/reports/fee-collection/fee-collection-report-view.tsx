@@ -9,13 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
-export function FeeCollectionReportView({
-  data,
-  profile,
-}: {
-  data: any
-  profile: any
-}) {
+export function FeeCollectionReportView({ data, profile }: { data: any; profile: any }) {
   const router = useRouter()
   const [fromDate, setFromDate] = useState("")
   const [toDate, setToDate] = useState("")
@@ -29,14 +23,17 @@ export function FeeCollectionReportView({
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Fee Collection Report" description="Fee collection and payment statistics" />
+      <PageHeader
+        title="Fee Collection Report"
+        description="Fee collection and payment statistics"
+      />
 
       <Card>
         <CardHeader>
           <CardTitle>Filter by Date Range</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 items-end">
+          <div className="flex items-end gap-4">
             <div>
               <Label htmlFor="fromDate">From Date</Label>
               <Input
@@ -66,7 +63,9 @@ export function FeeCollectionReportView({
             <CardTitle className="text-sm">Total Collected</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">${data.totalCollected.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-green-600">
+              ${data.totalCollected.toLocaleString()}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -99,10 +98,10 @@ export function FeeCollectionReportView({
           <CardTitle>Payment History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="rounded-lg border">
             <table className="w-full">
               <thead>
-                <tr className="border-b bg-muted/50">
+                <tr className="bg-muted/50 border-b">
                   <th className="p-3 text-left">Receipt No</th>
                   <th className="p-3 text-left">Student</th>
                   <th className="p-3 text-left">Amount</th>
@@ -118,7 +117,9 @@ export function FeeCollectionReportView({
                       {payment.invoice?.student?.firstName} {payment.invoice?.student?.lastName}
                     </td>
                     <td className="p-3">${Number(payment.amount).toLocaleString()}</td>
-                    <td className="p-3"><Badge>{payment.paymentMode}</Badge></td>
+                    <td className="p-3">
+                      <Badge>{payment.paymentMode}</Badge>
+                    </td>
                     <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString()}</td>
                   </tr>
                 ))}

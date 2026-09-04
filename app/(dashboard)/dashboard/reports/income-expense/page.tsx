@@ -14,13 +14,8 @@ export default async function IncomeExpenseReportPage({
     profile.schoolId!,
     profile.branchId || undefined,
     params.fromDate || undefined,
-    params.toDate || undefined
+    params.toDate || undefined,
   )
 
-  return (
-    <IncomeExpenseReportView
-      data={data}
-      profile={JSON.parse(JSON.stringify(profile))}
-    />
-  )
+  return <IncomeExpenseReportView data={data} profile={JSON.parse(JSON.stringify(profile))} />
 }

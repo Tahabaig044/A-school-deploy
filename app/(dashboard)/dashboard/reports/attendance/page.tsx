@@ -14,13 +14,8 @@ export default async function AttendanceReportPage({
     profile.schoolId!,
     profile.branchId || undefined,
     params.fromDate || undefined,
-    params.toDate || undefined
+    params.toDate || undefined,
   )
 
-  return (
-    <AttendanceReportView
-      data={data}
-      profile={JSON.parse(JSON.stringify(profile))}
-    />
-  )
+  return <AttendanceReportView data={data} profile={JSON.parse(JSON.stringify(profile))} />
 }

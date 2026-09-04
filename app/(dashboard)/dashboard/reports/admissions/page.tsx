@@ -1,4 +1,8 @@
-import { getAdmissionStats, getAdmissionsByClass, getAdmissionsByMonth } from "@/actions/admission.actions"
+import {
+  getAdmissionStats,
+  getAdmissionsByClass,
+  getAdmissionsByMonth,
+} from "@/actions/admission.actions"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -39,7 +43,9 @@ export default async function AdmissionsReportPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Applications</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">
+              Total Applications
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.total}</div>
@@ -47,7 +53,7 @@ export default async function AdmissionsReportPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">This Month</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">This Month</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.thisMonth}</div>
@@ -55,7 +61,7 @@ export default async function AdmissionsReportPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Enrolled</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">Enrolled</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">{stats.approved}</div>
@@ -63,7 +69,7 @@ export default async function AdmissionsReportPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">Pending</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
@@ -78,16 +84,18 @@ export default async function AdmissionsReportPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {Object.entries(stats).filter(([key]) => !["total", "thisMonth"].includes(key)).map(([key, value]) => (
-                <div key={key} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge className={statusColors[key.toUpperCase()] || ""}>
-                      {key.replace(/([A-Z])/g, " $1").trim()}
-                    </Badge>
+              {Object.entries(stats)
+                .filter(([key]) => !["total", "thisMonth"].includes(key))
+                .map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Badge className={statusColors[key.toUpperCase()] || ""}>
+                        {key.replace(/([A-Z])/g, " $1").trim()}
+                      </Badge>
+                    </div>
+                    <span className="font-bold">{value as number}</span>
                   </div>
-                  <span className="font-bold">{value as number}</span>
-                </div>
-              ))}
+                ))}
             </div>
           </CardContent>
         </Card>
@@ -129,11 +137,13 @@ export default async function AdmissionsReportPage() {
           <div className="space-y-3">
             {byMonth.map((item) => (
               <div key={item.month} className="flex items-center gap-4">
-                <span className="w-24 text-sm text-muted-foreground">{item.month}</span>
+                <span className="text-muted-foreground w-24 text-sm">{item.month}</span>
                 <div className="flex-1">
                   <div
-                    className="h-6 bg-blue-500 rounded"
-                    style={{ width: `${Math.max((item.count / Math.max(...byMonth.map((m) => m.count), 1)) * 100, 2)}%` }}
+                    className="h-6 rounded bg-blue-500"
+                    style={{
+                      width: `${Math.max((item.count / Math.max(...byMonth.map((m) => m.count), 1)) * 100, 2)}%`,
+                    }}
                   />
                 </div>
                 <span className="w-12 text-right font-bold">{item.count}</span>

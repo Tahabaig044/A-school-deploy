@@ -1,12 +1,15 @@
 # Project Overview
 
 ## Project Name
+
 School Management System (SMS)
 
 ## Description
+
 A comprehensive web-based school management system designed to streamline administrative operations, enhance communication between stakeholders, and improve educational outcomes.
 
 ## Target Users
+
 - **Administrators**: School principals, vice principals, office staff
 - **Teachers**: Classroom teachers, subject teachers, department heads
 - **Students**: All enrolled students
@@ -14,6 +17,7 @@ A comprehensive web-based school management system designed to streamline admini
 - **Support Staff**: Librarians, accountants, HR personnel
 
 ## Core Modules
+
 1. **Student Management**: Enrollment, profiles, attendance, behavior tracking
 2. **Staff Management**: Employee records, payroll, leave management
 3. **Academic Management**: Classes, sections, subjects, timetable
@@ -26,6 +30,7 @@ A comprehensive web-based school management system designed to streamline admini
 10. **Reports & Analytics**: Dashboards, custom reports, exports
 
 ## Technology Stack
+
 - **Frontend**: React.js / Next.js with TypeScript
 - **Backend**: Node.js with Express / NestJS
 - **Database**: PostgreSQL with Prisma ORM
@@ -36,6 +41,7 @@ A comprehensive web-based school management system designed to streamline admini
 - **SMS**: Twilio / Local provider
 
 ## Project Goals
+
 1. Centralize school operations in one platform
 2. Reduce manual paperwork by 90%
 3. Improve parent-teacher communication
@@ -44,6 +50,7 @@ A comprehensive web-based school management system designed to streamline admini
 6. Support multi-branch school chains
 
 ## Success Metrics
+
 - User adoption rate > 80% within 6 months
 - Average page load time < 2 seconds
 - System uptime > 99.9%
@@ -51,6 +58,7 @@ A comprehensive web-based school management system designed to streamline admini
 - Support ticket resolution < 24 hours
 
 ## Timeline
+
 - Phase 1: Foundation (2 weeks)
 - Phase 2: Core Modules (4 weeks)
 - Phase 3: Academics (3 weeks)

@@ -1,6 +1,7 @@
 # SECURITY_PROMPT
 
 ## Usage
+
 When reviewing security, use this prompt.
 
 ## Prompt

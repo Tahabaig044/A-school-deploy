@@ -4,11 +4,20 @@ import { LeaveView } from "./leave-view"
 
 export default async function LeavesPage() {
   const { profile } = await requireRole(
-    "SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL",
-    "TEACHER", "ACCOUNTANT", "ADMISSION_OFFICER", "LIBRARIAN", "TRANSPORT_MANAGER"
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "ACCOUNTANT",
+    "ADMISSION_OFFICER",
+    "LIBRARIAN",
+    "TRANSPORT_MANAGER",
   )
 
-  const isAdmin = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"].includes(profile.role)
+  const isAdmin = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"].includes(
+    profile.role,
+  )
 
   const leaves = isAdmin
     ? await prisma.leaveRequest.findMany({

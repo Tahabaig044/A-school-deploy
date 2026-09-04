@@ -37,7 +37,10 @@ const MONTHS = [
   "December",
 ]
 
-const STATUS_CONFIG: Record<string, { label: string; variant: "success" | "destructive" | "warning" | "info"; icon: React.ReactNode }> = {
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; variant: "success" | "destructive" | "warning" | "info"; icon: React.ReactNode }
+> = {
   PRESENT: { label: "Present", variant: "success", icon: <CheckCircle className="h-4 w-4" /> },
   ABSENT: { label: "Absent", variant: "destructive", icon: <XCircle className="h-4 w-4" /> },
   LATE: { label: "Late", variant: "warning", icon: <Clock className="h-4 w-4" /> },
@@ -60,7 +63,7 @@ export default async function ParentAttendancePage({
           <p className="text-muted-foreground">Track your children&apos;s attendance</p>
         </div>
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
+          <CardContent className="text-muted-foreground py-12 text-center">
             No children found.
           </CardContent>
         </Card>
@@ -90,11 +93,40 @@ export default async function ParentAttendancePage({
   const leaveCount = attendance.filter((r) => r.status === "LEAVE").length
 
   const stats = [
-    { label: "Total Days", value: totalDays, icon: <ClipboardCheck className="h-5 w-5" />, color: "text-foreground" },
-    { label: "Present", value: presentCount, pct: totalDays > 0 ? Math.round((presentCount / totalDays) * 100) : 0, icon: <CheckCircle className="h-5 w-5 text-emerald-500" />, color: "text-emerald-600" },
-    { label: "Absent", value: absentCount, pct: totalDays > 0 ? Math.round((absentCount / totalDays) * 100) : 0, icon: <XCircle className="h-5 w-5 text-red-500" />, color: "text-red-600" },
-    { label: "Late", value: lateCount, pct: totalDays > 0 ? Math.round((lateCount / totalDays) * 100) : 0, icon: <Clock className="h-5 w-5 text-amber-500" />, color: "text-amber-600" },
-    { label: "Leave", value: leaveCount, pct: totalDays > 0 ? Math.round((leaveCount / totalDays) * 100) : 0, icon: <AlertCircle className="h-5 w-5 text-blue-500" />, color: "text-blue-600" },
+    {
+      label: "Total Days",
+      value: totalDays,
+      icon: <ClipboardCheck className="h-5 w-5" />,
+      color: "text-foreground",
+    },
+    {
+      label: "Present",
+      value: presentCount,
+      pct: totalDays > 0 ? Math.round((presentCount / totalDays) * 100) : 0,
+      icon: <CheckCircle className="h-5 w-5 text-emerald-500" />,
+      color: "text-emerald-600",
+    },
+    {
+      label: "Absent",
+      value: absentCount,
+      pct: totalDays > 0 ? Math.round((absentCount / totalDays) * 100) : 0,
+      icon: <XCircle className="h-5 w-5 text-red-500" />,
+      color: "text-red-600",
+    },
+    {
+      label: "Late",
+      value: lateCount,
+      pct: totalDays > 0 ? Math.round((lateCount / totalDays) * 100) : 0,
+      icon: <Clock className="h-5 w-5 text-amber-500" />,
+      color: "text-amber-600",
+    },
+    {
+      label: "Leave",
+      value: leaveCount,
+      pct: totalDays > 0 ? Math.round((leaveCount / totalDays) * 100) : 0,
+      icon: <AlertCircle className="h-5 w-5 text-blue-500" />,
+      color: "text-blue-600",
+    },
   ]
 
   const prevMonth = selectedMonth > 0 ? selectedMonth - 1 : 11
@@ -113,7 +145,11 @@ export default async function ParentAttendancePage({
         </CardHeader>
         <CardContent>
           <ChildSelector
-            children={children.map((c) => ({ id: c.id, firstName: c.firstName, lastName: c.lastName }))}
+            children={children.map((c) => ({
+              id: c.id,
+              firstName: c.firstName,
+              lastName: c.lastName,
+            }))}
             selectedId={selectedStudentId}
             month={selectedMonth}
           />
@@ -121,12 +157,22 @@ export default async function ParentAttendancePage({
       </Card>
 
       <div className="flex items-center justify-between">
-        <Button variant="outline" size="sm" render={<a href={`?student=${selectedStudentId}&month=${prevMonth}`} />}>
+        <Button
+          variant="outline"
+          size="sm"
+          render={<a href={`?student=${selectedStudentId}&month=${prevMonth}`} />}
+        >
           <ChevronLeft className="h-4 w-4" />
           {MONTHS[prevMonth]}
         </Button>
-        <h3 className="text-lg font-semibold">{monthName} {now.getFullYear()}</h3>
-        <Button variant="outline" size="sm" render={<a href={`?student=${selectedStudentId}&month=${nextMonth}`} />}>
+        <h3 className="text-lg font-semibold">
+          {monthName} {now.getFullYear()}
+        </h3>
+        <Button
+          variant="outline"
+          size="sm"
+          render={<a href={`?student=${selectedStudentId}&month=${nextMonth}`} />}
+        >
           {MONTHS[nextMonth]}
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -142,7 +188,7 @@ export default async function ParentAttendancePage({
             <CardContent>
               <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
               {stat.pct !== undefined && (
-                <p className="text-xs text-muted-foreground">{stat.pct}%</p>
+                <p className="text-muted-foreground text-xs">{stat.pct}%</p>
               )}
             </CardContent>
           </Card>
@@ -155,40 +201,42 @@ export default async function ParentAttendancePage({
         </CardHeader>
         <CardContent>
           {attendance.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">No attendance records for this month.</p>
+            <p className="text-muted-foreground py-8 text-center">
+              No attendance records for this month.
+            </p>
           ) : (
             <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead>Remarks</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {attendance.map((record) => {
-                  const config = STATUS_CONFIG[record.status] || STATUS_CONFIG.PRESENT
-                  return (
-                    <TableRow key={record.id}>
-                      <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <Badge variant={config.variant} className="gap-1">
-                          {config.icon}
-                          {config.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {record.class?.name}
-                        {record.section?.name ? ` - ${record.section.name}` : ""}
-                      </TableCell>
-                      <TableCell>{record.remarks || "-"}</TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Class</TableHead>
+                    <TableHead>Remarks</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {attendance.map((record) => {
+                    const config = STATUS_CONFIG[record.status] || STATUS_CONFIG.PRESENT
+                    return (
+                      <TableRow key={record.id}>
+                        <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Badge variant={config.variant} className="gap-1">
+                            {config.icon}
+                            {config.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {record.class?.name}
+                          {record.section?.name ? ` - ${record.section.name}` : ""}
+                        </TableCell>
+                        <TableCell>{record.remarks || "-"}</TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>

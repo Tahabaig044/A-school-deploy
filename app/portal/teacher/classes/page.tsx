@@ -23,9 +23,9 @@ export default async function TeacherClassesPage() {
       {assignments.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <GraduationCap className="h-12 w-12 text-muted-foreground mb-4" />
+            <GraduationCap className="text-muted-foreground mb-4 h-12 w-12" />
             <h3 className="text-lg font-semibold">No classes assigned</h3>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-muted-foreground mt-1 text-sm">
               You don&apos;t have any class assignments yet. Contact your administrator.
             </p>
           </CardContent>
@@ -36,13 +36,13 @@ export default async function TeacherClassesPage() {
             <Card key={className}>
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <GraduationCap className="h-5 w-5 text-primary" />
+                  <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+                    <GraduationCap className="text-primary h-5 w-5" />
                   </div>
                   <div>
                     <CardTitle>{className}</CardTitle>
                     {classAssignments[0]?.academicSession?.name && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         {classAssignments[0].academicSession.name}
                       </p>
                     )}
@@ -57,10 +57,10 @@ export default async function TeacherClassesPage() {
                       className="flex items-center justify-between rounded-lg border p-3"
                     >
                       <div className="flex items-center gap-3">
-                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                        <BookOpen className="text-muted-foreground h-4 w-4" />
                         <div>
-                          <p className="font-medium text-sm">{a.subject.name}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-sm font-medium">{a.subject.name}</p>
+                          <p className="text-muted-foreground text-xs">
                             Section {a.section?.name || "N/A"}
                           </p>
                         </div>

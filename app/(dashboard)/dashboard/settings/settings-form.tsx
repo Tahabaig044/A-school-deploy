@@ -36,7 +36,7 @@ export function SettingsForm({
         return { error: msg }
       }
     },
-    null
+    null,
   )
 
   if (profileRole === "SUPER_ADMIN" && !school) {
@@ -54,7 +54,7 @@ export function SettingsForm({
   if (!school) return null
 
   return (
-    <form action={formAction} className="grid gap-6 max-w-2xl">
+    <form action={formAction} className="grid max-w-2xl gap-6">
       <Card>
         <CardHeader>
           <CardTitle>School Information</CardTitle>
@@ -81,7 +81,7 @@ export function SettingsForm({
             <Input id="email" name="email" type="email" defaultValue={school.email ?? ""} />
           </div>
           {state && "error" in state && state.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
+            <p className="text-destructive text-sm">{state.error}</p>
           )}
           <div>
             <Button type="submit" disabled={isPending}>

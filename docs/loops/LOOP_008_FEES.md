@@ -1,23 +1,27 @@
 # Loop 008: Fees
 
 ## Overview
+
 Fee module manages fee structures, invoice generation, payment collection, and financial reporting for the school.
 
 ## User Stories
 
 ### As an Admin
+
 1. I want to create fee structures
 2. I want to generate invoices
 3. I want to record payments
 4. I want to view financial reports
 
 ### As an Accountant
+
 1. I want to manage fee collection
 2. I want to generate receipts
 3. I want to track pending payments
 4. I want to reconcile payments
 
 ### As a Parent
+
 1. I want to view my child's fees
 2. I want to see payment history
 3. I want to download receipts
@@ -121,18 +125,21 @@ CREATE TABLE fee_waivers (
 ## Business Rules
 
 ### Invoice Generation
+
 - Invoice number format: INV{YEAR}{MONTH}{SEQUENCE}
 - Auto-generate for all students in class
 - Due date from fee structure
 - Support for partial payments
 
 ### Payment Rules
+
 - Payment number format: PAY{YEAR}{MONTH}{SEQUENCE}
 - Cannot exceed invoice amount
 - Multiple payments allowed
 - Receipt generated for each payment
 
 ### Status Flow
+
 ```
 Invoice: pending → partial → paid
                         ↓
@@ -142,6 +149,7 @@ Payment: completed (immediate)
 ```
 
 ### Fee Waiver
+
 - Percentage or flat amount
 - Requires approval
 - Applied before payment
@@ -149,6 +157,7 @@ Payment: completed (immediate)
 ## UI Components
 
 ### Fee Structure Form
+
 - Name and description
 - Class selector
 - Amount input
@@ -156,12 +165,14 @@ Payment: completed (immediate)
 - Recurrence settings
 
 ### Invoice List
+
 - Status filters
 - Student/class filters
 - Bulk generate option
 - Export to Excel
 
 ### Payment Form
+
 - Invoice selection
 - Amount input
 - Payment method
@@ -169,6 +180,7 @@ Payment: completed (immediate)
 - Receipt generation
 
 ### Financial Reports
+
 - Collection summary
 - Outstanding dues
 - Class-wise collection
@@ -176,6 +188,7 @@ Payment: completed (immediate)
 - Export options
 
 ## Acceptance Criteria
+
 - [ ] Fee structures can be created
 - [ ] Invoices generated correctly
 - [ ] Payments recorded accurately

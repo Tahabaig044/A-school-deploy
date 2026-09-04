@@ -3,7 +3,13 @@ import { requireRole } from "@/lib/auth"
 import { QrScanner } from "./qr-scanner"
 
 export default async function ScanAttendancePage() {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
 
   const schoolId = profile.schoolId!
   const [classes, sessions] = await Promise.all([

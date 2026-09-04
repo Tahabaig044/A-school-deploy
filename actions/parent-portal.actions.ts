@@ -268,7 +268,7 @@ export async function getParentLeaveRequests() {
 
 export async function createParentLeaveRequest(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const ctx = await getParentAuthContext()
   if (!ctx) return { error: "Not authenticated.", success: false }
@@ -308,7 +308,7 @@ export async function getParentProfile() {
 
 export async function updateParentProfile(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const ctx = await getParentAuthContext()
   if (!ctx) return { error: "Not authenticated.", success: false }

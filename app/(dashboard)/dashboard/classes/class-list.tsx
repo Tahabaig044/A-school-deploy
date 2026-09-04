@@ -69,7 +69,10 @@ export function ClassList({
       toast({ title: "Class deleted" })
       router.refresh()
     } catch (e) {
-      toast({ title: e instanceof Error ? e.message : "Failed to delete class", variant: "destructive" })
+      toast({
+        title: e instanceof Error ? e.message : "Failed to delete class",
+        variant: "destructive",
+      })
     }
   }
 
@@ -80,7 +83,7 @@ export function ClassList({
           <CardTitle>All Classes</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No classes created yet.</p>
+          <p className="text-muted-foreground text-sm">No classes created yet.</p>
         </CardContent>
       </Card>
     )
@@ -108,10 +111,7 @@ export function ClassList({
               {classes.map((cls) => (
                 <TableRow key={cls.id}>
                   <TableCell className="font-medium">
-                    <Link
-                      href={`/dashboard/classes/${cls.id}`}
-                      className="hover:underline"
-                    >
+                    <Link href={`/dashboard/classes/${cls.id}`} className="hover:underline">
                       {cls.name}
                     </Link>
                   </TableCell>
@@ -121,10 +121,21 @@ export function ClassList({
                   <TableCell>{cls.order}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditItem(cls); setError(null) }}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setEditItem(cls)
+                          setError(null)
+                        }}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(cls.id, cls.name)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(cls.id, cls.name)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -146,7 +157,7 @@ export function ClassList({
           >
             Previous
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Page {page} of {totalPages}
           </span>
           <Button
@@ -160,13 +171,21 @@ export function ClassList({
         </div>
       )}
 
-      <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
+      <Dialog
+        open={!!editItem}
+        onOpenChange={(o) => {
+          if (!o) {
+            setEditItem(null)
+            setError(null)
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Class</DialogTitle>
           </DialogHeader>
           <form action={handleUpdate} className="space-y-4">
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
             <div className="grid gap-2">
               <Label htmlFor="edit-name">Class Name</Label>
               <Input id="edit-name" name="name" defaultValue={editItem?.name} required />
@@ -179,7 +198,9 @@ export function ClassList({
               <Label htmlFor="edit-order">Display Order</Label>
               <Input id="edit-order" name="order" type="number" defaultValue={editItem?.order} />
             </div>
-            <Button type="submit" className="w-full">Update Class</Button>
+            <Button type="submit" className="w-full">
+              Update Class
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

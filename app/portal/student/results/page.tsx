@@ -30,8 +30,8 @@ export default async function StudentResultsPage() {
       ? Math.round(
           results.reduce(
             (sum, r) => sum + (Number(r.marksObtained) / Number(r.exam.totalMarks)) * 100,
-            0
-          ) / totalExams
+            0,
+          ) / totalExams,
         )
       : 0
 
@@ -72,7 +72,7 @@ export default async function StudentResultsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <GraduationCap className="h-6 w-6 text-primary" />
+        <GraduationCap className="text-primary h-6 w-6" />
         <h1 className="text-2xl font-bold tracking-tight">Exam Results</h1>
       </div>
 
@@ -93,7 +93,7 @@ export default async function StudentResultsPage() {
       {results.length === 0 ? (
         <Card>
           <CardContent className="py-10">
-            <p className="text-center text-muted-foreground">No exam results found.</p>
+            <p className="text-muted-foreground text-center">No exam results found.</p>
           </CardContent>
         </Card>
       ) : (
@@ -124,23 +124,21 @@ export default async function StudentResultsPage() {
                               {isPassed ? "Passed" : "Failed"}
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">
                             {result.exam.subject.name}
                           </p>
                           {result.exam.examDate && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                               {new Date(result.exam.examDate).toLocaleDateString()}
                             </p>
                           )}
                         </div>
-                        <div className="text-right space-y-1">
+                        <div className="space-y-1 text-right">
                           <p className="text-lg font-bold">
                             {obtained}/{total}
                           </p>
-                          <div className="flex items-center gap-2 justify-end">
-                            <span className="text-sm text-muted-foreground">
-                              {percentage}%
-                            </span>
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="text-muted-foreground text-sm">{percentage}%</span>
                             <Badge variant="secondary">
                               {result.grade ? GRADE_MAP[result.grade] || result.grade : "N/A"}
                             </Badge>

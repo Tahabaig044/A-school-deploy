@@ -49,26 +49,35 @@ export function CheckList({
             <CardTitle>{homework.title}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div><span className="font-medium">Class:</span> {homework.class?.name}</div>
-              <div><span className="font-medium">Subject:</span> {homework.subject?.name}</div>
-              <div><span className="font-medium">Due Date:</span> {new Date(homework.dueDate).toLocaleDateString()}</div>
-              <div><span className="font-medium">Total Marks:</span> {homework.totalMarks || "-"}</div>
+            <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+              <div>
+                <span className="font-medium">Class:</span> {homework.class?.name}
+              </div>
+              <div>
+                <span className="font-medium">Subject:</span> {homework.subject?.name}
+              </div>
+              <div>
+                <span className="font-medium">Due Date:</span>{" "}
+                {new Date(homework.dueDate).toLocaleDateString()}
+              </div>
+              <div>
+                <span className="font-medium">Total Marks:</span> {homework.totalMarks || "-"}
+              </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      <div className="border rounded-lg overflow-x-auto">
+      <div className="overflow-x-auto rounded-lg border">
         <table className="w-full">
           <thead>
-            <tr className="border-b bg-muted/50">
+            <tr className="bg-muted/50 border-b">
               <th className="p-3 text-left">Admission No</th>
               <th className="p-3 text-left">Student Name</th>
-              <th className="p-3 text-left hidden md:table-cell">Content</th>
-              <th className="p-3 text-left hidden md:table-cell">Submitted At</th>
+              <th className="hidden p-3 text-left md:table-cell">Content</th>
+              <th className="hidden p-3 text-left md:table-cell">Submitted At</th>
               <th className="p-3 text-left">Marks</th>
-              <th className="p-3 text-left hidden lg:table-cell">Feedback</th>
+              <th className="hidden p-3 text-left lg:table-cell">Feedback</th>
               <th className="p-3 text-left">Action</th>
             </tr>
           </thead>
@@ -76,9 +85,13 @@ export function CheckList({
             {submissions.map((sub) => (
               <tr key={sub.id} className="border-b">
                 <td className="p-3">{sub.student?.admissionNo}</td>
-                <td className="p-3">{sub.student?.firstName} {sub.student?.lastName}</td>
-                <td className="p-3 max-w-xs truncate hidden md:table-cell">{sub.content || "-"}</td>
-                <td className="p-3 hidden md:table-cell">{new Date(sub.submittedAt).toLocaleDateString()}</td>
+                <td className="p-3">
+                  {sub.student?.firstName} {sub.student?.lastName}
+                </td>
+                <td className="hidden max-w-xs truncate p-3 md:table-cell">{sub.content || "-"}</td>
+                <td className="hidden p-3 md:table-cell">
+                  {new Date(sub.submittedAt).toLocaleDateString()}
+                </td>
                 <td className="p-3">
                   {sub.status === "GRADED" ? (
                     <Badge>{sub.marksObtained}</Badge>
@@ -93,13 +106,15 @@ export function CheckList({
                     />
                   )}
                 </td>
-                <td className="p-3 hidden lg:table-cell">
+                <td className="hidden p-3 lg:table-cell">
                   {sub.status === "GRADED" ? (
                     <span className="text-sm">{sub.feedback || "-"}</span>
                   ) : (
                     <Input
                       defaultValue={feedback[sub.id] || ""}
-                      onChange={(e) => setFeedback((prev) => ({ ...prev, [sub.id]: e.target.value }))}
+                      onChange={(e) =>
+                        setFeedback((prev) => ({ ...prev, [sub.id]: e.target.value }))
+                      }
                       className="w-48"
                     />
                   )}

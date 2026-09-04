@@ -6,7 +6,13 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -24,8 +30,18 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
 }
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ]
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
@@ -119,7 +135,7 @@ export function CalendarView({
         </Button>
       </PageHeader>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
@@ -127,7 +143,9 @@ export function CalendarView({
                 <Button variant="outline" size="icon" onClick={() => navigateMonth(-1)}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <CardTitle>{MONTHS[currentMonth]} {currentYear}</CardTitle>
+                <CardTitle>
+                  {MONTHS[currentMonth]} {currentYear}
+                </CardTitle>
                 <Button variant="outline" size="icon" onClick={() => navigateMonth(1)}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -136,15 +154,18 @@ export function CalendarView({
             <CardContent>
               <div className="grid grid-cols-7 gap-1">
                 {DAYS.map((day) => (
-                  <div key={day} className="text-center text-sm font-medium py-2 text-muted-foreground">
+                  <div
+                    key={day}
+                    className="text-muted-foreground py-2 text-center text-sm font-medium"
+                  >
                     {day}
                   </div>
                 ))}
                 {getDaysInMonth().map((day, index) => (
                   <div
                     key={index}
-                    className={`min-h-[80px] border rounded p-1 ${
-                      day ? "cursor-pointer hover:bg-muted/50" : ""
+                    className={`min-h-[80px] rounded border p-1 ${
+                      day ? "hover:bg-muted/50 cursor-pointer" : ""
                     }`}
                     onClick={() => day && openCreateEvent(day)}
                   >
@@ -152,17 +173,19 @@ export function CalendarView({
                       <>
                         <div className="text-sm font-medium">{day}</div>
                         <div className="space-y-1">
-                          {getEventsForDay(day).slice(0, 2).map((event) => (
-                            <div
-                              key={event.id}
-                              className={`text-xs p-1 rounded ${EVENT_TYPE_COLORS[event.eventType] || ""}`}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {event.title}
-                            </div>
-                          ))}
+                          {getEventsForDay(day)
+                            .slice(0, 2)
+                            .map((event) => (
+                              <div
+                                key={event.id}
+                                className={`rounded p-1 text-xs ${EVENT_TYPE_COLORS[event.eventType] || ""}`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {event.title}
+                              </div>
+                            ))}
                           {getEventsForDay(day).length > 2 && (
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-muted-foreground text-xs">
                               +{getEventsForDay(day).length - 2} more
                             </div>
                           )}
@@ -191,8 +214,9 @@ export function CalendarView({
                       <div className="h-2 w-2 rounded-full bg-red-500" />
                       <div>
                         <p className="text-sm font-medium">{holiday.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(holiday.startDate).toLocaleDateString()} - {new Date(holiday.endDate).toLocaleDateString()}
+                        <p className="text-muted-foreground text-xs">
+                          {new Date(holiday.startDate).toLocaleDateString()} -{" "}
+                          {new Date(holiday.endDate).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -216,8 +240,9 @@ export function CalendarView({
                       <div className="h-2 w-2 rounded-full bg-orange-500" />
                       <div>
                         <p className="text-sm font-medium">{exam.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(exam.startDate).toLocaleDateString()} - {new Date(exam.endDate).toLocaleDateString()}
+                        <p className="text-muted-foreground text-xs">
+                          {new Date(exam.startDate).toLocaleDateString()} -{" "}
+                          {new Date(exam.endDate).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -249,7 +274,7 @@ export function CalendarView({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="eventType">Type</Label>
-                <select id="eventType" name="eventType" className="w-full border rounded p-2">
+                <select id="eventType" name="eventType" className="w-full rounded border p-2">
                   <option value="HOLIDAY">Holiday</option>
                   <option value="EXAM">Exam</option>
                   <option value="EVENT">Event</option>
@@ -291,11 +316,13 @@ export function CalendarView({
                 id="isAllDay"
                 name="isAllDay"
                 defaultChecked
-                className="w-4 h-4"
+                className="h-4 w-4"
               />
               <Label htmlFor="isAllDay">All Day Event</Label>
             </div>
-            <Button type="submit" className="w-full">Create Event</Button>
+            <Button type="submit" className="w-full">
+              Create Event
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

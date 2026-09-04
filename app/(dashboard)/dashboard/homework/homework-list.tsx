@@ -6,7 +6,13 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createHomework, updateHomework, deleteHomework } from "@/actions/homework.actions"
@@ -71,9 +77,21 @@ export function HomeworkList({
   return (
     <div className="space-y-6">
       <PageHeader title="Homework" description="Manage homework assignments">
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditItem(null); setError(null) } }}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o)
+            if (!o) {
+              setEditItem(null)
+              setError(null)
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Add Homework</Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Homework
+            </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -81,14 +99,19 @@ export function HomeworkList({
             </DialogHeader>
             <form action={handleSubmit} className="space-y-4">
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="title">Title</Label>
                   <Input id="title" name="title" defaultValue={editItem?.title || ""} required />
                 </div>
                 <div>
                   <Label htmlFor="classId">Class ID</Label>
-                  <Input id="classId" name="classId" defaultValue={editItem?.classId || ""} required />
+                  <Input
+                    id="classId"
+                    name="classId"
+                    defaultValue={editItem?.classId || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="sectionId">Section ID</Label>
@@ -96,35 +119,66 @@ export function HomeworkList({
                 </div>
                 <div>
                   <Label htmlFor="subjectId">Subject ID</Label>
-                  <Input id="subjectId" name="subjectId" defaultValue={editItem?.subjectId || ""} required />
+                  <Input
+                    id="subjectId"
+                    name="subjectId"
+                    defaultValue={editItem?.subjectId || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="academicSessionId">Academic Session ID</Label>
-                  <Input id="academicSessionId" name="academicSessionId" defaultValue={editItem?.academicSessionId || ""} required />
+                  <Input
+                    id="academicSessionId"
+                    name="academicSessionId"
+                    defaultValue={editItem?.academicSessionId || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="dueDate">Due Date</Label>
-                  <Input id="dueDate" name="dueDate" type="date" defaultValue={editItem?.dueDate?.split("T")[0] || ""} required />
+                  <Input
+                    id="dueDate"
+                    name="dueDate"
+                    type="date"
+                    defaultValue={editItem?.dueDate?.split("T")[0] || ""}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="totalMarks">Total Marks</Label>
-                  <Input id="totalMarks" name="totalMarks" type="number" defaultValue={editItem?.totalMarks || ""} />
+                  <Input
+                    id="totalMarks"
+                    name="totalMarks"
+                    type="number"
+                    defaultValue={editItem?.totalMarks || ""}
+                  />
                 </div>
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
-                <Input id="description" name="description" defaultValue={editItem?.description || ""} />
+                <Input
+                  id="description"
+                  name="description"
+                  defaultValue={editItem?.description || ""}
+                />
               </div>
               {editItem && (
                 <div>
                   <Label htmlFor="isActive">Active</Label>
-                  <select name="isActive" defaultValue={editItem?.isActive ? "true" : "false"} className="w-full border rounded p-2">
+                  <select
+                    name="isActive"
+                    defaultValue={editItem?.isActive ? "true" : "false"}
+                    className="w-full rounded border p-2"
+                  >
                     <option value="true">Active</option>
                     <option value="false">Inactive</option>
                   </select>
                 </div>
               )}
-              <Button type="submit" className="w-full">{editItem ? "Update" : "Create"}</Button>
+              <Button type="submit" className="w-full">
+                {editItem ? "Update" : "Create"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -135,23 +189,52 @@ export function HomeworkList({
           { header: "Title", accessorKey: "title" },
           { header: "Class", accessorKey: "class", cell: ({ row }: any) => row.class?.name },
           { header: "Subject", accessorKey: "subject", cell: ({ row }: any) => row.subject?.name },
-          { header: "Teacher", accessorKey: "teacher", cell: ({ row }: any) => `${row.teacher?.firstName} ${row.teacher?.lastName}` },
-          { header: "Due Date", accessorKey: "dueDate", cell: ({ row }: any) => new Date(row.dueDate).toLocaleDateString() },
-          { header: "Total Marks", accessorKey: "totalMarks", cell: ({ row }: any) => row.totalMarks || "-" },
-          { header: "Submissions", accessorKey: "_count", cell: ({ row }: any) => row._count?.submissions || 0 },
-          { header: "Status", accessorKey: "isActive", cell: ({ row }: any) => (
-            <Badge variant={row.isActive ? "default" : "secondary"}>
-              {row.isActive ? "Active" : "Inactive"}
-            </Badge>
-          )},
+          {
+            header: "Teacher",
+            accessorKey: "teacher",
+            cell: ({ row }: any) => `${row.teacher?.firstName} ${row.teacher?.lastName}`,
+          },
+          {
+            header: "Due Date",
+            accessorKey: "dueDate",
+            cell: ({ row }: any) => new Date(row.dueDate).toLocaleDateString(),
+          },
+          {
+            header: "Total Marks",
+            accessorKey: "totalMarks",
+            cell: ({ row }: any) => row.totalMarks || "-",
+          },
+          {
+            header: "Submissions",
+            accessorKey: "_count",
+            cell: ({ row }: any) => row._count?.submissions || 0,
+          },
+          {
+            header: "Status",
+            accessorKey: "isActive",
+            cell: ({ row }: any) => (
+              <Badge variant={row.isActive ? "default" : "secondary"}>
+                {row.isActive ? "Active" : "Inactive"}
+              </Badge>
+            ),
+          },
           {
             header: "Actions",
             cell: ({ row }: any) => (
               <div className="flex gap-2">
                 <Link href={`/dashboard/homework/check?homeworkId=${row.id}`}>
-                  <Button variant="ghost" size="icon"><Eye className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon">
+                    <Eye className="h-4 w-4" />
+                  </Button>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={() => { setEditItem(row); setOpen(true) }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setEditItem(row)
+                    setOpen(true)
+                  }}
+                >
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)}>

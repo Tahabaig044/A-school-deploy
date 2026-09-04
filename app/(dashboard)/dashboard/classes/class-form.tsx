@@ -16,7 +16,7 @@ export function ClassForm() {
         <CardTitle>Add New Class</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4 max-w-md">
+        <form action={formAction} className="grid max-w-md gap-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Class Name</Label>
             <Input id="name" name="name" placeholder="e.g. Class 1" required />
@@ -32,9 +32,7 @@ export function ClassForm() {
           <Button type="submit" disabled={pending}>
             {pending ? "Creating..." : "Create Class"}
           </Button>
-          {state?.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
-          )}
+          {state?.error && <p className="text-destructive text-sm">{state.error}</p>}
         </form>
       </CardContent>
     </Card>

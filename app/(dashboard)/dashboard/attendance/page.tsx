@@ -7,16 +7,24 @@ export default async function AttendancePage({
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>
 }) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
   const params = await searchParams
 
-  const classWhere = profile.role === "SUPER_ADMIN"
-    ? {}
-    : { schoolId: profile.schoolId!, branchId: profile.branchId! }
+  const classWhere =
+    profile.role === "SUPER_ADMIN"
+      ? {}
+      : { schoolId: profile.schoolId!, branchId: profile.branchId! }
 
-  const sessionWhere = profile.role === "SUPER_ADMIN"
-    ? { isCurrent: true as const }
-    : { schoolId: profile.schoolId!, isCurrent: true as const }
+  const sessionWhere =
+    profile.role === "SUPER_ADMIN"
+      ? { isCurrent: true as const }
+      : { schoolId: profile.schoolId!, isCurrent: true as const }
 
   const [classes, sessions] = await Promise.all([
     prisma.class.findMany({
@@ -48,12 +56,14 @@ export default async function AttendancePage({
     }
 
     const studentWhere = where
-    const attendanceWhere = params.sessionId ? {
-      date: new Date(params.date),
-      academicSessionId: params.sessionId,
-      classId: params.classId,
-      ...(params.sectionId ? { sectionId: params.sectionId } : {}),
-    } : null
+    const attendanceWhere = params.sessionId
+      ? {
+          date: new Date(params.date),
+          academicSessionId: params.sessionId,
+          classId: params.classId,
+          ...(params.sectionId ? { sectionId: params.sectionId } : {}),
+        }
+      : null
 
     const [studentsResult, attendanceResult] = await Promise.all([
       prisma.student.findMany({

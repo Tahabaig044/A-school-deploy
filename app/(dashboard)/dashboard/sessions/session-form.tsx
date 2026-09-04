@@ -15,11 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createSession } from "@/actions/session.actions"
 
-export function SessionForm({
-  branches,
-}: {
-  branches: { id: string; name: string }[]
-}) {
+export function SessionForm({ branches }: { branches: { id: string; name: string }[] }) {
   const [, formAction, pending] = useActionState(createSession, null)
 
   return (
@@ -28,15 +24,10 @@ export function SessionForm({
         <CardTitle>Create Academic Session</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4 max-w-md">
+        <form action={formAction} className="grid max-w-md gap-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Session Name</Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="e.g. 2025-2026"
-              required
-            />
+            <Input id="name" name="name" placeholder="e.g. 2025-2026" required />
           </div>
           {branches.length > 0 && (
             <div className="grid gap-2">
@@ -55,7 +46,7 @@ export function SessionForm({
               </Select>
             </div>
           )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="startDate">Start Date</Label>
               <Input id="startDate" name="startDate" type="date" required />

@@ -9,8 +9,16 @@ import { PageSkeleton } from "@/components/shared/loading-skeleton"
 
 export default async function DashboardPage() {
   const { profile } = await requireRole(
-    "SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "PARENT",
-    "PRINCIPAL", "ACCOUNTANT", "ADMISSION_OFFICER", "LIBRARIAN", "TRANSPORT_MANAGER"
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "PARENT",
+    "PRINCIPAL",
+    "ACCOUNTANT",
+    "ADMISSION_OFFICER",
+    "LIBRARIAN",
+    "TRANSPORT_MANAGER",
   )
 
   const cookieStore = await cookies()
@@ -31,10 +39,7 @@ export default async function DashboardPage() {
   const effectiveBranchId = branch?.id || profile.branchId || undefined
 
   const [statsResult] = await Promise.all([
-    getDashboardStats(
-      profile.schoolId || undefined,
-      effectiveBranchId
-    ).catch(() => ({
+    getDashboardStats(profile.schoolId || undefined, effectiveBranchId).catch(() => ({
       totalStudents: 0,
       totalTeachers: 0,
       totalParents: 0,
@@ -58,11 +63,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <Suspense fallback={<PageSkeleton />}>
-        <DashboardCards
-          stats={statsResult}
-          profile={profile}
-          branchName={branch?.name}
-        />
+        <DashboardCards stats={statsResult} profile={profile} branchName={branch?.name} />
       </Suspense>
     </div>
   )

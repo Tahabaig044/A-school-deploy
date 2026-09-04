@@ -112,7 +112,7 @@ export function StudentList({
         <div className="flex flex-wrap gap-4">
           <form onSubmit={handleSearch} className="flex gap-2">
             <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
               <Input
                 placeholder="Search students..."
                 value={searchValue}
@@ -127,7 +127,9 @@ export function StudentList({
 
           <Select
             value={initialStatus || "all"}
-            onValueChange={(v: string | null) => updateParam("status", v === "all" || v === null ? "" : v)}
+            onValueChange={(v: string | null) =>
+              updateParam("status", v === "all" || v === null ? "" : v)
+            }
           >
             <SelectTrigger className="w-36">
               <SelectValue placeholder="All Status" />
@@ -143,7 +145,9 @@ export function StudentList({
 
           <Select
             value={initialClassId || "all"}
-            onValueChange={(v: string | null) => updateParam("classId", v === "all" || v === null ? "" : v)}
+            onValueChange={(v: string | null) =>
+              updateParam("classId", v === "all" || v === null ? "" : v)
+            }
           >
             <SelectTrigger className="w-44">
               <SelectValue placeholder="All Classes" />
@@ -160,9 +164,7 @@ export function StudentList({
         </div>
 
         {students.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-8 text-center">
-            No students found.
-          </p>
+          <p className="text-muted-foreground py-8 text-center text-sm">No students found.</p>
         ) : (
           <div className="overflow-x-auto">
             <Table>
@@ -180,14 +182,13 @@ export function StudentList({
                 {students.map((student) => (
                   <TableRow key={student.id}>
                     <TableCell className="font-medium">
-                      <Link
-                        href={`/dashboard/students/${student.id}`}
-                        className="hover:underline"
-                      >
+                      <Link href={`/dashboard/students/${student.id}`} className="hover:underline">
                         {student.firstName} {student.lastName}
                       </Link>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">{student.admissionNo || "-"}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {student.admissionNo || "-"}
+                    </TableCell>
                     <TableCell>
                       {student.enrollments[0]
                         ? `${student.enrollments[0].class.name}${student.enrollments[0].section ? ` - ${student.enrollments[0].section.name}` : ""}`
@@ -221,7 +222,9 @@ export function StudentList({
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDelete(student.id, `${student.firstName} ${student.lastName}`)}
+                          onClick={() =>
+                            handleDelete(student.id, `${student.firstName} ${student.lastName}`)
+                          }
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -244,7 +247,7 @@ export function StudentList({
             >
               Previous
             </Button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground text-sm">
               Page {currentPage} of {totalPages}
             </span>
             <Button

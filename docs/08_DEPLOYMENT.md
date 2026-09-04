@@ -3,6 +3,7 @@
 ## Environment Setup
 
 ### Development
+
 ```bash
 # Install dependencies
 npm install
@@ -21,6 +22,7 @@ npm run dev
 ```
 
 ### Production
+
 ```bash
 # Build application
 npm run build
@@ -35,6 +37,7 @@ npm start
 ## Environment Variables
 
 ### Required
+
 ```env
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/school_db
@@ -52,6 +55,7 @@ API_URL=https://api.yourschool.com
 ```
 
 ### Optional
+
 ```env
 # Email
 SMTP_HOST=smtp.gmail.com
@@ -72,6 +76,7 @@ REDIS_URL=redis://localhost:6379
 ## Docker Deployment
 
 ### Dockerfile
+
 ```dockerfile
 FROM node:18-alpine AS builder
 
@@ -92,8 +97,9 @@ CMD ["npm", "start"]
 ```
 
 ### Docker Compose
+
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   app:
     build: .
@@ -127,6 +133,7 @@ volumes:
 ## CI/CD Pipeline
 
 ### GitHub Actions
+
 ```yaml
 name: CI/CD
 
@@ -143,7 +150,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
@@ -190,6 +197,7 @@ server {
 ## Monitoring
 
 ### Health Check Endpoint
+
 ```
 GET /api/v1/health
 
@@ -204,6 +212,7 @@ Response:
 ```
 
 ### Logging
+
 - Use Winston for logging
 - Log levels: error, warn, info, debug
 - Structured JSON logs
@@ -212,6 +221,7 @@ Response:
 ## Backup Strategy
 
 ### Database Backups
+
 ```bash
 # Daily backup
 pg_dump -U postgres school_db > backup_$(date +%Y%m%d).sql
@@ -221,6 +231,7 @@ psql -U postgres school_db < backup_20240101.sql
 ```
 
 ### Retention Policy
+
 - Daily backups: 7 days
 - Weekly backups: 4 weeks
 - Monthly backups: 12 months

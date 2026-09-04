@@ -56,15 +56,17 @@ export async function requireAuth(): Promise<AuthContext["user"]> {
   return user
 }
 
-export async function requireRole(
-  ...roles: string[]
-): Promise<AuthContext> {
+export async function requireRole(...roles: string[]): Promise<AuthContext> {
   const user = await requireAuth()
 
   const profile = await getCurrentProfile()
 
   if (!profile || !roles.includes(profile.role)) {
     throw new Error("Forbidden")
+  }
+
+  if (!profile.isActive || profile.status !== "ACTIVE") {
+    throw new Error("Account is not active")
   }
 
   return { user, profile }

@@ -32,17 +32,17 @@ Apply Phase 3 audit fixes (F17, F20, F9, F8, F18, F25) from `ARCHITECTURE_AUDIT.
 
 ## Files Modified (9)
 
-| # | File | Change |
-|---|------|--------|
-| 1 | `components/layout/notifications-dropdown.tsx` | `initialCount` prop; removed mount `getUnreadNotificationCount` POST; syncs count from prop on RSC refresh |
-| 2 | `app/(dashboard)/layout.tsx` | Added `unreadNotificationCount` query to Promise.all; passes `initialCount`; added `[PERF]` total timing |
-| 3 | `app/portal/layout.tsx` | Added `unreadNotificationCount` query; passes `initialCount` |
-| 4 | `actions/notification.actions.ts` | Added `revalidateUserRoute(role)`; replaced 4-path revalidation |
-| 5 | `lib/prisma.ts` | Pool `max: 5`; `[PERF]` client-created log with host |
-| 6 | `.env` | Commented direct-host `DIRECT_URL` (reverted to pooler for connectivity) |
-| 7 | `prisma/schema.prisma` | Added F18 composite index on `Timetable` |
-| 8 | `actions/reports.actions.ts` | Branch-scoped conflict self-join; `[PERF]` dashboardStats timing |
-| 9 | `proxy.ts` | `[PERF]` middleware timing |
+| #   | File                                           | Change                                                                                                     |
+| --- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 1   | `components/layout/notifications-dropdown.tsx` | `initialCount` prop; removed mount `getUnreadNotificationCount` POST; syncs count from prop on RSC refresh |
+| 2   | `app/(dashboard)/layout.tsx`                   | Added `unreadNotificationCount` query to Promise.all; passes `initialCount`; added `[PERF]` total timing   |
+| 3   | `app/portal/layout.tsx`                        | Added `unreadNotificationCount` query; passes `initialCount`                                               |
+| 4   | `actions/notification.actions.ts`              | Added `revalidateUserRoute(role)`; replaced 4-path revalidation                                            |
+| 5   | `lib/prisma.ts`                                | Pool `max: 5`; `[PERF]` client-created log with host                                                       |
+| 6   | `.env`                                         | Commented direct-host `DIRECT_URL` (reverted to pooler for connectivity)                                   |
+| 7   | `prisma/schema.prisma`                         | Added F18 composite index on `Timetable`                                                                   |
+| 8   | `actions/reports.actions.ts`                   | Branch-scoped conflict self-join; `[PERF]` dashboardStats timing                                           |
+| 9   | `proxy.ts`                                     | `[PERF]` middleware timing                                                                                 |
 
 ## Key Fixes
 

@@ -1,17 +1,21 @@
 # AUTH_AUDIT
 
 ## Audit Date
+
 [Insert Date]
 
 ## Auditor
+
 [Insert Name]
 
 ## Scope
+
 Authentication system review
 
 ## Checklist
 
 ### Login
+
 - [ ] Rate limiting working
 - [ ] Password validation
 - [ ] Error messages generic
@@ -19,6 +23,7 @@ Authentication system review
 - [ ] Session management
 
 ### Register
+
 - [ ] Input validation
 - [ ] Email verification
 - [ ] Password hashing
@@ -26,6 +31,7 @@ Authentication system review
 - [ ] Audit logging
 
 ### Token Security
+
 - [ ] JWT signed correctly
 - [ ] Expiry set
 - [ ] httpOnly cookie
@@ -34,9 +40,9 @@ Authentication system review
 
 ## Findings
 
-| ID | Description | Severity | Status |
-|----|-------------|----------|--------|
-| | | | |
+| ID  | Description | Severity | Status |
+| --- | ----------- | -------- | ------ |
+|     |             |          |        |
 
 ## Recommendations
 

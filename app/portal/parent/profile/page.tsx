@@ -66,26 +66,24 @@ export default function ParentProfilePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
-              <Mail className="h-4 w-4 text-muted-foreground" />
+              <Mail className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-muted-foreground text-sm">Email</p>
                 <p className="font-medium">{profile.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <User className="h-4 w-4 text-muted-foreground" />
+              <User className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-sm text-muted-foreground">Role</p>
+                <p className="text-muted-foreground text-sm">Role</p>
                 <p className="font-medium">{profile.role}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-sm text-muted-foreground">Member Since</p>
-                <p className="font-medium">
-                  {new Date(profile.createdAt).toLocaleDateString()}
-                </p>
+                <p className="text-muted-foreground text-sm">Member Since</p>
+                <p className="font-medium">{new Date(profile.createdAt).toLocaleDateString()}</p>
               </div>
             </div>
           </CardContent>
@@ -99,38 +97,21 @@ export default function ParentProfilePage() {
             <form action={formAction} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  defaultValue={profile.firstName}
-                  required
-                />
+                <Input id="firstName" name="firstName" defaultValue={profile.firstName} required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  defaultValue={profile.lastName}
-                  required
-                />
+                <Input id="lastName" name="lastName" defaultValue={profile.lastName} required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  defaultValue={profile.phone ?? ""}
-                />
+                <Input id="phone" name="phone" type="tel" defaultValue={profile.phone ?? ""} />
               </div>
 
               {state?.success && (
                 <p className="text-sm text-green-600">Profile updated successfully.</p>
               )}
-              {state?.error && (
-                <p className="text-sm text-red-600">{state.error}</p>
-              )}
+              {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
 
               <Button type="submit" className="w-full">
                 <Save className="h-4 w-4" />

@@ -29,7 +29,9 @@ type ParentItem = {
   occupation: string | null
   address: string | null
   isPrimary: boolean
-  students: { student: { id: string; firstName: string; lastName: string; admissionNo: string | null } }[]
+  students: {
+    student: { id: string; firstName: string; lastName: string; admissionNo: string | null }
+  }[]
 }
 
 export function ParentList({
@@ -91,7 +93,7 @@ export function ParentList({
           <CardTitle>All Parents ({total})</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No parents added yet.</p>
+          <p className="text-muted-foreground text-sm">No parents added yet.</p>
         </CardContent>
       </Card>
     )
@@ -118,7 +120,7 @@ export function ParentList({
         </CardHeader>
         <CardContent>
           {parents.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No parents match your search.</p>
+            <p className="text-muted-foreground text-sm">No parents match your search.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -138,27 +140,31 @@ export function ParentList({
                       <TableCell className="font-medium">
                         {parent.firstName} {parent.lastName}
                       </TableCell>
-                      <TableCell className="hidden md:table-cell capitalize">
+                      <TableCell className="hidden capitalize md:table-cell">
                         {parent.relationship.toLowerCase()}
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         <div className="text-sm">
                           {parent.email && <div>{parent.email}</div>}
-                          {parent.phone && <div className="text-muted-foreground">{parent.phone}</div>}
+                          {parent.phone && (
+                            <div className="text-muted-foreground">{parent.phone}</div>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
-                        {parent.students.length > 0
-                          ? parent.students.map((s) => (
-                              <span key={s.student.id} className="inline-block mr-2 text-sm">
-                                {s.student.firstName} {s.student.lastName}
-                              </span>
-                            ))
-                          : <span className="text-muted-foreground text-sm">None</span>}
+                        {parent.students.length > 0 ? (
+                          parent.students.map((s) => (
+                            <span key={s.student.id} className="mr-2 inline-block text-sm">
+                              {s.student.firstName} {s.student.lastName}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-muted-foreground text-sm">None</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {parent.isPrimary ? (
-                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800">
+                          <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
                             Primary
                           </span>
                         ) : (
@@ -167,10 +173,21 @@ export function ParentList({
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => { setEditItem(parent); setError(null) }}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setEditItem(parent)
+                              setError(null)
+                            }}
+                          >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(parent.id)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(parent.id)}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -186,45 +203,79 @@ export function ParentList({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1}
-            onClick={() => router.push(`/dashboard/parents?page=${page - 1}&search=${search}`)}>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => router.push(`/dashboard/parents?page=${page - 1}&search=${search}`)}
+          >
             Previous
           </Button>
-          <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages}
-            onClick={() => router.push(`/dashboard/parents?page=${page + 1}&search=${search}`)}>
+          <span className="text-muted-foreground text-sm">
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => router.push(`/dashboard/parents?page=${page + 1}&search=${search}`)}
+          >
             Next
           </Button>
         </div>
       )}
 
-      <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
+      <Dialog
+        open={!!editItem}
+        onOpenChange={(o) => {
+          if (!o) {
+            setEditItem(null)
+            setError(null)
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Parent</DialogTitle>
           </DialogHeader>
           <form action={handleUpdate} className="space-y-4">
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {error && <p className="text-destructive text-sm">{error}</p>}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-firstName">First Name</Label>
-                <Input id="edit-firstName" name="firstName" defaultValue={editItem?.firstName} required />
+                <Input
+                  id="edit-firstName"
+                  name="firstName"
+                  defaultValue={editItem?.firstName}
+                  required
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-lastName">Last Name</Label>
-                <Input id="edit-lastName" name="lastName" defaultValue={editItem?.lastName} required />
+                <Input
+                  id="edit-lastName"
+                  name="lastName"
+                  defaultValue={editItem?.lastName}
+                  required
+                />
               </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-relationship">Relationship</Label>
-              <select id="edit-relationship" name="relationship" defaultValue={editItem?.relationship} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+              <select
+                id="edit-relationship"
+                name="relationship"
+                defaultValue={editItem?.relationship}
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                required
+              >
                 <option value="FATHER">Father</option>
                 <option value="MOTHER">Mother</option>
                 <option value="GUARDIAN">Guardian</option>
                 <option value="OTHER">Other</option>
               </select>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-phone">Phone</Label>
                 <Input id="edit-phone" name="phone" defaultValue={editItem?.phone || ""} />
@@ -236,17 +287,29 @@ export function ParentList({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-occupation">Occupation</Label>
-              <Input id="edit-occupation" name="occupation" defaultValue={editItem?.occupation || ""} />
+              <Input
+                id="edit-occupation"
+                name="occupation"
+                defaultValue={editItem?.occupation || ""}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-address">Address</Label>
               <Input id="edit-address" name="address" defaultValue={editItem?.address || ""} />
             </div>
             <div className="flex items-center gap-2">
-              <input id="edit-isPrimary" name="isPrimary" type="checkbox" defaultChecked={editItem?.isPrimary} className="h-4 w-4 rounded border-gray-300" />
+              <input
+                id="edit-isPrimary"
+                name="isPrimary"
+                type="checkbox"
+                defaultChecked={editItem?.isPrimary}
+                className="h-4 w-4 rounded border-gray-300"
+              />
               <Label htmlFor="edit-isPrimary">Primary Contact</Label>
             </div>
-            <Button type="submit" className="w-full">Update Parent</Button>
+            <Button type="submit" className="w-full">
+              Update Parent
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

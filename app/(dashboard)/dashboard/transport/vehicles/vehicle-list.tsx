@@ -6,7 +6,13 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createVehicle, updateVehicle, deleteVehicle } from "@/actions/transport.actions"
@@ -15,13 +21,7 @@ import { Pencil, Trash2, Plus } from "lucide-react"
 
 const vehicleTypes = ["BUS", "VAN", "CAR", "MINIBUS", "OTHER"] as const
 
-export function VehicleList({
-  vehicles,
-  profile,
-}: {
-  vehicles: any[]
-  profile: any
-}) {
+export function VehicleList({ vehicles, profile }: { vehicles: any[]; profile: any }) {
   const router = useRouter()
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
@@ -63,9 +63,21 @@ export function VehicleList({
   return (
     <div className="space-y-6">
       <PageHeader title="Vehicles" description="Manage transport vehicles">
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditItem(null); setError(null) } }}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o)
+            if (!o) {
+              setEditItem(null)
+              setError(null)
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Add Vehicle</Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Vehicle
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -75,38 +87,69 @@ export function VehicleList({
               {error && <p className="text-sm text-red-500">{error}</p>}
               <div>
                 <Label htmlFor="plateNumber">Plate Number</Label>
-                <Input id="plateNumber" name="plateNumber" defaultValue={editItem?.plateNumber || ""} required />
+                <Input
+                  id="plateNumber"
+                  name="plateNumber"
+                  defaultValue={editItem?.plateNumber || ""}
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="vehicleType">Vehicle Type</Label>
-                <select name="vehicleType" defaultValue={editItem?.vehicleType || "BUS"} className="w-full border rounded p-2">
-                  {vehicleTypes.map(t => (
-                    <option key={t} value={t}>{t}</option>
+                <select
+                  name="vehicleType"
+                  defaultValue={editItem?.vehicleType || "BUS"}
+                  className="w-full rounded border p-2"
+                >
+                  {vehicleTypes.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
                   ))}
                 </select>
               </div>
               <div>
                 <Label htmlFor="capacity">Capacity</Label>
-                <Input id="capacity" name="capacity" type="number" defaultValue={editItem?.capacity || ""} required />
+                <Input
+                  id="capacity"
+                  name="capacity"
+                  type="number"
+                  defaultValue={editItem?.capacity || ""}
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="driverName">Driver Name</Label>
-                <Input id="driverName" name="driverName" defaultValue={editItem?.driverName || ""} />
+                <Input
+                  id="driverName"
+                  name="driverName"
+                  defaultValue={editItem?.driverName || ""}
+                />
               </div>
               <div>
                 <Label htmlFor="driverPhone">Driver Phone</Label>
-                <Input id="driverPhone" name="driverPhone" defaultValue={editItem?.driverPhone || ""} />
+                <Input
+                  id="driverPhone"
+                  name="driverPhone"
+                  defaultValue={editItem?.driverPhone || ""}
+                />
               </div>
               {editItem && (
                 <div>
                   <Label htmlFor="isActive">Active</Label>
-                  <select name="isActive" defaultValue={editItem?.isActive ? "true" : "false"} className="w-full border rounded p-2">
+                  <select
+                    name="isActive"
+                    defaultValue={editItem?.isActive ? "true" : "false"}
+                    className="w-full rounded border p-2"
+                  >
                     <option value="true">Active</option>
                     <option value="false">Inactive</option>
                   </select>
                 </div>
               )}
-              <Button type="submit" className="w-full">{editItem ? "Update" : "Add Vehicle"}</Button>
+              <Button type="submit" className="w-full">
+                {editItem ? "Update" : "Add Vehicle"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -117,20 +160,47 @@ export function VehicleList({
           { header: "Plate Number", accessorKey: "plateNumber" },
           { header: "Type", accessorKey: "vehicleType" },
           { header: "Capacity", accessorKey: "capacity" },
-          { header: "Driver", accessorKey: "driverName", cell: ({ row }: any) => row.driverName || "-" },
-          { header: "Driver Phone", accessorKey: "driverPhone", cell: ({ row }: any) => row.driverPhone || "-" },
-          { header: "Routes", accessorKey: "_count", cell: ({ row }: any) => row._count?.routes || 0 },
-          { header: "Assignments", accessorKey: "_count", cell: ({ row }: any) => row._count?.assignments || 0 },
-          { header: "Status", accessorKey: "isActive", cell: ({ row }: any) => (
-            <Badge variant={row.isActive ? "default" : "secondary"}>
-              {row.isActive ? "Active" : "Inactive"}
-            </Badge>
-          )},
+          {
+            header: "Driver",
+            accessorKey: "driverName",
+            cell: ({ row }: any) => row.driverName || "-",
+          },
+          {
+            header: "Driver Phone",
+            accessorKey: "driverPhone",
+            cell: ({ row }: any) => row.driverPhone || "-",
+          },
+          {
+            header: "Routes",
+            accessorKey: "_count",
+            cell: ({ row }: any) => row._count?.routes || 0,
+          },
+          {
+            header: "Assignments",
+            accessorKey: "_count",
+            cell: ({ row }: any) => row._count?.assignments || 0,
+          },
+          {
+            header: "Status",
+            accessorKey: "isActive",
+            cell: ({ row }: any) => (
+              <Badge variant={row.isActive ? "default" : "secondary"}>
+                {row.isActive ? "Active" : "Inactive"}
+              </Badge>
+            ),
+          },
           {
             header: "Actions",
             cell: ({ row }: any) => (
               <div className="flex gap-2">
-                <Button variant="ghost" size="icon" onClick={() => { setEditItem(row); setOpen(true) }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setEditItem(row)
+                    setOpen(true)
+                  }}
+                >
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)}>

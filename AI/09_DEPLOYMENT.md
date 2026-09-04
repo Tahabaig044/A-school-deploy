@@ -6,17 +6,18 @@
 
 ## Deployment Stack
 
-| Component | Technology |
-|-----------|------------|
-| Hosting | Vercel |
-| Database | Supabase (PostgreSQL) |
-| Storage | Supabase Storage |
-| CI/CD | GitHub Actions |
-| Monitoring | Vercel Analytics |
+| Component  | Technology            |
+| ---------- | --------------------- |
+| Hosting    | Vercel                |
+| Database   | Supabase (PostgreSQL) |
+| Storage    | Supabase Storage      |
+| CI/CD      | GitHub Actions        |
+| Monitoring | Vercel Analytics      |
 
 ## Environment Variables
 
 ### Required
+
 ```env
 # Database
 DATABASE_URL=postgresql://...
@@ -32,6 +33,7 @@ NEXTAUTH_URL=https://...
 ```
 
 ### Forbidden to Commit
+
 - .env.local
 - .env.production
 - Any file with secrets
@@ -58,6 +60,7 @@ npm test
 ## Deployment Checklist
 
 ### Before Deploy
+
 - [ ] All tests pass
 - [ ] TypeScript compiles
 - [ ] No lint errors
@@ -66,6 +69,7 @@ npm test
 - [ ] Database migrations run
 
 ### After Deploy
+
 - [ ] Health check passes
 - [ ] Auth works
 - [ ] Core features work

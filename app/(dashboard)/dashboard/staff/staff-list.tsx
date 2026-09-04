@@ -72,16 +72,21 @@ export function StaffList({
       toast({ title: "Staff deleted" })
       router.refresh()
     } catch (e) {
-      toast({ title: e instanceof Error ? e.message : "Failed to delete staff", variant: "destructive" })
+      toast({
+        title: e instanceof Error ? e.message : "Failed to delete staff",
+        variant: "destructive",
+      })
     }
   }
 
   if (staff.length === 0) {
     return (
       <Card>
-        <CardHeader><CardTitle>All Staff</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>All Staff</CardTitle>
+        </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No staff added yet.</p>
+          <p className="text-muted-foreground text-sm">No staff added yet.</p>
         </CardContent>
       </Card>
     )
@@ -90,7 +95,9 @@ export function StaffList({
   return (
     <>
       <Card>
-        <CardHeader><CardTitle>All Staff ({total})</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>All Staff ({total})</CardTitle>
+        </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
@@ -108,21 +115,34 @@ export function StaffList({
               <TableBody>
                 {staff.map((s) => (
                   <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.firstName} {s.lastName}</TableCell>
+                    <TableCell className="font-medium">
+                      {s.firstName} {s.lastName}
+                    </TableCell>
                     <TableCell className="hidden md:table-cell">{s.employeeCode}</TableCell>
                     <TableCell className="hidden lg:table-cell">{s.department}</TableCell>
                     <TableCell className="hidden lg:table-cell">{s.designation}</TableCell>
                     <TableCell className="hidden md:table-cell">{s.school.name}</TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        s.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          s.status === "ACTIVE"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
                         {s.status.charAt(0) + s.status.slice(1).toLowerCase()}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditItem(s); setError(null) }}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setEditItem(s)
+                            setError(null)
+                          }}
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}>
@@ -148,7 +168,7 @@ export function StaffList({
           >
             Previous
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Page {page} of {totalPages}
           </span>
           <Button
@@ -162,55 +182,105 @@ export function StaffList({
         </div>
       )}
 
-      <Dialog open={!!editItem} onOpenChange={(o) => { if (!o) { setEditItem(null); setError(null) } }}>
+      <Dialog
+        open={!!editItem}
+        onOpenChange={(o) => {
+          if (!o) {
+            setEditItem(null)
+            setError(null)
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Staff</DialogTitle>
           </DialogHeader>
           <form action={handleUpdate} className="space-y-4">
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {error && <p className="text-destructive text-sm">{error}</p>}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-firstName">First Name</Label>
-                <Input id="edit-firstName" name="firstName" defaultValue={editItem?.firstName} required />
+                <Input
+                  id="edit-firstName"
+                  name="firstName"
+                  defaultValue={editItem?.firstName}
+                  required
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-lastName">Last Name</Label>
-                <Input id="edit-lastName" name="lastName" defaultValue={editItem?.lastName} required />
+                <Input
+                  id="edit-lastName"
+                  name="lastName"
+                  defaultValue={editItem?.lastName}
+                  required
+                />
               </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-employeeCode">Employee Code</Label>
-              <Input id="edit-employeeCode" name="employeeCode" defaultValue={editItem?.employeeCode} required />
+              <Input
+                id="edit-employeeCode"
+                name="employeeCode"
+                defaultValue={editItem?.employeeCode}
+                required
+              />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-department">Department</Label>
-                <Input id="edit-department" name="department" defaultValue={editItem?.department} required />
+                <Input
+                  id="edit-department"
+                  name="department"
+                  defaultValue={editItem?.department}
+                  required
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-designation">Designation</Label>
-                <Input id="edit-designation" name="designation" defaultValue={editItem?.designation} required />
+                <Input
+                  id="edit-designation"
+                  name="designation"
+                  defaultValue={editItem?.designation}
+                  required
+                />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-phone">Phone</Label>
-                <Input id="edit-phone" name="phone" type="tel" defaultValue={editItem?.phone || ""} />
+                <Input
+                  id="edit-phone"
+                  name="phone"
+                  type="tel"
+                  defaultValue={editItem?.phone || ""}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-email">Email</Label>
-                <Input id="edit-email" name="email" type="email" defaultValue={editItem?.email || ""} />
+                <Input
+                  id="edit-email"
+                  name="email"
+                  type="email"
+                  defaultValue={editItem?.email || ""}
+                />
               </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-status">Status</Label>
-              <select id="edit-status" name="status" defaultValue={editItem?.status} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <select
+                id="edit-status"
+                name="status"
+                defaultValue={editItem?.status}
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+              >
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
               </select>
             </div>
-            <Button type="submit" className="w-full">Update Staff</Button>
+            <Button type="submit" className="w-full">
+              Update Staff
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

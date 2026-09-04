@@ -6,23 +6,25 @@ import { SubjectList } from "./subject-list"
 export default async function SubjectsPage() {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL")
 
-  const subjects = profile.role === "SUPER_ADMIN"
-    ? await prisma.subject.findMany({
-        include: { school: true, classSubjects: { include: { class: true } } },
-        orderBy: { name: "asc" },
-      })
-    : await prisma.subject.findMany({
-        where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
-        include: { school: true, classSubjects: { include: { class: true } } },
-        orderBy: { name: "asc" },
-      })
+  const subjects =
+    profile.role === "SUPER_ADMIN"
+      ? await prisma.subject.findMany({
+          include: { school: true, classSubjects: { include: { class: true } } },
+          orderBy: { name: "asc" },
+        })
+      : await prisma.subject.findMany({
+          where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
+          include: { school: true, classSubjects: { include: { class: true } } },
+          orderBy: { name: "asc" },
+        })
 
-  const classes = profile.role === "SUPER_ADMIN"
-    ? await prisma.class.findMany({ orderBy: { order: "asc" } })
-    : await prisma.class.findMany({
-        where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
-        orderBy: { order: "asc" },
-      })
+  const classes =
+    profile.role === "SUPER_ADMIN"
+      ? await prisma.class.findMany({ orderBy: { order: "asc" } })
+      : await prisma.class.findMany({
+          where: { schoolId: profile.schoolId!, branchId: profile.branchId! },
+          orderBy: { order: "asc" },
+        })
 
   return (
     <div className="grid gap-6">

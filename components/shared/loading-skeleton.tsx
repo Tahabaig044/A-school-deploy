@@ -64,10 +64,10 @@ export function FormSkeleton({ fields = 3 }: { fields?: number }) {
 
 export function TransitionSkeleton() {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg border bg-card p-6 shadow-lg">
+    <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+      <div className="bg-card w-full max-w-md rounded-lg border p-6 shadow-lg">
         <div className="flex flex-col gap-4">
-          <Skeleton className="h-6 w-48 mx-auto" />
+          <Skeleton className="mx-auto h-6 w-48" />
           <div className="space-y-3">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />

@@ -12,7 +12,7 @@ export default async function StudentsPage({
     "SCHOOL_ADMIN",
     "BRANCH_ADMIN",
     "PRINCIPAL",
-    "ADMISSION_OFFICER"
+    "ADMISSION_OFFICER",
   )
 
   const params = await searchParams
@@ -59,9 +59,10 @@ export default async function StudentsPage({
     }),
     prisma.student.count({ where }),
     prisma.class.findMany({
-      where: profile.role === "SUPER_ADMIN"
-        ? undefined
-        : { schoolId: profile.schoolId!, branchId: profile.branchId! },
+      where:
+        profile.role === "SUPER_ADMIN"
+          ? undefined
+          : { schoolId: profile.schoolId!, branchId: profile.branchId! },
       orderBy: { order: "asc" },
     }),
   ])

@@ -1,6 +1,7 @@
 # DATABASE_PROMPT
 
 ## Usage
+
 When working with database, use this prompt.
 
 ## Prompt

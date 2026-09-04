@@ -23,10 +23,15 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const DEFAULT_PASSWORD = "School@123"
 
-async function createAuthUser(id: string, email: string, password: string, userMeta: Record<string, string>) {
+async function createAuthUser(
+  id: string,
+  email: string,
+  password: string,
+  userMeta: Record<string, string>,
+) {
   const checkRes = await fetch(
     `${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`,
-    { headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` } }
+    { headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` } },
   )
   const existing = await checkRes.json()
   if (existing.users?.length > 0) return { skipped: true, id: existing.users[0].id }
@@ -46,16 +51,26 @@ async function createAuthUser(id: string, email: string, password: string, userM
 async function main() {
   console.log("=== Step 1: Create Profile + Auth users for parents ===\n")
 
-  interface ParentRow { id: string; school_id: string; first_name: string; last_name: string; email: string; phone: string | null }
+  interface ParentRow {
+    id: string
+    school_id: string
+    first_name: string
+    last_name: string
+    email: string
+    phone: string | null
+  }
   const parents = await prisma.$queryRawUnsafe<ParentRow[]>(
-    "SELECT id, school_id, first_name, last_name, email, phone FROM parents WHERE email IS NOT NULL AND email != ''"
+    "SELECT id, school_id, first_name, last_name, email, phone FROM parents WHERE email IS NOT NULL AND email != ''",
   )
 
   let created = 0
   let skipped = 0
 
   for (const p of parents) {
-    const existingProfile = await prisma.profile.findUnique({ where: { email: p.email }, select: { id: true } })
+    const existingProfile = await prisma.profile.findUnique({
+      where: { email: p.email },
+      select: { id: true },
+    })
     if (existingProfile) {
       console.log(`  EXISTS: ${p.email}`)
       skipped++
@@ -100,10 +115,11 @@ async function main() {
 
   for (const profile of portalProfiles) {
     if (!profile.email) continue
-    const result = await createAuthUser(
-      profile.id, profile.email, DEFAULT_PASSWORD,
-      { first_name: profile.firstName || "", last_name: profile.lastName || "", role: profile.role }
-    )
+    const result = await createAuthUser(profile.id, profile.email, DEFAULT_PASSWORD, {
+      first_name: profile.firstName || "",
+      last_name: profile.lastName || "",
+      role: profile.role,
+    })
 
     if (result.skipped) {
       console.log(`  EXISTS: ${profile.email} (${profile.role})`)
@@ -138,4 +154,7 @@ async function main() {
   await pool.end()
 }
 
-main().catch((e) => { console.error(e); process.exit(1) })
+main().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})

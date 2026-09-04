@@ -6,7 +6,13 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { submitExamResult, submitBulkExamResults } from "@/actions/exam.actions"
 import { useToast } from "@/hooks/use-toast"
@@ -51,11 +57,18 @@ export function MarksEntryForm({
     if (!selectedExam) return
 
     setSaving(true)
-    const results = students.map((student) => ({
-      studentId: student.id,
-      marksObtained: marks[student.id] !== undefined ? Number(marks[student.id]) : (existingResultsMap[student.id]?.marksObtained ? Number(existingResultsMap[student.id].marksObtained) : null),
-      remarks: remarks[student.id] || existingResultsMap[student.id]?.remarks || undefined,
-    })).filter((r) => r.marksObtained !== null)
+    const results = students
+      .map((student) => ({
+        studentId: student.id,
+        marksObtained:
+          marks[student.id] !== undefined
+            ? Number(marks[student.id])
+            : existingResultsMap[student.id]?.marksObtained
+              ? Number(existingResultsMap[student.id].marksObtained)
+              : null,
+        remarks: remarks[student.id] || existingResultsMap[student.id]?.remarks || undefined,
+      }))
+      .filter((r) => r.marksObtained !== null)
 
     const res = await submitBulkExamResults(selectedExam.id, results)
     setSaving(false)
@@ -94,7 +107,9 @@ export function MarksEntryForm({
         <div className="w-64">
           <Label>Select Exam</Label>
           <Select defaultValue={selectedExam?.id || ""} onValueChange={handleExamChange}>
-            <SelectTrigger><SelectValue placeholder="Choose exam" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose exam" />
+            </SelectTrigger>
             <SelectContent>
               {exams.map((exam) => (
                 <SelectItem key={exam.id} value={exam.id}>
@@ -109,8 +124,10 @@ export function MarksEntryForm({
       {selectedExam && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex justify-between items-center">
-              <span>{selectedExam.name} - {selectedExam.class?.name} ({selectedExam.subject?.name})</span>
+            <CardTitle className="flex items-center justify-between">
+              <span>
+                {selectedExam.name} - {selectedExam.class?.name} ({selectedExam.subject?.name})
+              </span>
               <span className="text-sm font-normal">
                 Total: {selectedExam.totalMarks} | Passing: {selectedExam.passingMarks}
               </span>
@@ -124,10 +141,10 @@ export function MarksEntryForm({
                 </Button>
               </div>
 
-              <div className="border rounded-lg">
+              <div className="rounded-lg border">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b bg-muted/50">
+                    <tr className="bg-muted/50 border-b">
                       <th className="p-3 text-left">Admission No</th>
                       <th className="p-3 text-left">Student Name</th>
                       <th className="p-3 text-left">Marks Obtained</th>
@@ -141,7 +158,9 @@ export function MarksEntryForm({
                       return (
                         <tr key={student.id} className="border-b">
                           <td className="p-3">{student.admissionNo}</td>
-                          <td className="p-3">{student.firstName} {student.lastName}</td>
+                          <td className="p-3">
+                            {student.firstName} {student.lastName}
+                          </td>
                           <td className="p-3">
                             <Input
                               type="number"
@@ -160,7 +179,11 @@ export function MarksEntryForm({
                             />
                           </td>
                           <td className="p-3">
-                            <Button variant="ghost" size="sm" onClick={() => handleSaveIndividual(student.id)}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSaveIndividual(student.id)}
+                            >
                               Save
                             </Button>
                           </td>

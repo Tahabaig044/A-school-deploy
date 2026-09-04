@@ -18,9 +18,9 @@ export default async function ChildrenPage() {
       {children.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Users className="h-12 w-12 text-muted-foreground mb-4" />
+            <Users className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-lg font-medium">No children linked to your account</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Contact the school administration to link your children
             </p>
           </CardContent>
@@ -70,9 +70,7 @@ export default async function ChildrenPage() {
                       </Link>
                     </Button>
                     <Button asChild variant="outline" size="sm" className="flex-1">
-                      <Link href={`/portal/parent/fees?student=${child.id}`}>
-                        Fees
-                      </Link>
+                      <Link href={`/portal/parent/fees?student=${child.id}`}>Fees</Link>
                     </Button>
                     <Button asChild variant="outline" size="sm" className="flex-1">
                       <Link href={`/portal/parent/results?student=${child.id}`}>

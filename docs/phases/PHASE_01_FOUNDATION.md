@@ -1,9 +1,11 @@
 # Phase 1: Foundation
 
 ## Duration
+
 2 weeks
 
 ## Objectives
+
 - Set up development environment
 - Establish project structure
 - Implement authentication system
@@ -13,6 +15,7 @@
 ## Deliverables
 
 ### Week 1
+
 1. **Project Setup**
    - Initialize Next.js project with TypeScript
    - Configure ESLint, Prettier, Husky
@@ -32,6 +35,7 @@
    - Implement password hashing
 
 ### Week 2
+
 1. **Base UI Components**
    - Button, Input, Select components
    - Card, Modal, Table components
@@ -47,6 +51,7 @@
 ## Technical Tasks
 
 ### Backend
+
 ```bash
 # Initialize project
 npm init -y
@@ -62,6 +67,7 @@ npm install -D @types/jsonwebtoken @types/bcryptjs
 ```
 
 ### Frontend
+
 ```bash
 # Initialize Next.js
 npx create-next-app@latest --typescript --tailwind
@@ -73,12 +79,14 @@ npm install lucide-react
 ```
 
 ## Database Schema (Initial)
+
 - Users table
 - Schools table
 - Roles table
 - Permissions table
 
 ## API Endpoints
+
 - POST /api/v1/auth/register
 - POST /api/v1/auth/login
 - POST /api/v1/auth/refresh
@@ -86,6 +94,7 @@ npm install lucide-react
 - GET /api/v1/health
 
 ## Acceptance Criteria
+
 - [ ] User can register new account
 - [ ] User can login with credentials
 - [ ] JWT tokens work correctly
@@ -95,13 +104,15 @@ npm install lucide-react
 - [ ] All tests pass
 
 ## Dependencies
+
 - Node.js 18+
 - PostgreSQL 15+
 - Redis (optional for caching)
 
 ## Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Database setup issues | High | Use Docker for local DB |
-| Authentication vulnerabilities | High | Follow security best practices |
-| Component reusability | Medium | Create comprehensive storybook |
+
+| Risk                           | Impact | Mitigation                     |
+| ------------------------------ | ------ | ------------------------------ |
+| Database setup issues          | High   | Use Docker for local DB        |
+| Authentication vulnerabilities | High   | Follow security best practices |
+| Component reusability          | Medium | Create comprehensive storybook |

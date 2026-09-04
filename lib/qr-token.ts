@@ -14,7 +14,7 @@ function getTokenSecret(): string {
   if (!secret) {
     if (process.env.NODE_ENV === "production") {
       throw new Error(
-        "ID_CARD_TOKEN_SECRET is required in production. Set it to a long random value and keep it secret."
+        "ID_CARD_TOKEN_SECRET is required in production. Set it to a long random value and keep it secret.",
       )
     }
     return process.env.SUPABASE_SERVICE_ROLE_KEY || "id-card-dev-secret-change-me"
@@ -23,9 +23,7 @@ function getTokenSecret(): string {
 }
 
 export function deriveQrToken(cardId: string): string {
-  return createHmac("sha256", getTokenSecret())
-    .update(`id-card:${cardId}`)
-    .digest("base64url")
+  return createHmac("sha256", getTokenSecret()).update(`id-card:${cardId}`).digest("base64url")
 }
 
 export function hashQrToken(token: string): string {

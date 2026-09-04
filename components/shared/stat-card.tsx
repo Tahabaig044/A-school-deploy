@@ -14,13 +14,11 @@ export function StatCard({ title, value, icon: Icon, description }: StatCardProp
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-muted-foreground text-sm">{title}</p>
             <p className="text-3xl font-bold">{value}</p>
-            {description && (
-              <p className="text-xs text-muted-foreground">{description}</p>
-            )}
+            {description && <p className="text-muted-foreground text-xs">{description}</p>}
           </div>
-          <div className="rounded-lg bg-primary/10 p-3 text-primary">
+          <div className="bg-primary/10 text-primary rounded-lg p-3">
             <Icon className="h-5 w-5" />
           </div>
         </div>

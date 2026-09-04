@@ -21,7 +21,7 @@ const sectionSchema = z.object({
 
 export async function createClass(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -66,7 +66,7 @@ export async function createClass(
 export async function updateClass(
   classId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
   const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
@@ -131,9 +131,9 @@ export async function deleteClass(classId: string) {
 
 export async function createSection(
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
   const classId = formData.get("classId") as string
   const name = formData.get("name") as string
@@ -142,6 +142,15 @@ export async function createSection(
   const parsed = sectionSchema.safeParse({ classId, name, capacity })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
+  }
+
+  const cls = await prisma.class.findUnique({
+    where: { id: classId },
+    select: { schoolId: true },
+  })
+  if (!cls) return { error: "Class not found.", success: false }
+  if (profile.role !== "SUPER_ADMIN" && cls.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
   }
 
   try {
@@ -157,13 +166,22 @@ export async function createSection(
 }
 
 export async function deleteSection(sectionId: string) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
   try {
-    const section = await prisma.section.findUnique({ where: { id: sectionId } })
+    const section = await prisma.section.findUnique({
+      where: { id: sectionId },
+      include: { class: { select: { schoolId: true } } },
+    })
+    if (!section) return { error: "Section not found.", success: false }
+    if (profile.role !== "SUPER_ADMIN" && section.class.schoolId !== profile.schoolId) {
+      return { error: "Forbidden", success: false }
+    }
+
     await prisma.section.delete({ where: { id: sectionId } })
 
     if (section) revalidatePath(`/dashboard/classes/${section.classId}`)
+    return { success: true }
   } catch (e) {
     // Silently fail — section may have dependent records
   }
@@ -172,21 +190,31 @@ export async function deleteSection(sectionId: string) {
 export async function updateSection(
   sectionId: string,
   _prevState: { error?: string; success?: boolean } | null,
-  formData: FormData
+  formData: FormData,
 ) {
-  await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
+  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN")
 
   const name = formData.get("name") as string
   const capacity = parseInt(formData.get("capacity") as string) || 30
 
-  const parsed = sectionSchema.safeParse({ classId: "00000000-0000-0000-0000-000000000000", name, capacity })
+  const parsed = sectionSchema.safeParse({
+    classId: "00000000-0000-0000-0000-000000000000",
+    name,
+    capacity,
+  })
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message, success: false }
   }
 
-  const section = await prisma.section.findUnique({ where: { id: sectionId } })
+  const section = await prisma.section.findUnique({
+    where: { id: sectionId },
+    include: { class: { select: { schoolId: true } } },
+  })
   if (!section) {
     return { error: "Section not found", success: false }
+  }
+  if (profile.role !== "SUPER_ADMIN" && section.class.schoolId !== profile.schoolId) {
+    return { error: "Forbidden", success: false }
   }
 
   try {

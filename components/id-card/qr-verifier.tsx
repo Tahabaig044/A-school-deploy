@@ -8,7 +8,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { verifyIdCardTokenAction } from "@/actions/id-card.actions"
 import type { IdCardVerification } from "@/services/id-card"
-import { Camera, CameraOff, CheckCircle2, XCircle, Loader2, ScanLine, ShieldCheck } from "lucide-react"
+import {
+  Camera,
+  CameraOff,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  ScanLine,
+  ShieldCheck,
+} from "lucide-react"
 import type { Html5Qrcode } from "html5-qrcode"
 
 export function QrVerifier() {
@@ -50,7 +58,7 @@ export function QrVerifier() {
         async (decodedText) => {
           await verify(decodedText)
         },
-        () => {}
+        () => {},
       )
       setScanning(true)
     } catch {
@@ -86,12 +94,12 @@ export function QrVerifier() {
           <div
             id="id-card-qr-reader"
             ref={readerRef}
-            className={`w-full max-w-md mx-auto overflow-hidden rounded-lg border bg-muted ${scanning ? "" : "flex items-center justify-center"}`}
+            className={`bg-muted mx-auto w-full max-w-md overflow-hidden rounded-lg border ${scanning ? "" : "flex items-center justify-center"}`}
             style={{ minHeight: scanning ? "auto" : "200px" }}
           >
             {!scanning && (
-              <div className="text-center text-muted-foreground p-8">
-                <ScanLine className="h-12 w-12 mx-auto mb-3 opacity-40" />
+              <div className="text-muted-foreground p-8 text-center">
+                <ScanLine className="mx-auto mb-3 h-12 w-12 opacity-40" />
                 <p>Start the scanner to verify a card</p>
               </div>
             )}
@@ -99,11 +107,13 @@ export function QrVerifier() {
           <div className="flex justify-center">
             {scanning ? (
               <Button variant="destructive" onClick={stopScanner}>
-                <CameraOff className="h-4 w-4 mr-2" />Stop Scanner
+                <CameraOff className="mr-2 h-4 w-4" />
+                Stop Scanner
               </Button>
             ) : (
               <Button onClick={startScanner}>
-                <Camera className="h-4 w-4 mr-2" />Start Scanner
+                <Camera className="mr-2 h-4 w-4" />
+                Start Scanner
               </Button>
             )}
           </div>
@@ -127,8 +137,16 @@ export function QrVerifier() {
                 className="font-mono"
               />
             </div>
-            <Button onClick={() => verify(tokenInput)} disabled={!tokenInput || verifying} className="w-full">
-              {verifying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
+            <Button
+              onClick={() => verify(tokenInput)}
+              disabled={!tokenInput || verifying}
+              className="w-full"
+            >
+              {verifying ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <ShieldCheck className="mr-2 h-4 w-4" />
+              )}
               Verify Token
             </Button>
           </CardContent>
@@ -140,12 +158,14 @@ export function QrVerifier() {
               <div className="flex items-center justify-between">
                 <CardTitle>Verification Result</CardTitle>
                 {result.verified ? (
-                  <Badge variant="success" className="text-sm px-3 py-1">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />Verified
+                  <Badge variant="success" className="px-3 py-1 text-sm">
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                    Verified
                   </Badge>
                 ) : (
-                  <Badge variant="destructive" className="text-sm px-3 py-1">
-                    <XCircle className="h-3 w-3 mr-1" />{result.reason || "Failed"}
+                  <Badge variant="destructive" className="px-3 py-1 text-sm">
+                    <XCircle className="mr-1 h-3 w-3" />
+                    {result.reason || "Failed"}
                   </Badge>
                 )}
               </div>
@@ -156,7 +176,9 @@ export function QrVerifier() {
                   <div className="text-lg font-semibold">{result.data.name}</div>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="info">{result.data.role}</Badge>
-                    <Badge variant="outline" className="font-mono">{result.data.cardNumber}</Badge>
+                    <Badge variant="outline" className="font-mono">
+                      {result.data.cardNumber}
+                    </Badge>
                   </div>
                   <div className="pt-1">
                     <span className="text-muted-foreground">{result.data.identity.label}: </span>
@@ -182,12 +204,12 @@ export function QrVerifier() {
                         <span className="font-medium">{d.value}</span>
                       </div>
                     ))}
-                  <div className="pt-1 text-xs text-muted-foreground">
+                  <div className="text-muted-foreground pt-1 text-xs">
                     Attendance: {result.data.attendanceEligible ? "Eligible" : "Not eligible"}
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   This token could not be verified. The card may be invalid, revoked, or inactive.
                 </p>
               )}

@@ -10,11 +10,7 @@ import { PORTAL_ROLES, type Role } from "@/lib/constants"
 import { getCurrentUser } from "@/lib/auth"
 import { validateDashboardAccess } from "@/lib/dashboard-validation"
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const layoutStart = performance.now()
   const user = await getCurrentUser()
 
@@ -28,10 +24,12 @@ export default async function DashboardLayout({
     // Show professional error page instead of blank page
     return (
       <div className="flex min-h-full items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-destructive">Access Error</h1>
+        <div className="space-y-4 text-center">
+          <h1 className="text-destructive text-2xl font-bold">Access Error</h1>
           <p className="text-muted-foreground">{validation.error}</p>
-          <a href="/login" className="text-primary underline">Return to Login</a>
+          <a href="/login" className="text-primary underline">
+            Return to Login
+          </a>
         </div>
       </div>
     )
@@ -73,7 +71,7 @@ export default async function DashboardLayout({
     <div className="flex min-h-full">
       <Sidebar permissions={permissions} />
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-10 border-b bg-background">
+        <header className="bg-background sticky top-0 z-10 border-b">
           <div className="flex h-16 items-center justify-between px-3">
             <MobileSidebar permissions={permissions} />
             <div className="flex items-center gap-4">

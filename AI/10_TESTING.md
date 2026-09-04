@@ -6,26 +6,29 @@
 
 ## Testing Stack
 
-| Tool | Purpose |
-|------|---------|
-| Vitest | Unit testing |
+| Tool                  | Purpose           |
+| --------------------- | ----------------- |
+| Vitest                | Unit testing      |
 | React Testing Library | Component testing |
-| Playwright | E2E testing |
-| MSW | API mocking |
+| Playwright            | E2E testing       |
+| MSW                   | API mocking       |
 
 ## Test Types
 
 ### Unit Tests
+
 - Test individual functions
 - Fast execution
 - No side effects
 
 ### Component Tests
+
 - Test React components
 - User interactions
 - Rendering
 
 ### E2E Tests
+
 - Test full flows
 - Browser automation
 - Critical paths
@@ -51,24 +54,24 @@
 ## Test Structure
 
 ```typescript
-describe('StudentService', () => {
-  describe('createStudent', () => {
-    it('should create student with valid data', async () => {
+describe("StudentService", () => {
+  describe("createStudent", () => {
+    it("should create student with valid data", async () => {
       // Arrange
-      const data = { firstName: 'John', lastName: 'Doe' }
-      
+      const data = { firstName: "John", lastName: "Doe" }
+
       // Act
       const result = await createStudent(data)
-      
+
       // Assert
-      expect(result).toHaveProperty('id')
-      expect(result.firstName).toBe('John')
+      expect(result).toHaveProperty("id")
+      expect(result.firstName).toBe("John")
     })
 
-    it('should throw error with invalid data', async () => {
+    it("should throw error with invalid data", async () => {
       // Arrange
-      const data = { firstName: '' }
-      
+      const data = { firstName: "" }
+
       // Act & Assert
       await expect(createStudent(data)).rejects.toThrow()
     })
@@ -78,12 +81,12 @@ describe('StudentService', () => {
 
 ## Coverage Requirements
 
-| Type | Minimum |
-|------|---------|
-| Statements | 80% |
-| Branches | 75% |
-| Functions | 80% |
-| Lines | 80% |
+| Type       | Minimum |
+| ---------- | ------- |
+| Statements | 80%     |
+| Branches   | 75%     |
+| Functions  | 80%     |
+| Lines      | 80%     |
 
 ## Test Commands
 

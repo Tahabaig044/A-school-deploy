@@ -34,7 +34,7 @@ export default async function ParentTimetablePage({
         </div>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+            <Calendar className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-muted-foreground">No children found in your account.</p>
           </CardContent>
         </Card>
@@ -54,7 +54,7 @@ export default async function ParentTimetablePage({
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {children.map((child) => (
             <Link key={child.id} href={`/portal/parent/timetable?student=${child.id}`}>
-              <Card className="transition-colors hover:bg-accent cursor-pointer">
+              <Card className="hover:bg-accent cursor-pointer transition-colors">
                 <CardHeader>
                   <CardTitle className="text-base">
                     {child.firstName} {child.lastName}
@@ -62,12 +62,14 @@ export default async function ParentTimetablePage({
                 </CardHeader>
                 <CardContent>
                   {child.enrollments[0] ? (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {child.enrollments[0].class.name}
-                      {child.enrollments[0].section ? ` - ${child.enrollments[0].section.name}` : ""}
+                      {child.enrollments[0].section
+                        ? ` - ${child.enrollments[0].section.name}`
+                        : ""}
                     </p>
                   ) : (
-                    <p className="text-sm text-muted-foreground">No active enrollment</p>
+                    <p className="text-muted-foreground text-sm">No active enrollment</p>
                   )}
                 </CardContent>
               </Card>
@@ -94,7 +96,7 @@ export default async function ParentTimetablePage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Calendar className="h-6 w-6 text-primary" />
+          <Calendar className="text-primary h-6 w-6" />
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Weekly Timetable</h2>
             <p className="text-muted-foreground">
@@ -113,7 +115,7 @@ export default async function ParentTimetablePage({
       {timetable.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+            <BookOpen className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-muted-foreground">No timetable entries found for this child.</p>
           </CardContent>
         </Card>
@@ -133,23 +135,23 @@ export default async function ParentTimetablePage({
                     {slots.map((slot, index) => (
                       <div
                         key={slot.id || index}
-                        className={`rounded-lg border p-3 space-y-2 ${
+                        className={`space-y-2 rounded-lg border p-3 ${
                           slot.isFree ? "bg-muted/30 border-dashed" : ""
                         }`}
                       >
                         <div className="flex items-center gap-2 text-sm font-medium">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <Clock className="text-muted-foreground h-4 w-4" />
                           <span>
                             {slot.startTime} – {slot.endTime}
                           </span>
                         </div>
                         {slot.isFree ? (
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs text-muted-foreground">
+                            <Badge variant="outline" className="text-muted-foreground text-xs">
                               Free Period
                             </Badge>
                             {slot.freePeriodReason && (
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-muted-foreground text-xs">
                                 {slot.freePeriodReason}
                               </span>
                             )}
@@ -158,7 +160,7 @@ export default async function ParentTimetablePage({
                           <>
                             <p className="text-sm font-semibold">{slot.subject?.name}</p>
                             {slot.teacher && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                                 <User className="h-4 w-4" />
                                 <span>
                                   {slot.teacher.firstName} {slot.teacher.lastName}
@@ -168,7 +170,7 @@ export default async function ParentTimetablePage({
                           </>
                         )}
                         {slot.room && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="text-muted-foreground flex items-center gap-2 text-sm">
                             <MapPin className="h-4 w-4" />
                             <span>{slot.room}</span>
                           </div>

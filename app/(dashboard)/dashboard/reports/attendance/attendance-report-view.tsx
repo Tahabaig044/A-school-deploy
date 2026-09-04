@@ -8,13 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 
-export function AttendanceReportView({
-  data,
-  profile,
-}: {
-  data: any[]
-  profile: any
-}) {
+export function AttendanceReportView({ data, profile }: { data: any[]; profile: any }) {
   const router = useRouter()
   const [fromDate, setFromDate] = useState("")
   const [toDate, setToDate] = useState("")
@@ -41,7 +35,7 @@ export function AttendanceReportView({
           <CardTitle>Filter by Date Range</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex flex-wrap items-end gap-4">
             <div>
               <Label htmlFor="fromDate">From Date</Label>
               <Input
@@ -65,14 +59,14 @@ export function AttendanceReportView({
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Total Present</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{totalPresent}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {totalRecords > 0 ? ((totalPresent / totalRecords) * 100).toFixed(1) : 0}%
             </p>
           </CardContent>
@@ -83,7 +77,7 @@ export function AttendanceReportView({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{totalAbsent}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {totalRecords > 0 ? ((totalAbsent / totalRecords) * 100).toFixed(1) : 0}%
             </p>
           </CardContent>
@@ -94,7 +88,7 @@ export function AttendanceReportView({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">{totalLate}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {totalRecords > 0 ? ((totalLate / totalRecords) * 100).toFixed(1) : 0}%
             </p>
           </CardContent>
@@ -105,7 +99,7 @@ export function AttendanceReportView({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{totalLeave}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {totalRecords > 0 ? ((totalLeave / totalRecords) * 100).toFixed(1) : 0}%
             </p>
           </CardContent>
@@ -117,10 +111,10 @@ export function AttendanceReportView({
           <CardTitle>Daily Attendance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg overflow-x-auto">
+          <div className="overflow-x-auto rounded-lg border">
             <table className="w-full">
               <thead>
-                <tr className="border-b bg-muted/50">
+                <tr className="bg-muted/50 border-b">
                   <th className="p-3 text-left">Date</th>
                   <th className="p-3 text-right">Present</th>
                   <th className="p-3 text-right">Absent</th>
@@ -137,7 +131,9 @@ export function AttendanceReportView({
                     <td className="p-3 text-right text-red-600">{item.ABSENT}</td>
                     <td className="p-3 text-right text-yellow-600">{item.LATE}</td>
                     <td className="p-3 text-right text-blue-600">{item.LEAVE}</td>
-                    <td className="p-3 text-right">{item.PRESENT + item.ABSENT + item.LATE + item.LEAVE}</td>
+                    <td className="p-3 text-right">
+                      {item.PRESENT + item.ABSENT + item.LATE + item.LEAVE}
+                    </td>
                   </tr>
                 ))}
               </tbody>

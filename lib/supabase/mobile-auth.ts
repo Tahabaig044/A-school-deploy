@@ -7,7 +7,9 @@ import { createClient } from "@supabase/supabase-js"
  * server-side and let the id-card service re-check authorization per request.
  */
 
-export async function getMobileUserFromRequest(req: Request): Promise<{ id: string; email?: string } | null> {
+export async function getMobileUserFromRequest(
+  req: Request,
+): Promise<{ id: string; email?: string } | null> {
   const authHeader = req.headers.get("authorization") || ""
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : ""
   if (!token) return null
@@ -15,7 +17,7 @@ export async function getMobileUserFromRequest(req: Request): Promise<{ id: stri
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+    { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } },
   )
 
   const {

@@ -7,7 +7,14 @@ export default async function AnnouncementsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>
 }) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "TEACHER", "STUDENT", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "TEACHER",
+    "STUDENT",
+    "PARENT",
+  )
   const params = await searchParams
   const page = parseInt(params.page || "1")
   const pageSize = 10

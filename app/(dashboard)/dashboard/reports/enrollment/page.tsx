@@ -13,13 +13,8 @@ export default async function EnrollmentReportPage({
   const data = await getStudentEnrollmentReport(
     profile.schoolId!,
     profile.branchId || undefined,
-    params.academicSessionId || undefined
+    params.academicSessionId || undefined,
   )
 
-  return (
-    <EnrollmentReportView
-      data={data}
-      profile={JSON.parse(JSON.stringify(profile))}
-    />
-  )
+  return <EnrollmentReportView data={data} profile={JSON.parse(JSON.stringify(profile))} />
 }

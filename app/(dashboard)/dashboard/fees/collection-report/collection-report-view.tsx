@@ -5,7 +5,14 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 export function CollectionReport({
   payments,
@@ -30,10 +37,7 @@ export function CollectionReport({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Collection Report"
-        description="Daily collection summary"
-      />
+      <PageHeader title="Collection Report" description="Daily collection summary" />
 
       <form action={handleFilter} className="flex flex-wrap items-end gap-4">
         <div>
@@ -47,30 +51,33 @@ export function CollectionReport({
         <Button type="submit">Filter</Button>
       </form>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Total Collected</p>
+            <p className="text-muted-foreground text-sm">Total Collected</p>
             <p className="text-2xl font-bold text-green-600">${totalCollected.toFixed(2)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Transactions</p>
+            <p className="text-muted-foreground text-sm">Transactions</p>
             <p className="text-2xl font-bold">{payments.length}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Period</p>
-            <p className="text-lg font-medium">{new Date(fromDate).toLocaleDateString()} — {new Date(toDate).toLocaleDateString()}</p>
+            <p className="text-muted-foreground text-sm">Period</p>
+            <p className="text-lg font-medium">
+              {new Date(fromDate).toLocaleDateString()} — {new Date(toDate).toLocaleDateString()}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Cash / Bank / Online</p>
+            <p className="text-muted-foreground text-sm">Cash / Bank / Online</p>
             <p className="text-lg font-medium">
-              ${(byMode["CASH"] || 0).toFixed(2)} / ${(byMode["BANK_TRANSFER"] || 0).toFixed(2)} / ${(byMode["ONLINE"] || 0).toFixed(2)}
+              ${(byMode["CASH"] || 0).toFixed(2)} / ${(byMode["BANK_TRANSFER"] || 0).toFixed(2)} / $
+              {(byMode["ONLINE"] || 0).toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -83,7 +90,7 @@ export function CollectionReport({
         <CardContent>
           <div className="space-y-2">
             {Object.entries(byMode).map(([mode, amount]) => (
-              <div key={mode} className="flex justify-between items-center">
+              <div key={mode} className="flex items-center justify-between">
                 <span className="font-medium">{mode.replace(/_/g, " ")}</span>
                 <span className="font-bold">${amount.toFixed(2)}</span>
               </div>
@@ -101,7 +108,7 @@ export function CollectionReport({
         </CardHeader>
         <CardContent>
           {payments.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">No payments found.</p>
+            <p className="text-muted-foreground py-4 text-center">No payments found.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -119,13 +126,21 @@ export function CollectionReport({
                   {payments.map((payment: any) => (
                     <TableRow key={payment.id}>
                       <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
-                      <TableCell className="hidden md:table-cell font-mono text-xs">{payment.receiptNumber}</TableCell>
+                      <TableCell className="hidden font-mono text-xs md:table-cell">
+                        {payment.receiptNumber}
+                      </TableCell>
                       <TableCell>
                         {payment.invoice.student.firstName} {payment.invoice.student.lastName}
                       </TableCell>
-                      <TableCell className="hidden md:table-cell">{payment.paymentMode.replace(/_/g, " ")}</TableCell>
-                      <TableCell className="text-right font-medium">${Number(payment.amount).toFixed(2)}</TableCell>
-                      <TableCell className="hidden lg:table-cell">{payment.recorder.firstName} {payment.recorder.lastName}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {payment.paymentMode.replace(/_/g, " ")}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        ${Number(payment.amount).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        {payment.recorder.firstName} {payment.recorder.lastName}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

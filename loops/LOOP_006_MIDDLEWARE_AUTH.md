@@ -29,13 +29,13 @@ Apply Phase 2 audit fixes (F3, F4, F5, F7, F14) from `ARCHITECTURE_AUDIT.md`: re
 
 ## Files Modified (5)
 
-| # | File | Change |
-|---|------|--------|
-| 1 | `proxy.ts` | Removed Prisma query + dynamic supabase client; public routes skip auth; role from session metadata; deleted X-User-* response headers; reuses `updateSession` |
-| 2 | `lib/supabase/middleware.ts` | `updateSession` returns `{ user, supabaseResponse }` |
-| 3 | `app/portal/page.tsx` | Uses `getCurrentProfile()` instead of `X-User-Role` header |
-| 4 | `app/api/qr/route.ts` | Added `requireRole` (admin/staff) + per-IP rate limiter |
-| 5 | `app/api/upload/homework/route.ts` | Added `requireRole` (incl. STUDENT) with 401/403 handling |
+| #   | File                               | Change                                                                                                                                                         |
+| --- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `proxy.ts`                         | Removed Prisma query + dynamic supabase client; public routes skip auth; role from session metadata; deleted X-User-* response headers; reuses `updateSession` |
+| 2   | `lib/supabase/middleware.ts`       | `updateSession` returns `{ user, supabaseResponse }`                                                                                                           |
+| 3   | `app/portal/page.tsx`              | Uses `getCurrentProfile()` instead of `X-User-Role` header                                                                                                     |
+| 4   | `app/api/qr/route.ts`              | Added `requireRole` (admin/staff) + per-IP rate limiter                                                                                                        |
+| 5   | `app/api/upload/homework/route.ts` | Added `requireRole` (incl. STUDENT) with 401/403 handling                                                                                                      |
 
 ## Key Fixes
 

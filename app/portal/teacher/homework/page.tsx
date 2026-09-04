@@ -56,7 +56,7 @@ export default async function TeacherHomeworkPage({
         </div>
         <Button asChild>
           <Link href="/portal/teacher/homework/new">
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             New Homework
           </Link>
         </Button>
@@ -65,12 +65,14 @@ export default async function TeacherHomeworkPage({
       {homework.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <BookOpen className="mb-4 h-12 w-12 text-muted-foreground" />
+            <BookOpen className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-lg font-medium">No homework created yet</p>
-            <p className="text-sm text-muted-foreground mb-4">Create your first homework assignment</p>
+            <p className="text-muted-foreground mb-4 text-sm">
+              Create your first homework assignment
+            </p>
             <Button asChild>
               <Link href="/portal/teacher/homework/new">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Create Homework
               </Link>
             </Button>
@@ -88,23 +90,33 @@ export default async function TeacherHomeworkPage({
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold">{hw.title}</h3>
-                          <Badge variant={isOverdue ? "destructive" : "default"} className="text-xs">
+                          <Badge
+                            variant={isOverdue ? "destructive" : "default"}
+                            className="text-xs"
+                          >
                             {isOverdue ? "Overdue" : "Active"}
                           </Badge>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                          <span>{hw.subject?.name ?? "General"} {hw.subject?.code ? `(${hw.subject.code})` : ""}</span>
-                          <span>{hw.class.name}{hw.section ? ` - ${hw.section.name}` : ""}</span>
+                        <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
+                          <span>
+                            {hw.subject?.name ?? "General"}{" "}
+                            {hw.subject?.code ? `(${hw.subject.code})` : ""}
+                          </span>
+                          <span>
+                            {hw.class.name}
+                            {hw.section ? ` - ${hw.section.name}` : ""}
+                          </span>
                           {hw.totalMarks && <span>Total: {hw.totalMarks}</span>}
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <div className="text-muted-foreground flex items-center gap-3 text-xs">
                           <span className="flex items-center gap-1">
                             <CalendarDays className="h-3 w-3" />
                             Due: {new Date(hw.dueDate).toLocaleDateString()}
                           </span>
                           <span className="flex items-center gap-1">
                             <FileText className="h-3 w-3" />
-                            {hw._count.submissions} submission{hw._count.submissions !== 1 ? "s" : ""}
+                            {hw._count.submissions} submission
+                            {hw._count.submissions !== 1 ? "s" : ""}
                           </span>
                         </div>
                       </div>
@@ -137,7 +149,7 @@ export default async function TeacherHomeworkPage({
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
               )}
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 Page {currentPage} of {totalPages}
               </span>
               {currentPage < totalPages ? (

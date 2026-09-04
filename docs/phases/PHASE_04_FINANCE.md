@@ -1,9 +1,11 @@
 # Phase 4: Finance
 
 ## Duration
+
 2 weeks
 
 ## Objectives
+
 - Implement Fee Management system
 - Build Payment processing
 - Create Invoice generation
@@ -12,6 +14,7 @@
 ## Deliverables
 
 ### Week 1: Fee Structure & Payments
+
 1. **Fee Structure**
    - Define fee categories
    - Create fee templates
@@ -25,6 +28,7 @@
    - Partial payments
 
 ### Week 2: Invoices & Reports
+
 1. **Invoice System**
    - Auto-generate invoices
    - Invoice templates
@@ -40,6 +44,7 @@
 ## Technical Implementation
 
 ### API Endpoints
+
 ```
 # Fee Structure
 GET    /api/v1/fee-structures
@@ -66,6 +71,7 @@ GET    /api/v1/reports/fees/class-wise
 ```
 
 ### Database Schema
+
 ```sql
 -- Fee Structure
 CREATE TABLE fee_structures (
@@ -116,6 +122,7 @@ CREATE TABLE fee_waivers (
 ```
 
 ### UI Pages
+
 - /fees - Fee management dashboard
 - /fees/structures - Fee structure setup
 - /fees/invoices - Invoice list
@@ -126,12 +133,14 @@ CREATE TABLE fee_waivers (
 ## Features
 
 ### Fee Management
+
 - Bulk invoice generation
 - Online payment integration (future)
 - Payment gateway support
 - Auto-reminder emails
 
 ### Reports
+
 - Daily collection report
 - Outstanding dues report
 - Class-wise collection
@@ -139,12 +148,14 @@ CREATE TABLE fee_waivers (
 - Export to Excel/PDF
 
 ### Receipts
+
 - Professional receipt templates
 - Digital receipts
 - Print receipts
 - Email receipts
 
 ## Acceptance Criteria
+
 - [ ] Fee structures can be created
 - [ ] Invoices generated correctly
 - [ ] Payments recorded accurately
@@ -155,13 +166,15 @@ CREATE TABLE fee_waivers (
 - [ ] All amounts calculated correctly
 
 ## Dependencies
+
 - Phase 2 completed
 - Students module ready
 - User authentication working
 
 ## Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Payment calculation errors | High | Use decimal arithmetic |
-| Invoice duplication | High | Unique constraints |
-| Receipt formatting | Medium | Template validation |
+
+| Risk                       | Impact | Mitigation             |
+| -------------------------- | ------ | ---------------------- |
+| Payment calculation errors | High   | Use decimal arithmetic |
+| Invoice duplication        | High   | Unique constraints     |
+| Receipt formatting         | Medium | Template validation    |

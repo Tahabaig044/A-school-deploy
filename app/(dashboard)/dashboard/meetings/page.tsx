@@ -9,10 +9,19 @@ export default async function MeetingsPage({
 }) {
   const params = await searchParams
   const meetingType = params.type || undefined
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER", "PARENT")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+    "PARENT",
+  )
 
   const meetings = await getMeetings(meetingType)
-  const canApprove = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"].includes(profile.role)
+  const canApprove = ["SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL"].includes(
+    profile.role,
+  )
 
   return (
     <MeetingList

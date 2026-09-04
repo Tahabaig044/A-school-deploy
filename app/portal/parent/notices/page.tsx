@@ -1,23 +1,23 @@
-import { getParentAnnouncements } from "@/actions/parent-portal.actions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Bell, User, Calendar } from "lucide-react";
+import { getParentAnnouncements } from "@/actions/parent-portal.actions"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Bell, User, Calendar } from "lucide-react"
 
 function formatDate(date: Date | string) {
   return new Date(date).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
-  });
+  })
 }
 
 function truncateContent(content: string, maxLength = 150) {
-  if (content.length <= maxLength) return content;
-  return content.slice(0, maxLength).trimEnd() + "...";
+  if (content.length <= maxLength) return content
+  return content.slice(0, maxLength).trimEnd() + "..."
 }
 
 export default async function ParentNoticesPage() {
-  const announcements = await getParentAnnouncements();
+  const announcements = await getParentAnnouncements()
 
   return (
     <div className="space-y-6">
@@ -32,7 +32,7 @@ export default async function ParentNoticesPage() {
       {announcements.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <Bell className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
             <p className="text-muted-foreground">No announcements at this time.</p>
           </CardContent>
         </Card>
@@ -49,10 +49,10 @@ export default async function ParentNoticesPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {truncateContent(announcement.content)}
                 </p>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="text-muted-foreground flex items-center gap-4 text-xs">
                   <span className="flex items-center gap-1">
                     <User className="h-3 w-3" />
                     {announcement.author.firstName} {announcement.author.lastName}
@@ -68,5 +68,5 @@ export default async function ParentNoticesPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

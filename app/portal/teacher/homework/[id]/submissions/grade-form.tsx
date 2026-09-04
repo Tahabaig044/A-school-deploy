@@ -23,7 +23,9 @@ export function GradeForm({
     <form action={formAction} className="grid gap-3 sm:grid-cols-3">
       <input type="hidden" name="submissionId" value={submissionId} />
       <div>
-        <Label htmlFor={`marks-${submissionId}`} className="text-xs">Marks {totalMarks ? `/ ${totalMarks}` : ""}</Label>
+        <Label htmlFor={`marks-${submissionId}`} className="text-xs">
+          Marks {totalMarks ? `/ ${totalMarks}` : ""}
+        </Label>
         <Input
           id={`marks-${submissionId}`}
           name="marksObtained"
@@ -35,7 +37,9 @@ export function GradeForm({
         />
       </div>
       <div>
-        <Label htmlFor={`feedback-${submissionId}`} className="text-xs">Feedback</Label>
+        <Label htmlFor={`feedback-${submissionId}`} className="text-xs">
+          Feedback
+        </Label>
         <Input
           id={`feedback-${submissionId}`}
           name="feedback"
@@ -48,7 +52,7 @@ export function GradeForm({
           {pending ? "Saving..." : currentMarks !== null ? "Update" : "Grade"}
         </Button>
       </div>
-      {state?.error && <p className="text-xs text-destructive col-span-full">{state.error}</p>}
+      {state?.error && <p className="text-destructive col-span-full text-xs">{state.error}</p>}
     </form>
   )
 }

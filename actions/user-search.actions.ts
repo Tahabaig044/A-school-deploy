@@ -10,9 +10,15 @@ export async function searchUsers(
     roles?: string[]
     classId?: string
     department?: string
-  } = {}
+  } = {},
 ) {
-  const { profile } = await requireRole("SUPER_ADMIN", "SCHOOL_ADMIN", "BRANCH_ADMIN", "PRINCIPAL", "TEACHER")
+  const { profile } = await requireRole(
+    "SUPER_ADMIN",
+    "SCHOOL_ADMIN",
+    "BRANCH_ADMIN",
+    "PRINCIPAL",
+    "TEACHER",
+  )
 
   if (!query || query.length < 2) return []
 
@@ -46,7 +52,9 @@ export async function searchUsers(
       where: {
         schoolId,
         status: "ACTIVE",
-        ...(filters.classId ? { enrollments: { some: { classId: filters.classId, status: "ACTIVE" } } } : {}),
+        ...(filters.classId
+          ? { enrollments: { some: { classId: filters.classId, status: "ACTIVE" } } }
+          : {}),
         OR: [
           { firstName: { contains: query, mode: "insensitive" } },
           { lastName: { contains: query, mode: "insensitive" } },

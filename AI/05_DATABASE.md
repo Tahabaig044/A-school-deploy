@@ -6,12 +6,12 @@
 
 ## Database Stack
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Database | PostgreSQL 15+ | Primary storage |
-| ORM | Prisma 5.x | Type-safe queries |
-| Hosting | Supabase | Managed database |
-| Migrations | Prisma Migrate | Schema changes |
+| Component  | Technology     | Purpose           |
+| ---------- | -------------- | ----------------- |
+| Database   | PostgreSQL 15+ | Primary storage   |
+| ORM        | Prisma 5.x     | Type-safe queries |
+| Hosting    | Supabase       | Managed database  |
+| Migrations | Prisma Migrate | Schema changes    |
 
 ## Core Rules
 
@@ -44,6 +44,7 @@
 ## Schema Principles
 
 ### Naming Convention
+
 ```sql
 -- Tables: plural, snake_case
 students, teachers, fee_structures
@@ -62,7 +63,9 @@ idx_students_class_id, idx_attendance_date
 ```
 
 ### Required Columns
+
 Every table must have:
+
 ```sql
 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -71,6 +74,7 @@ school_id UUID REFERENCES schools(id) NOT NULL
 ```
 
 ### Soft Delete
+
 ```sql
 -- Add to every important table
 deleted_at TIMESTAMP,
@@ -83,40 +87,44 @@ UPDATE table SET deleted_at = NOW() WHERE id = 'xxx';
 ## Common Patterns
 
 ### Multi-Tenancy
+
 ```typescript
 // Every query must include school_id
 const students = await prisma.student.findMany({
   where: {
     schoolId: user.schoolId,
-    deletedAt: null
-  }
-});
+    deletedAt: null,
+  },
+})
 ```
 
 ### Pagination
+
 ```typescript
 // Always paginate lists
 const students = await prisma.student.findMany({
   where: { schoolId },
   skip: (page - 1) * limit,
   take: limit,
-  orderBy: { createdAt: 'desc' }
-});
+  orderBy: { createdAt: "desc" },
+})
 ```
 
 ### Transactions
+
 ```typescript
 // Use for multiple operations
 await prisma.$transaction(async (tx) => {
-  const student = await tx.student.create({ data });
-  await tx.attendance.create({ data });
-  await tx.auditLog.create({ data });
-});
+  const student = await tx.student.create({ data })
+  await tx.attendance.create({ data })
+  await tx.auditLog.create({ data })
+})
 ```
 
 ## Index Strategy
 
 ### Required Indexes
+
 ```sql
 -- Foreign keys
 CREATE INDEX idx_students_school_id ON students(school_id);
@@ -132,6 +140,7 @@ CREATE INDEX idx_teachers_employee_id ON teachers(employee_id);
 ```
 
 ### Composite Indexes
+
 ```sql
 -- For common query patterns
 CREATE INDEX idx_attendance_student_date ON attendance(student_id, date);
@@ -141,12 +150,14 @@ CREATE INDEX idx_results_student_exam ON results(student_id, exam_id);
 ## Migration Rules
 
 ### Before Migration
+
 - [ ] Test on development database
 - [ ] Backup production database
 - [ ] Review migration file
 - [ ] Check for data loss
 
 ### Migration File
+
 ```typescript
 // prisma/migrations/xxx_add_attendance.sql
 CREATE TABLE attendance (
@@ -162,6 +173,7 @@ CREATE INDEX idx_attendance_date ON attendance(date);
 ```
 
 ### After Migration
+
 - [ ] Verify data integrity
 - [ ] Check application works
 - [ ] Monitor performance
@@ -170,6 +182,7 @@ CREATE INDEX idx_attendance_date ON attendance(date);
 ## Query Optimization
 
 ### Avoid N+1
+
 ```typescript
 // Bad: N+1 queries
 const students = await prisma.student.findMany();
@@ -186,9 +199,10 @@ const students = await prisma.student.findMany({
 ```
 
 ### Use Select
+
 ```typescript
 // Bad: Select all columns
-const students = await prisma.student.findMany();
+const students = await prisma.student.findMany()
 
 // Good: Select only needed
 const students = await prisma.student.findMany({
@@ -196,28 +210,29 @@ const students = await prisma.student.findMany({
     id: true,
     firstName: true,
     lastName: true,
-    admissionNumber: true
-  }
-});
+    admissionNumber: true,
+  },
+})
 ```
 
 ### Use Cursor for Large Lists
+
 ```typescript
 // Good: Cursor-based pagination
 const students = await prisma.student.findMany({
   take: 20,
   skip: 1,
-  cursor: { id: lastId }
-});
+  cursor: { id: lastId },
+})
 ```
 
 ## Backup Strategy
 
-| Type | Frequency | Retention |
-|------|-----------|-----------|
-| Full | Daily | 30 days |
-| Incremental | Hourly | 7 days |
-| Schema | On change | Forever |
+| Type        | Frequency | Retention |
+| ----------- | --------- | --------- |
+| Full        | Daily     | 30 days   |
+| Incremental | Hourly    | 7 days    |
+| Schema      | On change | Forever   |
 
 ---
 

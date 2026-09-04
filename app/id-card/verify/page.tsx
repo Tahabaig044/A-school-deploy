@@ -8,7 +8,9 @@ export default async function VerifyIdCardPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Verify ID Card</h2>
-        <p className="text-muted-foreground">Scan or paste an ID card token to verify its holder and status</p>
+        <p className="text-muted-foreground">
+          Scan or paste an ID card token to verify its holder and status
+        </p>
       </div>
       <QrVerifier />
     </div>

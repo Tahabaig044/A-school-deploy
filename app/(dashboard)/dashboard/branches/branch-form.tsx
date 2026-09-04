@@ -16,10 +16,8 @@ export function BranchForm({ schoolId }: { schoolId?: string }) {
         <CardTitle>Add New Branch</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4 max-w-md">
-          {schoolId && (
-            <input type="hidden" name="schoolId" value={schoolId} />
-          )}
+        <form action={formAction} className="grid max-w-md gap-4">
+          {schoolId && <input type="hidden" name="schoolId" value={schoolId} />}
           <div className="grid gap-2">
             <Label htmlFor="name">Branch Name</Label>
             <Input id="name" name="name" required />
