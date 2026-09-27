@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { generateTransferCertificate, generateStudentCertificate } from "@/lib/certificate-pdf"
 import { createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
+import { isValidUuid } from "@/lib/validate-uuid"
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,6 +21,10 @@ export async function GET(request: NextRequest) {
 
     if (!studentId) {
       return NextResponse.json({ error: "Student ID is required" }, { status: 400 })
+    }
+
+    if (!isValidUuid(studentId)) {
+      return NextResponse.json({ error: "Invalid student ID format" }, { status: 400 })
     }
 
     const profile = await prisma.profile.findUnique({

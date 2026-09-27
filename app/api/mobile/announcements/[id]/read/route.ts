@@ -1,8 +1,10 @@
 import { getMobileUserFromRequest, jsonError } from "@/lib/supabase/mobile-auth"
 import { prisma } from "@/lib/prisma"
+import { isValidUuid } from "@/lib/validate-uuid"
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  if (!isValidUuid(id)) return jsonError("Invalid announcement ID format", 400)
   const mobileUser = await getMobileUserFromRequest(req)
   if (!mobileUser) return jsonError("Unauthorized", 401)
 

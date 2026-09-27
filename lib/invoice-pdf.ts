@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { escapeHtml } from "@/lib/html-escape"
 
 export async function generateInvoicePDF(invoiceId: string): Promise<string> {
   const invoice = await prisma.feeInvoice.findUnique({
@@ -79,31 +80,31 @@ export async function generateInvoicePDF(invoiceId: string): Promise<string> {
       <div class="invoice-container">
         <div class="header">
           <div class="school-info">
-            <h1>${school?.name || "School Name"}</h1>
-            <p>${school?.address || ""}</p>
-            <p>Phone: ${school?.phone || ""} | Email: ${school?.email || ""}</p>
+            <h1>${escapeHtml(school?.name || "School Name")}</h1>
+            <p>${escapeHtml(school?.address || "")}</p>
+            <p>Phone: ${escapeHtml(school?.phone || "")} | Email: ${escapeHtml(school?.email || "")}</p>
           </div>
           <div class="invoice-title">
             <h2>FEE INVOICE</h2>
-            <p>Invoice #: ${invoice.invoiceNumber}</p>
+            <p>Invoice #: ${escapeHtml(invoice.invoiceNumber)}</p>
             <p>Date: ${new Date(invoice.invoiceDate).toLocaleDateString()}</p>
-            <span class="status status-${invoice.status}">${invoice.status}</span>
+            <span class="status status-${escapeHtml(invoice.status)}">${escapeHtml(invoice.status)}</span>
           </div>
         </div>
 
         <div class="info-grid">
           <div class="info-box">
             <h3>Student Information</h3>
-            <p><strong>${invoice.student.firstName} ${invoice.student.lastName}</strong></p>
-            <p>Admission #: ${invoice.student.admissionNo}</p>
-            ${invoice.student.phone ? `<p>Phone: ${invoice.student.phone}</p>` : ""}
-            ${invoice.student.email ? `<p>Email: ${invoice.student.email}</p>` : ""}
+            <p><strong>${escapeHtml(invoice.student.firstName)} ${escapeHtml(invoice.student.lastName)}</strong></p>
+            <p>Admission #: ${escapeHtml(invoice.student.admissionNo)}</p>
+            ${invoice.student.phone ? `<p>Phone: ${escapeHtml(invoice.student.phone)}</p>` : ""}
+            ${invoice.student.email ? `<p>Email: ${escapeHtml(invoice.student.email)}</p>` : ""}
           </div>
           <div class="info-box">
             <h3>Invoice Details</h3>
-            <p><strong>Session:</strong> ${invoice.academicSession.name}</p>
+            <p><strong>Session:</strong> ${escapeHtml(invoice.academicSession.name)}</p>
             <p><strong>Due Date:</strong> ${new Date(invoice.dueDate).toLocaleDateString()}</p>
-            ${invoice.notes ? `<p><strong>Notes:</strong> ${invoice.notes}</p>` : ""}
+            ${invoice.notes ? `<p><strong>Notes:</strong> ${escapeHtml(invoice.notes)}</p>` : ""}
           </div>
         </div>
 
@@ -122,8 +123,8 @@ export async function generateInvoicePDF(invoiceId: string): Promise<string> {
                 (item, i) => `
               <tr>
                 <td>${i + 1}</td>
-                <td>${item.feeStructure.name}</td>
-                <td>${item.feeStructure.category}</td>
+                <td>${escapeHtml(item.feeStructure.name)}</td>
+                <td>${escapeHtml(item.feeStructure.category)}</td>
                 <td style="text-align:right">$${Number(item.amount).toFixed(2)}</td>
               </tr>
             `,
@@ -175,10 +176,10 @@ export async function generateInvoicePDF(invoiceId: string): Promise<string> {
                 .map(
                   (p) => `
                 <tr>
-                  <td>${p.receiptNumber}</td>
+                  <td>${escapeHtml(p.receiptNumber)}</td>
                   <td>${new Date(p.paymentDate).toLocaleDateString()}</td>
-                  <td>${p.paymentMode.replace(/_/g, " ")}</td>
-                  <td>${p.referenceNumber || "—"}</td>
+                  <td>${escapeHtml(p.paymentMode.replace(/_/g, " "))}</td>
+                  <td>${escapeHtml(p.referenceNumber || "—")}</td>
                   <td style="text-align:right">$${Number(p.amount).toFixed(2)}</td>
                 </tr>
               `,

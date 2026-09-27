@@ -1,5 +1,6 @@
 import { getMobileUserFromRequest, jsonError } from "@/lib/supabase/mobile-auth"
 import { prisma } from "@/lib/prisma"
+import { isValidUuid } from "@/lib/validate-uuid"
 
 export async function POST(req: Request) {
   const mobileUser = await getMobileUserFromRequest(req)
@@ -27,8 +28,20 @@ export async function POST(req: Request) {
   }
 
   if (!body.classId) return jsonError("classId is required", 400)
+  if (!isValidUuid(body.classId)) return jsonError("Invalid classId format", 400)
   if (!body.attendance || !Array.isArray(body.attendance) || body.attendance.length === 0) {
     return jsonError("attendance array is required", 400)
+  }
+  if (body.attendance.length > 100) return jsonError("Too many attendance entries (max 100)", 400)
+
+  const VALID_STATUSES = ["PRESENT", "ABSENT", "LATE", "LEAVE"]
+  for (const entry of body.attendance) {
+    if (!entry.studentId || !isValidUuid(entry.studentId)) {
+      return jsonError("Invalid studentId in attendance", 400)
+    }
+    if (!entry.status || !VALID_STATUSES.includes(entry.status)) {
+      return jsonError(`Invalid status: ${entry.status}. Allowed: ${VALID_STATUSES.join(", ")}`, 400)
+    }
   }
 
   const currentSession = await prisma.academicSession.findFirst({

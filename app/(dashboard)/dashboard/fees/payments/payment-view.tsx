@@ -77,8 +77,10 @@ export function PaymentView({ invoices, profile }: { invoices: any[]; profile: a
       const data = await res.json()
       if (data.error) {
         toast({ title: data.error, variant: "destructive" })
-      } else if (data.url) {
+      } else if (data.url && typeof data.url === "string" && data.url.startsWith("https://")) {
         window.location.href = data.url
+      } else if (data.url) {
+        toast({ title: "Invalid payment URL", variant: "destructive" })
       }
     } catch {
       toast({ title: "Failed to initiate online payment", variant: "destructive" })

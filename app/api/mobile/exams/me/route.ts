@@ -1,5 +1,6 @@
 import { getMobileUserFromRequest, jsonError } from "@/lib/supabase/mobile-auth"
 import { prisma } from "@/lib/prisma"
+import { isValidUuid } from "@/lib/validate-uuid"
 
 export async function GET(req: Request) {
   const mobileUser = await getMobileUserFromRequest(req)
@@ -21,6 +22,7 @@ export async function GET(req: Request) {
     schoolId: profile.schoolId,
   }
   if (academicSessionId) {
+    if (!isValidUuid(academicSessionId)) return jsonError("Invalid academicSessionId format", 400)
     sessionFilter.id = academicSessionId
   } else {
     sessionFilter.isCurrent = true

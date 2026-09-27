@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { generateInvoicePDF } from "@/lib/invoice-pdf"
 import { createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
+import { isValidUuid } from "@/lib/validate-uuid"
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,6 +20,10 @@ export async function GET(request: NextRequest) {
 
     if (!invoiceId) {
       return NextResponse.json({ error: "Invoice ID is required" }, { status: 400 })
+    }
+
+    if (!isValidUuid(invoiceId)) {
+      return NextResponse.json({ error: "Invalid invoice ID format" }, { status: 400 })
     }
 
     const invoice = await prisma.feeInvoice.findUnique({

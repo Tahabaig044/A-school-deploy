@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
+import { isValidUuid } from "@/lib/validate-uuid"
 
 export async function GET(request: Request) {
   try {
@@ -16,6 +17,9 @@ export async function GET(request: Request) {
     const studentId = searchParams.get("id")
 
     if (studentId) {
+      if (!isValidUuid(studentId)) {
+        return NextResponse.json({ error: "Invalid student ID format" }, { status: 400 })
+      }
       const student = await prisma.student.findFirst({
         where: { id: studentId, schoolId: teacher.schoolId },
         include: {
@@ -67,9 +71,9 @@ export async function GET(request: Request) {
 
     if (classIds.length === 0) return NextResponse.json([])
 
-    const page = parseInt(searchParams.get("page") || "1")
-    const limit = parseInt(searchParams.get("limit") || "20")
-    const q = searchParams.get("q") || ""
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1)
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20") || 20))
+    const q = (searchParams.get("q") || "").slice(0, 100)
     const skip = (page - 1) * limit
 
     const where: any = {

@@ -155,8 +155,8 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
     }),
     // Timetable conflicts: count slots where same teacher has overlapping time
     prisma
-      .$queryRawUnsafe<{ count: bigint }[]>(
-        `SELECT COUNT(*) as count FROM (
+      .$queryRaw<{ count: bigint }[]>`
+        SELECT COUNT(*) as count FROM (
         SELECT t1.id FROM timetables t1
         INNER JOIN timetables t2 ON t1.teacher_id = t2.teacher_id
           AND t1.day_of_week = t2.day_of_week
@@ -164,12 +164,10 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
           AND t1.start_time < t2.end_time
           AND t2.start_time < t1.end_time
           AND t1.academic_session_id = t2.academic_session_id
-        WHERE (t1.school_id = $1 OR $1 IS NULL)
-          AND (t1.branch_id = $2 OR $2 IS NULL)
-      ) conflicts`,
-        effectiveSchoolId ?? null,
-        effectiveBranchId ?? null,
-      )
+        WHERE (t1.school_id = ${effectiveSchoolId ?? null} OR ${effectiveSchoolId ?? null} IS NULL)
+          AND (t1.branch_id = ${effectiveBranchId ?? null} OR ${effectiveBranchId ?? null} IS NULL)
+      ) conflicts
+      `
       .then((r) => Number(r[0]?.count || 0))
       .catch(() => 0),
   ])

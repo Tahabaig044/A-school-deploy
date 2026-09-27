@@ -1,5 +1,6 @@
 import { getMobileUserFromRequest, jsonError } from "@/lib/supabase/mobile-auth"
 import { prisma } from "@/lib/prisma"
+import { isValidUuid } from "@/lib/validate-uuid"
 
 export async function POST(req: Request) {
   const mobileUser = await getMobileUserFromRequest(req)
@@ -17,6 +18,7 @@ export async function POST(req: Request) {
   }
 
   if (!body.homeworkId) return jsonError("homeworkId is required", 400)
+  if (!isValidUuid(body.homeworkId)) return jsonError("Invalid homeworkId format", 400)
 
   const student = await prisma.student.findFirst({
     where: { schoolId: profile.schoolId, email: profile.email },

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { escapeHtml } from "@/lib/html-escape"
 
 export async function generateTransferCertificate(studentId: string): Promise<string> {
   const student = await prisma.student.findUnique({
@@ -59,16 +60,16 @@ export async function generateTransferCertificate(studentId: string): Promise<st
       <div class="certificate">
         <div class="watermark">TRANSFER CERTIFICATE</div>
         <div class="header">
-          <h1>${school?.name || "School Name"}</h1>
-          <p>${school?.address || ""}</p>
-          <p>Phone: ${school?.phone || ""} | Email: ${school?.email || ""}</p>
+          <h1>${escapeHtml(school?.name || "School Name")}</h1>
+          <p>${escapeHtml(school?.address || "")}</p>
+          <p>Phone: ${escapeHtml(school?.phone || "")} | Email: ${escapeHtml(school?.email || "")}</p>
         </div>
         <div class="title">TRANSFER CERTIFICATE</div>
         <div class="body">
-          <p>This is to certify that <strong>${student.firstName} ${student.lastName}</strong></p>
+          <p>This is to certify that <strong>${escapeHtml(student.firstName)} ${escapeHtml(student.lastName)}</strong></p>
           <div class="detail-row">
             <span class="detail-label">Admission Number:</span>
-            <span class="detail-value">${student.admissionNo || "N/A"}</span>
+            <span class="detail-value">${escapeHtml(student.admissionNo || "N/A")}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Date of Birth:</span>
@@ -76,21 +77,21 @@ export async function generateTransferCertificate(studentId: string): Promise<st
           </div>
           <div class="detail-row">
             <span class="detail-label">Gender:</span>
-            <span class="detail-value">${student.gender}</span>
+            <span class="detail-value">${escapeHtml(student.gender)}</span>
           </div>
           ${enrollment ? `
           <div class="detail-row">
             <span class="detail-label">Class/Section:</span>
-            <span class="detail-value">${enrollment.class.name} - ${enrollment.section?.name || "N/A"}</span>
+            <span class="detail-value">${escapeHtml(enrollment.class.name)} - ${escapeHtml(enrollment.section?.name || "N/A")}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Academic Session:</span>
-            <span class="detail-value">${enrollment.academicSession.name}</span>
+            <span class="detail-value">${escapeHtml(enrollment.academicSession.name)}</span>
           </div>
           ` : ""}
           <div class="detail-row">
             <span class="detail-label">Address:</span>
-            <span class="detail-value">${student.address || "N/A"}</span>
+            <span class="detail-value">${escapeHtml(student.address || "N/A")}</span>
           </div>
           <p style="margin-top: 20px;">
             was a bonafide student of this school. The school guarantees the above student's
@@ -169,14 +170,14 @@ export async function generateStudentCertificate(studentId: string, type: string
     <body>
       <div class="certificate">
         <div class="header">
-          <h1>${school?.name || "School Name"}</h1>
-          <p>${school?.address || ""}</p>
+          <h1>${escapeHtml(school?.name || "School Name")}</h1>
+          <p>${escapeHtml(school?.address || "")}</p>
         </div>
         <div class="title">${title}</div>
         <div class="body">
-          <p>This is to certify that <strong>${student.firstName} ${student.lastName}</strong>
-          (Admission No: ${student.admissionNo || "N/A"}) is a bonafide student of this school,
-          studying in <strong>${enrollment?.class?.name || "N/A"} - ${enrollment?.section?.name || "N/A"}</strong>.</p>
+          <p>This is to certify that <strong>${escapeHtml(student.firstName)} ${escapeHtml(student.lastName)}</strong>
+          (Admission No: ${escapeHtml(student.admissionNo || "N/A")}) is a bonafide student of this school,
+          studying in <strong>${escapeHtml(enrollment?.class?.name || "N/A")} - ${escapeHtml(enrollment?.section?.name || "N/A")}</strong>.</p>
         </div>
         <div class="footer">
           <div class="signature">

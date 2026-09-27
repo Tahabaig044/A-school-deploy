@@ -19,10 +19,14 @@ function isRateLimited(ip: string): boolean {
 
 export async function GET(req: NextRequest) {
   const data = req.nextUrl.searchParams.get("data")
-  const size = parseInt(req.nextUrl.searchParams.get("size") || "140")
+  const size = Math.min(1000, Math.max(100, parseInt(req.nextUrl.searchParams.get("size") || "140") || 140))
 
   if (!data) {
     return new Response("Missing data parameter", { status: 400 })
+  }
+
+  if (data.length > 2048) {
+    return new Response("Data too long (max 2048 characters)", { status: 400 })
   }
 
   const ip =

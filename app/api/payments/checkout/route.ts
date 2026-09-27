@@ -2,8 +2,28 @@ import { NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import { createClient } from "@/lib/supabase/server"
+import { isValidUuid } from "@/lib/validate-uuid"
+
+function validateCsrfOrigin(request: NextRequest): boolean {
+  const origin = request.headers.get("origin")
+  const host = request.headers.get("host")
+  if (!origin && !host) return true
+  const allowed = process.env.NEXT_PUBLIC_APP_URL
+  if (!allowed) return true
+  if (origin) {
+    return origin === allowed || origin.endsWith(`.${new URL(allowed).hostname}`)
+  }
+  if (host) {
+    return host === new URL(allowed).host
+  }
+  return true
+}
 
 export async function POST(request: NextRequest) {
+  if (!validateCsrfOrigin(request)) {
+    return NextResponse.json({ error: "Invalid origin" }, { status: 403 })
+  }
+
   try {
     const supabase = await createClient()
     const {
@@ -19,6 +39,10 @@ export async function POST(request: NextRequest) {
 
     if (!invoiceId) {
       return NextResponse.json({ error: "Invoice ID is required" }, { status: 400 })
+    }
+
+    if (!isValidUuid(invoiceId)) {
+      return NextResponse.json({ error: "Invalid invoice ID format" }, { status: 400 })
     }
 
     const invoice = await prisma.feeInvoice.findUnique({

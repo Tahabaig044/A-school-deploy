@@ -1,5 +1,6 @@
 import { getMobileUserFromRequest, jsonError } from "@/lib/supabase/mobile-auth"
 import { prisma } from "@/lib/prisma"
+import { isValidUuid } from "@/lib/validate-uuid"
 
 export async function GET(req: Request) {
   const mobileUser = await getMobileUserFromRequest(req)
@@ -12,6 +13,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const examId = searchParams.get("examId")
   if (!examId) return jsonError("examId is required", 400)
+  if (!isValidUuid(examId)) return jsonError("Invalid examId format", 400)
 
   const exam = await prisma.exam.findUnique({
     where: { id: examId },

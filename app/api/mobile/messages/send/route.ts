@@ -1,5 +1,6 @@
 import { getMobileUserFromRequest, jsonError } from "@/lib/supabase/mobile-auth"
 import { prisma } from "@/lib/prisma"
+import { isValidUuid } from "@/lib/validate-uuid"
 
 export async function POST(req: Request) {
   const mobileUser = await getMobileUserFromRequest(req)
@@ -18,6 +19,8 @@ export async function POST(req: Request) {
 
   if (!body.receiverId) return jsonError("receiverId is required", 400)
   if (!body.content) return jsonError("content is required", 400)
+  if (!isValidUuid(body.receiverId)) return jsonError("Invalid receiverId format", 400)
+  if (body.content.length > 5000) return jsonError("Content too long (max 5000 characters)", 400)
 
   const receiver = await prisma.profile.findUnique({
     where: { id: body.receiverId },

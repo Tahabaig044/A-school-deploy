@@ -6,6 +6,7 @@ import {
   getBulkStudentIdCardData,
 } from "@/services/id-card"
 import { generateIdCardPdf, generateIdCardsPdfBulk } from "@/lib/id-card-pdf"
+import { isValidUuid } from "@/lib/validate-uuid"
 
 const WINDOW_MS = 60_000
 const MAX_REQUESTS_PER_IP = 30
@@ -53,6 +54,10 @@ export async function GET(req: NextRequest) {
       const sectionId = search.get("sectionId") || undefined
       const sessionId = search.get("sessionId") || undefined
       if (!schoolId || !classId) return jsonError("Missing schoolId or classId", 400)
+      if (!isValidUuid(schoolId)) return jsonError("Invalid schoolId format", 400)
+      if (!isValidUuid(classId)) return jsonError("Invalid classId format", 400)
+      if (sectionId && !isValidUuid(sectionId)) return jsonError("Invalid sectionId format", 400)
+      if (sessionId && !isValidUuid(sessionId)) return jsonError("Invalid sessionId format", 400)
 
       const cards = await getBulkStudentIdCardData(schoolId, classId, sectionId, sessionId)
       if (cards.length === 0) return jsonError("No students found", 404)
@@ -68,9 +73,9 @@ export async function GET(req: NextRequest) {
     const data = self
       ? await getMyIdCard()
       : profileId
-        ? await getIdCardDataForUser(profileId)
+        ? isValidUuid(profileId) ? await getIdCardDataForUser(profileId) : null
         : studentId
-          ? await getStudentIdCardData(studentId)
+          ? isValidUuid(studentId) ? await getStudentIdCardData(studentId) : null
           : null
 
     if (!data) return jsonError("ID card not found", 404)
