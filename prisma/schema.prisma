@@ -106,7 +106,11 @@ model School {
   alumni          Alumni[]
   alumniEvents    AlumniEvent[]
   salaryStructures SalaryStructure[]
+  planId          String?           @map("plan_id") @db.Uuid
+  plan            Plan?             @relation(fields: [planId], references: [id])
+  demoTenant      DemoTenant?
 
+  @@index([planId])
   @@map("schools")
 }
 
@@ -1945,4 +1949,200 @@ model TeacherRating {
   @@index([raterId])
   @@index([rating])
   @@map("teacher_ratings")
+}
+
+// ─── Demo / Trial Enums ────────────────────────────────────────────────────
+
+enum DemoStatus {
+  REQUESTED
+  PROVISIONING
+  SEEDING
+  READY
+  EXPIRED
+  REVOKED
+  PURGED
+  FAILED
+}
+
+enum DemoSeedStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+enum DemoPersonaType {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum DemoEventType {
+  REQUESTED
+  SEED_STARTED
+  SEED_PROGRESS
+  SEED_COMPLETED
+  SEED_FAILED
+  PERSONA_CREATED
+  PERSONA_READY
+  PERSONA_SIGNIN
+  LIMIT_BLOCKED
+  EXTENSION_REQUESTED
+  EXTENSION_GRANTED
+  EXTENSION_DENIED
+  EXPIRED
+  REVOKED
+  PURGE_STARTED
+  PURGE_COMPLETED
+  PURGE_FAILED
+}
+
+enum DemoExtensionStatus {
+  PENDING
+  GRANTED
+  DENIED
+  AUTO_GRANTED
+}
+
+// ─── Plans ─────────────────────────────────────────────────────────────────
+
+model Plan {
+  id            String   @id @default(uuid()) @db.Uuid
+  key           String   @unique
+  name          String
+  description   String?
+  durationDays  Int      @default(3) @map("duration_days")
+  retentionDays Int      @default(2) @map("retention_days")
+  isPublic      Boolean  @default(false) @map("is_public")
+  isActive      Boolean  @default(true) @map("is_active")
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  limits  PlanLimit[]
+  schools School[]
+  tenants DemoTenant[]
+
+  @@map("plans")
+}
+
+model PlanLimit {
+  id         String   @id @default(uuid()) @db.Uuid
+  planId     String   @map("plan_id") @db.Uuid
+  key        String
+  metric     String
+  limitValue Int      @default(-1) @map("limit_value")
+  period     String   @default("TOTAL")
+  isEnabled  Boolean  @default(true) @map("is_enabled")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, key])
+  @@index([metric])
+  @@map("plan_limits")
+}
+
+// ─── Demo / Trial ──────────────────────────────────────────────────────────
+
+model DemoTenant {
+  id               String         @id @default(uuid()) @db.Uuid
+  slug             String         @unique
+  schoolId         String?        @unique @map("school_id") @db.Uuid
+  planId           String?        @map("plan_id") @db.Uuid
+  status           DemoStatus     @default(REQUESTED)
+  seedStatus       DemoSeedStatus @default(PENDING) @map("seed_status")
+  seedProgress     Int            @default(0) @map("seed_progress")
+  seedStep         String?        @map("seed_step")
+  seedError        String?        @map("seed_error")
+  seedAttempts     Int            @default(0) @map("seed_attempts")
+  source           String         @default("PUBLIC_DEMO")
+  requestIp        String?        @map("request_ip")
+  requestUserAgent String?        @map("request_user_agent")
+  contactEmail     String?        @map("contact_email")
+  createdById      String?        @map("created_by_id") @db.Uuid
+  expiresAt        DateTime       @map("expires_at")
+  lastAccessedAt   DateTime?      @map("last_accessed_at")
+  purgeAfter       DateTime       @map("purge_after")
+  purgedAt         DateTime?      @map("purged_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  plan       Plan?                  @relation(fields: [planId], references: [id])
+  school     School?                @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  personas   DemoPersona[]
+  events     DemoEvent[]
+  extensions DemoExtensionRequest[]
+
+  @@index([status, expiresAt])
+  @@index([status, purgeAfter])
+  @@index([planId])
+  @@index([createdAt])
+  @@map("demo_tenants")
+}
+
+model DemoPersona {
+  id             String          @id @default(uuid()) @db.Uuid
+  demoTenantId   String          @map("demo_tenant_id") @db.Uuid
+  personaType    DemoPersonaType @map("persona_type")
+  label          String
+  description    String?
+  authUserId     String?         @unique @map("auth_user_id") @db.Uuid
+  profileId      String?         @map("profile_id") @db.Uuid
+  email          String
+  role           Role
+  isReady        Boolean         @default(false) @map("is_ready")
+  lastSignedInAt DateTime?       @map("last_signed_in_at")
+  signInCount    Int             @default(0) @map("sign_in_count")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  demoTenant DemoTenant @relation(fields: [demoTenantId], references: [id], onDelete: Cascade)
+
+  @@unique([demoTenantId, personaType])
+  @@index([demoTenantId, isReady])
+  @@index([email])
+  @@map("demo_personas")
+}
+
+model DemoEvent {
+  id             String        @id @default(uuid()) @db.Uuid
+  demoTenantId   String        @map("demo_tenant_id") @db.Uuid
+  type           DemoEventType
+  fromStatus     DemoStatus?   @map("from_status")
+  toStatus       DemoStatus?   @map("to_status")
+  message        String?
+  metadata       Json?
+  actorProfileId String?       @map("actor_profile_id") @db.Uuid
+  ipAddress      String?       @map("ip_address")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  demoTenant DemoTenant @relation(fields: [demoTenantId], references: [id], onDelete: Cascade)
+
+  @@index([demoTenantId, createdAt])
+  @@index([type, createdAt])
+  @@map("demo_events")
+}
+
+model DemoExtensionRequest {
+  id               String              @id @default(uuid()) @db.Uuid
+  demoTenantId     String              @map("demo_tenant_id") @db.Uuid
+  requestedMinutes Int                 @map("requested_minutes")
+  status           DemoExtensionStatus @default(PENDING)
+  reason           String?
+  contactEmail     String?             @map("contact_email")
+  decidedById      String?             @map("decided_by_id") @db.Uuid
+  decidedAt        DateTime?           @map("decided_at")
+  newExpiresAt     DateTime?           @map("new_expires_at")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  demoTenant DemoTenant @relation(fields: [demoTenantId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([demoTenantId, status])
+  @@map("demo_extension_requests")
 }

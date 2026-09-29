@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
+import { unstable_cache } from "next/cache"
 
 export async function getDashboardStats(schoolId?: string, branchId?: string) {
   const { profile } = await requireRole(
@@ -11,12 +12,25 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
     "TEACHER",
     "PARENT",
   )
-  const statsStart = performance.now()
 
   const effectiveSchoolId =
     profile.role === "SUPER_ADMIN" ? schoolId || profile.schoolId : profile.schoolId
   const effectiveBranchId =
     profile.role === "SUPER_ADMIN" ? branchId || profile.branchId : profile.branchId
+
+  return getCachedDashboardStats(
+    effectiveSchoolId ?? undefined,
+    effectiveBranchId ?? undefined,
+    profile.id,
+  )
+}
+
+async function computeDashboardStats(
+  effectiveSchoolId?: string,
+  effectiveBranchId?: string,
+  profileId?: string,
+) {
+  const statsStart = performance.now()
 
   const whereClause: any = {}
   if (effectiveSchoolId) whereClause.schoolId = effectiveSchoolId
@@ -149,13 +163,12 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
     }),
     prisma.notification.count({
       where: {
-        userId: profile.id,
+        userId: profileId!,
         isRead: false,
       },
     }),
     // Timetable conflicts: count slots where same teacher has overlapping time
-    prisma
-      .$queryRaw<{ count: bigint }[]>`
+    prisma.$queryRaw<{ count: bigint }[]>`
         SELECT COUNT(*) as count FROM (
         SELECT t1.id FROM timetables t1
         INNER JOIN timetables t2 ON t1.teacher_id = t2.teacher_id
@@ -201,6 +214,22 @@ export async function getDashboardStats(schoolId?: string, branchId?: string) {
     timetableConflicts,
   }
 }
+
+// The dashboard stats are 17 queries that change at most daily. Caching them avoids
+// re-running the whole block on every navigation back to the dashboard while the
+// stale-while-revalidate window lets an ongoing write still show up quickly. The key
+// is per user/scope/day: a different school branch or a different user sharing the
+// cache could leak counts across tenants.
+const getCachedDashboardStats = unstable_cache(
+  async (schoolId?: string, branchId?: string, profileId?: string) => {
+    return computeDashboardStats(schoolId, branchId, profileId)
+  },
+  ["dashboard-stats"],
+  {
+    revalidate: 60,
+    tags: ["dashboard-stats"],
+  },
+)
 
 export async function getStudentEnrollmentReport(
   schoolId: string,
@@ -252,7 +281,8 @@ export async function getAttendanceReport(
   const whereClause: any = {
     date: { gte: start, lte: end },
   }
-  if (effectiveSchoolId) whereClause.class = { schoolId: effectiveSchoolId, ...(branchId && { branchId }) }
+  if (effectiveSchoolId)
+    whereClause.class = { schoolId: effectiveSchoolId, ...(branchId && { branchId }) }
 
   const attendance = await prisma.studentAttendance.groupBy({
     by: ["date", "status"],
