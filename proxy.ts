@@ -1,7 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { updateSession } from "@/lib/supabase/middleware"
 
-const CORS_ALLOWED_ORIGINS = ["http://localhost:8080", "http://localhost:3000"]
+function getAllowedOrigins(): string[] {
+  const defaults = ["http://localhost:8080", "http://localhost:3000"]
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || ""
+  if (appUrl) defaults.push(appUrl)
+  const extra = (process.env.CORS_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+  return [...new Set([...defaults, ...extra])]
+}
+
+const CORS_ALLOWED_ORIGINS = getAllowedOrigins()
 
 function setCorsHeaders(response: NextResponse, origin: string | null) {
   if (origin && CORS_ALLOWED_ORIGINS.includes(origin)) {

@@ -7,6 +7,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   DIRECT_URL: z.string().url(),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  SUPABASE_STORAGE_BUCKET: z.string().min(1).default("homework"),
 })
 
 function validateEnv() {
@@ -26,4 +27,5 @@ export const env = {
   DATABASE_URL: process.env.DATABASE_URL!,
   DIRECT_URL: process.env.DIRECT_URL!,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET || "homework",
 }

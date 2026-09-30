@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
 import { randomUUID } from "crypto"
 import { requireRole } from "@/lib/auth"
+import { createServiceClient } from "@/lib/supabase/server"
+import { env } from "@/lib/env"
 
 function validateCsrfOrigin(request: Request): boolean {
   const origin = request.headers.get("origin")
@@ -52,6 +52,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
   }
 
+  const bucket = env.SUPABASE_STORAGE_BUCKET
+  const storage = (await createServiceClient()).storage
+
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File | null
@@ -77,15 +80,21 @@ export async function POST(request: Request) {
     }
 
     const safeName = `${randomUUID()}.${originalExt}`
-    const uploadDir = join(process.cwd(), "uploads", "homework", ctx.profile.schoolId)
-    const filePath = join(uploadDir, safeName)
+    const path = `${ctx.profile.schoolId}/${safeName}`
+    const bytes = Buffer.from(await file.arrayBuffer())
 
-    await mkdir(uploadDir, { recursive: true })
-    const bytes = await file.arrayBuffer()
-    await writeFile(filePath, Buffer.from(bytes))
+    const { error } = await storage.from(bucket).upload(path, bytes, {
+      contentType: file.type,
+      cacheControl: "3600",
+      upsert: false,
+    })
+    if (error) {
+      console.error("Storage upload error:", error.message)
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 })
+    }
 
     return NextResponse.json({
-      url: `/api/uploads/homework/${ctx.profile.schoolId}/${safeName}`,
+      url: `/api/uploads/homework/${path}`,
       fileName: file.name,
       fileType: file.type,
       fileSize: file.size,

@@ -46,3 +46,8 @@ next-env.d.ts
 
 # prisma generated client
 lib/generated/
+
+# supabase CLI local state (never commit)
+supabase/.temp/
+supabase/.branches/
+

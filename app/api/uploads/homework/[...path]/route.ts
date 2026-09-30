@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
-import { readFile } from "fs/promises"
-import { join } from "path"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceClient, createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
+import { env } from "@/lib/env"
 
-const ALLOWED_EXTENSIONS = new Set(["pdf", "doc", "docx", "jpg", "jpeg", "png", "gif", "webp", "txt"])
+const ALLOWED_EXTENSIONS = new Set([
+  "pdf",
+  "doc",
+  "docx",
+  "jpg",
+  "jpeg",
+  "png",
+  "gif",
+  "webp",
+  "txt",
+])
 
 export async function GET(
   _request: NextRequest,
@@ -49,27 +58,18 @@ export async function GET(
       return NextResponse.json({ error: "Invalid file name" }, { status: 400 })
     }
 
-    const filePath = join(process.cwd(), "uploads", "homework", schoolId, fileName)
-    const data = await readFile(filePath)
+    const objectPath = `${schoolId}/${fileName}`
+    const { data, error } = await (
+      await createServiceClient()
+    ).storage
+      .from(env.SUPABASE_STORAGE_BUCKET)
+      .createSignedUrl(objectPath, 3600)
 
-    const mimeTypes: Record<string, string> = {
-      pdf: "application/pdf",
-      doc: "application/msword",
-      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      jpg: "image/jpeg",
-      jpeg: "image/jpeg",
-      png: "image/png",
-      gif: "image/gif",
-      webp: "image/webp",
-      txt: "text/plain",
+    if (error || !data?.signedUrl) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 })
     }
 
-    return new NextResponse(data, {
-      headers: {
-        "Content-Type": mimeTypes[ext] || "application/octet-stream",
-        "Cache-Control": "private, max-age=3600",
-      },
-    })
+    return NextResponse.redirect(data.signedUrl)
   } catch {
     return NextResponse.json({ error: "File not found" }, { status: 404 })
   }
